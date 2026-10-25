@@ -1,0 +1,99 @@
+# lilgrip.com — Cursor Rules
+
+You are working on **the lilgriper** site: a static, vanilla web project hosted on GitHub Pages at `lilgrip.com`.
+
+## Stack (non-negotiable)
+
+- **Vanilla only:** HTML5, CSS3, and ES6+ JavaScript modules.
+- **Never** introduce React, Vue, Svelte, Angular, Next, Nuxt, or similar.
+- **Never** introduce Tailwind, Bootstrap, Bulma, or CSS-in-JS libraries.
+- **Never** add a bundler or build step (no Vite, Webpack, Parcel, npm scripts for UI).
+- Allowed third-party use: Google Fonts CDN, and the existing Supabase JS client via ESM CDN (`esm.sh`) for shared comments/sightings only.
+- Prefer progressive enhancement: the page must remain readable if JS fails.
+
+## File split (enforce)
+
+Keep a clean root layout. Do not collapse everything into one file.
+
+| File | Role |
+| --- | --- |
+| `index.html` | Structure, semantics, meta, content sections |
+| `styles.css` | All presentation (this repo uses `styles.css`, not `style.css`) |
+| `script.js` | Behavior as an ES module (`type="module"`) |
+| `images/` | Static assets (e.g. `lilgriper.jpg`) |
+| `favicon.svg` | Site icon |
+| `CNAME` | GitHub Pages custom domain (`lilgrip.com`) |
+| `.nojekyll` | Disable Jekyll on Pages |
+
+- Do **not** invent parallel entrypoints (`app.js`, `main.css`) without a clear need.
+- Do **not** rename `styles.css` to `style.css` unless the user explicitly asks; keep the existing name for continuity.
+- Keep `README.md`, `OVERVIEW.md`, and `TODO.md` accurate when architecture or features change.
+
+## HTML standards
+
+- Use **semantic HTML5**: `main`, `header`, `section`, `figure`/`figcaption`, `blockquote`, `form`, `label`, `nav` when navigation exists.
+- Every interactive control needs a real `<button>` or labeled form control — no clickable bare `<div>`s.
+- Associate labels with inputs (`<label>` wrapping or `for`/`id`).
+- Provide meaningful `alt` text for meaningful images; decorative images may use empty `alt` only when truly decorative.
+- Prefer one `h1` per page; nest headings in order.
+- Use `aria-labelledby` / `aria-live` where dynamic UI needs it (points chip, status readouts).
+- Mobile-first markup: forms and buttons must be usable on small screens (adequate tap targets).
+
+## CSS standards
+
+- **No inline styles** for presentation. No `style="color:…"` / layout hacks in HTML.
+- Exception: dynamic CSS custom properties may be set from JS via `element.style.setProperty('--token', value)` — never dump full CSS rules inline.
+- Centralize design tokens in `:root` CSS variables (Catppuccin-inspired palette already in use).
+- Prefer **Flexbox** and **Grid** for layout. Avoid float-based layouts.
+- Prefer responsive sizing with `clamp()`, `minmax()`, and fluid type — avoid hard-coded breakpoints as the only strategy.
+- Respect `prefers-reduced-motion`: disable or simplify non-essential animation.
+- Support safe areas (`env(safe-area-inset-*)`) and avoid horizontal overflow (`overflow-x: hidden` on body is already established).
+- Keep selectors readable; avoid deep nesting and `!important` unless fixing a proven conflict.
+- Match the existing chill aesthetic: Catppuccin mocha tones, pink accent, no athletic/dashboard-clutter rewrites unless asked.
+
+## JavaScript standards
+
+- Write **modular, event-driven** ES6+ code in `script.js`.
+- Use `const`/`let`, arrow functions where clear, async/await for network work.
+- Bind behavior with `addEventListener` — no inline `onclick=` attributes.
+- Query the DOM once at the top (or in small scoped helpers); null-check before use.
+- Keep concerns separated: screen commands, notes, sightings/points should not become one tangled mega-function.
+- Sanitize/clamp user text before insert (`clean()` pattern already used).
+- Do not store secrets in the client. Only the Supabase **publishable/anon** key may appear in `script.js`.
+- Prefer `localStorage` only for non-sensitive UX state (e.g. hunter name). Shared data (comments, sightings) lives in Supabase.
+- Honor `prefers-reduced-motion` when choosing to animate or tick live counters.
+
+## Supabase / data rules
+
+Existing shared features:
+
+- Table `lilgrip_comments` — public notes (select/insert for anon).
+- Table `grip_sightings` — hunter, place, photo path, points (select/insert for anon).
+- Storage bucket `grip-sightings` — public image uploads for sightings.
+
+When changing data:
+
+- Prefer migrations/SQL through the project’s Supabase tooling; document new tables in `OVERVIEW.md`.
+- Keep RLS tight: anon should not get unrestricted update/delete unless the user explicitly requests moderation tooling.
+- Cap file size and MIME types for uploads; give clear user-facing error text.
+
+## Product / content voice
+
+- Brand: **the lilgriper** / **lilgrip** — chill, playful, lightly nerdy (servers/CS flavor), not athletic.
+- Keep pink as a primary accent; Catppuccin tokens for the rest.
+- Scripture quote on the hero: 1 Corinthians 16:14 (WEB): “Let all that you do be done in love.”
+- Do not reintroduce “peace” gags or cluttered sticker/tag spam unless the user asks.
+
+## Git / deploy awareness
+
+- Publish source: GitHub Pages from `main` root.
+- Domain: `lilgrip.com` via `CNAME`.
+- Prefer small, focused commits with conventional messages (`feat:`, `fix:`, `docs:`, `chore:`).
+- Do not invent frameworks “to make Pages easier.” Static files are the product.
+
+## When unsure
+
+- Inspect existing `index.html` / `styles.css` / `script.js` before inventing new patterns.
+- Prefer extending current sections (hero, lilgrip screen, grip sightings, notes) over adding unrelated pages.
+- Update `TODO.md` when finishing or discovering follow-up work.
+- Update `OVERVIEW.md` when structure, tokens, or features change materially.
