@@ -103,6 +103,50 @@
       </div>
     </section>
 
+    <section class="sightings" aria-labelledby="sightings-title">
+      <div class="sightings-head">
+        <div>
+          <h2 id="sightings-title">grip sightings</h2>
+          <p class="sightings-lede">
+            Spot the lilgriper. Snap a pic. Claim <strong>+10 grip points</strong>.
+          </p>
+        </div>
+        <div class="points-chip" aria-live="polite">
+          <span>your grip points</span>
+          <strong id="my-points">0</strong>
+        </div>
+      </div>
+
+      <form id="sighting-form">
+        <label>
+          hunter name
+          <input type="text" name="hunter" id="hunter-name" maxlength="24" autocomplete="nickname" placeholder="anon" />
+        </label>
+        <label>
+          where
+          <input type="text" name="place" maxlength="80" placeholder="school hallway, target, youth group…" />
+        </label>
+        <label class="photo-pick">
+          photo of the lilgriper
+          <input name="photo" type="file" accept="image/*" capture="environment" required />
+          <span class="photo-pick-btn" id="photo-label">take or choose a photo</span>
+        </label>
+        <button type="submit">log sighting · +10</button>
+      </form>
+      <p class="hint" id="sighting-hint">photos go live for everyone. be chill about it.</p>
+
+      <div class="sightings-board">
+        <div>
+          <h3>latest sightings</h3>
+          <ul id="sighting-list"></ul>
+        </div>
+        <div>
+          <h3>grip leaderboard</h3>
+          <ol id="leaderboard"></ol>
+        </div>
+      </div>
+    </section>
+
     <section class="notes" aria-labelledby="notes-title">
       <h2 id="notes-title">notes for lilgrip</h2>
       <form id="note-form">

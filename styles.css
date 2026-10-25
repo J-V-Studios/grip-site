@@ -174,7 +174,8 @@ blockquote cite {
 @media (max-width: 820px) {
   main,
   .panel,
-  .notes {
+  .notes,
+  .sightings {
     width: min(560px, calc(100% - 1.4rem));
   }
 
@@ -202,16 +203,20 @@ blockquote cite {
 }
 
 .panel,
-.notes {
+.notes,
+.sightings {
   width: min(1040px, calc(100% - 2.6rem));
   margin: 0 auto;
 }
 
 .panel { padding-bottom: 0.4rem; }
+.sightings { padding: 1.4rem 0 0.6rem; }
 .notes { padding-bottom: max(2.5rem, env(safe-area-inset-bottom)); }
 
 .panel h2,
-.notes h2 {
+.notes h2,
+.sightings h2,
+.sightings h3 {
   margin: 0 0 0.7rem;
   color: var(--mauve);
   font-family: "JetBrains Mono", ui-monospace, monospace;
@@ -219,6 +224,11 @@ blockquote cite {
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
+}
+
+.sightings h3 {
+  margin-top: 1.4rem;
+  color: var(--teal);
 }
 
 .panel-grid {
@@ -378,6 +388,7 @@ blockquote cite {
 
 .keys button,
 #note-form button,
+#sighting-form button,
 .note-card button {
   touch-action: manipulation;
   cursor: pointer;
@@ -399,12 +410,14 @@ blockquote cite {
   transform: translateY(1px);
 }
 
-#note-form {
+#note-form,
+#sighting-form {
   display: grid;
   gap: 0.7rem;
 }
 
-#note-form label {
+#note-form label,
+#sighting-form label {
   display: grid;
   gap: 0.35rem;
   color: var(--subtext);
@@ -415,7 +428,9 @@ blockquote cite {
 }
 
 #note-form input,
-#note-form textarea {
+#note-form textarea,
+#sighting-form input[type="text"],
+#sighting-form input:not([type="file"]) {
   width: 100%;
   border: 1px solid rgba(205, 214, 244, 0.16);
   border-radius: 0.85rem;
@@ -430,7 +445,8 @@ blockquote cite {
   resize: vertical;
 }
 
-#note-form button {
+#note-form button,
+#sighting-form button {
   justify-self: start;
   min-height: 48px;
   padding: 0 1.3rem;
@@ -441,8 +457,171 @@ blockquote cite {
   font: 700 1rem/1 "Outfit", sans-serif;
 }
 
-#note-form button:active {
+#note-form button:active,
+#sighting-form button:active {
   transform: translateY(1px);
+}
+
+#sighting-form button:disabled {
+  opacity: 0.65;
+}
+
+.sightings-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem 1.2rem;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.sightings-lede {
+  margin: 0;
+  max-width: 28rem;
+  color: var(--subtext);
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.sightings-lede strong {
+  color: var(--peach);
+}
+
+.points-chip {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 8.5rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgba(243, 139, 168, 0.35);
+  border-radius: 1rem;
+  background: rgba(49, 50, 68, 0.8);
+  text-align: right;
+}
+
+.points-chip span {
+  color: var(--subtext);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.points-chip strong {
+  color: var(--pink);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.photo-pick {
+  position: relative;
+}
+
+.photo-pick input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.photo-pick-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0.8rem 1rem;
+  border: 1px dashed rgba(203, 166, 247, 0.55);
+  border-radius: 0.85rem;
+  background: rgba(24, 24, 37, 0.9);
+  color: var(--mauve);
+  font: 650 0.95rem/1.2 "Outfit", sans-serif;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  text-align: center;
+}
+
+.sightings-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(220px, 0.7fr);
+  gap: 1rem 1.2rem;
+  margin-top: 0.4rem;
+}
+
+#sighting-list,
+#leaderboard {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sighting-card {
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  gap: 0.75rem;
+  padding: 0.55rem;
+  border-radius: 1rem;
+  background: rgba(49, 50, 68, 0.78);
+  animation: rise 0.35s ease;
+}
+
+.sighting-card img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 0.75rem;
+  background: #181825;
+}
+
+.sighting-card strong {
+  color: var(--peach);
+}
+
+.sighting-card p {
+  margin: 0.25rem 0 0;
+  color: var(--text);
+  line-height: 1.35;
+}
+
+.sighting-card .pts {
+  display: inline-block;
+  margin-top: 0.45rem;
+  color: var(--pink);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.board-row {
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: center;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.85rem;
+  background: rgba(49, 50, 68, 0.78);
+  animation: rise 0.35s ease;
+}
+
+.board-row .rank {
+  color: var(--mauve);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-weight: 600;
+}
+
+.board-row strong {
+  overflow: hidden;
+  color: var(--text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board-row .score {
+  color: var(--pink);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .hint,
@@ -551,11 +730,13 @@ blockquote cite {
 
 @media (max-width: 820px) {
   .panel,
-  .notes {
+  .notes,
+  .sightings {
     width: min(560px, calc(100% - 1.4rem));
   }
 
-  .panel-grid {
+  .panel-grid,
+  .sightings-board {
     grid-template-columns: 1fr;
   }
 
@@ -568,8 +749,14 @@ blockquote cite {
     font-size: clamp(3.3rem, 18vw, 4.8rem);
   }
 
-  #note-form button {
+  #note-form button,
+  #sighting-form button {
     width: 100%;
+  }
+
+  .points-chip {
+    width: 100%;
+    text-align: left;
   }
 }
 
