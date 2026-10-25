@@ -17,6 +17,13 @@ const commands = {
   },
 };
 
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const db = createClient(
+  "https://lendvtrjkehanndudjfd.supabase.co",
+  "sb_publishable_3YWB0mRTB__4zo5xNtuFoQ__r2yX6xf"
+);
+
 const readout = document.querySelector("#readout");
 const statusLine = document.querySelector("#screen-status");
 const screen = document.querySelector(".screen");
@@ -26,7 +33,7 @@ const latency = document.querySelector("#latency");
 const form = document.querySelector("#note-form");
 const list = document.querySelector("#note-list");
 const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const noteKey = "lilgrip-notes";
+const hint = document.querySelector(".hint");
 
 let count = 1024;
 
@@ -79,22 +86,18 @@ if (!reduced && packets && latency) {
   }, 1400);
 }
 
-function loadNotes() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(noteKey) || "[]");
-    return Array.isArray(saved) ? saved : [];
-  } catch {
-    return [];
-  }
+async function loadNotes() {
+  const { data, error } = await db
+    .from("lilgrip_comments")
+    .select("id,name,body")
+    .order("created_at", { ascending: false })
+    .limit(40);
+  if (error) throw error;
+  return data || [];
 }
 
-function saveNotes(notes) {
-  localStorage.setItem(noteKey, JSON.stringify(notes));
-}
-
-function renderNotes() {
+function renderNotes(notes) {
   if (!list) return;
-  const notes = loadNotes();
   list.replaceChildren();
   if (!notes.length) {
     const empty = document.createElement("li");
@@ -110,15 +113,16 @@ function renderNotes() {
     name.textContent = note.name;
     const body = document.createElement("p");
     body.textContent = note.body;
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.textContent = "remove";
-    remove.addEventListener("click", () => {
-      saveNotes(loadNotes().filter((entry) => entry.id !== note.id));
-      renderNotes();
-    });
-    item.append(name, body, remove);
+    item.append(name, body);
     list.append(item);
+  }
+}
+
+async function refreshNotes() {
+  try {
+    renderNotes(await loadNotes());
+  } catch {
+    if (hint) hint.textContent = "notes could not load. try again in a minute.";
   }
 }
 
@@ -127,18 +131,24 @@ function clean(value, max) {
 }
 
 if (form) {
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = new FormData(form);
     const body = clean(String(data.get("body") || ""), 200);
     if (!body) return;
     const name = clean(String(data.get("name") || ""), 24) || "anon";
-    const notes = loadNotes();
-    notes.unshift({ id: Date.now().toString(36), name, body });
-    saveNotes(notes.slice(0, 40));
+    const button = form.querySelector("button");
+    if (button) button.disabled = true;
+    const { error } = await db.from("lilgrip_comments").insert({ name, body });
+    if (button) button.disabled = false;
+    if (error) {
+      if (hint) hint.textContent = "that note did not post. try again.";
+      return;
+    }
+    if (hint) hint.textContent = "everyone can see these notes.";
     form.reset();
-    renderNotes();
+    refreshNotes();
   });
 }
 
-renderNotes();
+refreshNotes();

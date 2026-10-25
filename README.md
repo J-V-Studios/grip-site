@@ -1,12 +1,15 @@
 # the lilgriper
 
-Personal site for **the lilgriper**. The site files are on `main`.
+Personal site for **the lilgriper**, published from `main` with GitHub Pages.
 
-GitHub Pages has to be switched on in the repository settings. The token used to push this repo cannot enable it.
+The custom domain in `CNAME` is `lilgrip.com`.
 
-1. Make the repository public: Settings → General → Danger Zone → Change repository visibility. GitHub Free only publishes Pages from public repositories.
-2. Open Settings → Pages. Under Build and deployment, choose **Deploy from a branch**, then `main` and `/ (root)`, and save.
+`lilgrip.com` DNS is still on Squarespace, and mail stays on Titan. Change only the website records. Leave the nameservers, MX, SPF, and DMARC records alone.
 
-The site will be at https://j-v-studios.github.io/grip-site/
+In Squarespace DNS for `lilgrip.com`:
 
-Add `lilgrip.com` on that same Pages screen after the github.io site loads. Leave the Titan mail records and Squarespace nameservers alone.
+- Replace the Squarespace `A` records on `@` with `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, and `185.199.111.153`.
+- Point the `www` `CNAME` at `j-v-studios.github.io` instead of `ext-sq.squarespace.com`.
+- Remove the Squarespace `HTTPS` record on `@` if it is still pinning the old addresses.
+
+Notes are stored in Supabase so anyone who opens the site can read them.
