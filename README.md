@@ -1,11 +1,12 @@
 # the lilgriper
 
-Personal site for **the lilgriper**.
+Personal site for **the lilgriper**. The site files are on `main`.
 
-GitHub Actions publishes it from `main` to GitHub Pages:
+GitHub Pages has to be switched on in the repository settings. The token used to push this repo cannot enable it.
 
-https://j-v-studios.github.io/grip-site/
+1. Make the repository public: Settings → General → Danger Zone → Change repository visibility. GitHub Free only publishes Pages from public repositories.
+2. Open Settings → Pages. Under Build and deployment, choose **Deploy from a branch**, then `main` and `/ (root)`, and save.
 
-This repository has to be public. GitHub Free only serves Pages from public repositories.
+The site will be at https://j-v-studios.github.io/grip-site/
 
-`lilgrip.com` is not attached yet. After the Pages URL above is live, add the custom domain in the repository Pages settings, then point only the website DNS records at GitHub Pages. Leave the Titan mail records (MX, SPF, DMARC) and the Squarespace nameservers alone.
+Add `lilgrip.com` on that same Pages screen after the github.io site loads. Leave the Titan mail records and Squarespace nameservers alone.
