@@ -53,20 +53,29 @@
       </figure>
     </main>
 
-    <section class="rack" aria-labelledby="server-title">
-      <h2 id="server-title">localhost</h2>
-      <div class="rack-grid">
-        <div class="term">
-          <div class="term-bar">
+    <section class="panel" aria-labelledby="screen-title">
+      <h2 id="screen-title">lilgrip screen</h2>
+      <div class="panel-grid">
+        <div class="screen">
+          <div class="bezel">
             <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
-            <span class="term-title">lilgriper@pages:~</span>
+            <span>node 01</span>
             <span class="live"><span class="pulse" aria-hidden="true"></span> live</span>
           </div>
-          <div class="term-body" id="log" aria-hidden="true"></div>
-          <p class="sr">
-            the lilgriper server is up. uptime: just a chill guy. love.service is active,
-            running 1 Corinthians 16:14. Listening on port 443. HTTP 200.
-          </p>
+          <div class="display">
+            <p class="host">lilgrip</p>
+            <p class="host-sub" id="screen-status">online</p>
+            <div class="bits" aria-hidden="true">
+              <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
+            <p class="readout" id="readout">tap a command</p>
+          </div>
+          <div class="keys" role="group" aria-label="lilgrip commands">
+            <button type="button" data-cmd="ping">ping</button>
+            <button type="button" data-cmd="tls">tls</button>
+            <button type="button" data-cmd="verse">verse</button>
+            <button type="button" data-cmd="boot">boot</button>
+          </div>
         </div>
 
         <ul class="gauges">
@@ -92,6 +101,23 @@
           </li>
         </ul>
       </div>
+    </section>
+
+    <section class="notes" aria-labelledby="notes-title">
+      <h2 id="notes-title">notes for lilgrip</h2>
+      <form id="note-form">
+        <label>
+          name
+          <input name="name" maxlength="24" autocomplete="nickname" placeholder="anon" />
+        </label>
+        <label>
+          comment
+          <textarea name="body" maxlength="200" required placeholder="say hey to the lilgriper"></textarea>
+        </label>
+        <button type="submit">post</button>
+      </form>
+      <p class="hint">saved on this phone or computer</p>
+      <ul id="note-list"></ul>
     </section>
 
     <script src="script.js"></script>

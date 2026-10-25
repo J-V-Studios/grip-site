@@ -1,104 +1,144 @@
-const lines = [
-  {
-    cmd: "uptime",
-    out: [
-      { cls: "warm", text: "just a chill guy" },
-      { cls: "dim", text: "load average: 0.01, 0.02, 0.02" },
-    ],
+const commands = {
+  ping: {
+    status: "pinging",
+    text: "lilgrip answered · 0% packet loss",
   },
-  {
-    cmd: "systemctl status love.service",
-    out: [
-      { cls: "ok", text: "active (running)" },
-      { cls: "note", text: "1 Corinthians 16:14" },
-    ],
+  tls: {
+    status: "handshake",
+    text: "TLS 1.3 · lilgrip locked in",
   },
-  {
-    cmd: "ss -ltnp",
-    out: [{ cls: "info", text: "LISTEN  0.0.0.0:443   the lilgriper" }],
+  verse: {
+    status: "love.service",
+    text: "Let all that you do be done in love.",
   },
-  {
-    cmd: "curl -sI /",
-    out: [
-      { cls: "ok", text: "HTTP/2 200" },
-      { cls: "warm", text: "server: the-lilgriper" },
-      { cls: "note", text: "x-powered-by: chill" },
-    ],
+  boot: {
+    status: "booting",
+    text: "lilgrip ready",
   },
-];
+};
 
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-function staticLog(log) {
-  log.replaceChildren();
-  for (const block of lines) {
-    const prompt = document.createElement("p");
-    const ps1 = document.createElement("span");
-    ps1.className = "ps1";
-    ps1.textContent = "lilgriper@pages:~$ ";
-    prompt.append(ps1, document.createTextNode(block.cmd));
-    log.append(prompt);
-    for (const row of block.out) {
-      const line = document.createElement("p");
-      line.className = row.cls;
-      line.textContent = row.text;
-      log.append(line);
-    }
-  }
-}
-
-async function typeInto(node, text, caret) {
-  node.append(caret);
-  for (const char of text) {
-    node.insertBefore(document.createTextNode(char), caret);
-    await wait(text.length > 28 ? 16 : 26);
-  }
-}
-
-async function play(log) {
-  const caret = document.createElement("span");
-  caret.className = "caret";
-  while (true) {
-    log.replaceChildren();
-    for (const block of lines) {
-      const prompt = document.createElement("p");
-      const ps1 = document.createElement("span");
-      ps1.className = "ps1";
-      ps1.textContent = "lilgriper@pages:~$ ";
-      const command = document.createElement("span");
-      prompt.append(ps1, command);
-      log.append(prompt);
-      await typeInto(command, block.cmd, caret);
-      await wait(180);
-      for (const row of block.out) {
-        const line = document.createElement("p");
-        line.className = row.cls;
-        log.append(line);
-        await typeInto(line, row.text, caret);
-        await wait(120);
-      }
-      await wait(280);
-    }
-    await wait(1700);
-  }
-}
-
-const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const log = document.querySelector("#log");
+const readout = document.querySelector("#readout");
+const statusLine = document.querySelector("#screen-status");
+const screen = document.querySelector(".screen");
+const keys = document.querySelectorAll("[data-cmd]");
 const packets = document.querySelector("#packets");
 const latency = document.querySelector("#latency");
+const form = document.querySelector("#note-form");
+const list = document.querySelector("#note-list");
+const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const noteKey = "lilgrip-notes";
 
-if (log) {
-  if (reduced) staticLog(log);
-  else play(log);
+let count = 1024;
+
+function setReadout(text) {
+  if (!readout) return;
+  readout.textContent = text;
+  readout.classList.remove("pop");
+  if (!reduced) {
+    void readout.offsetWidth;
+    readout.classList.add("pop");
+  }
 }
+
+function runCommand(name) {
+  const command = commands[name];
+  if (!command) return;
+  keys.forEach((button) => {
+    button.classList.toggle("is-on", button.dataset.cmd === name);
+  });
+  if (statusLine) statusLine.textContent = command.status;
+  if (screen) screen.classList.add("is-hot");
+  setReadout(command.text);
+  count += name === "ping" ? 3 : 1;
+  if (packets) packets.textContent = count.toLocaleString("en-US");
+  if (latency && name === "ping") {
+    latency.textContent = 8 + Math.floor(Math.random() * 11) + "ms";
+  }
+  window.setTimeout(() => {
+    if (screen) screen.classList.remove("is-hot");
+    if (statusLine) statusLine.textContent = "online";
+  }, 900);
+}
+
+keys.forEach((button) => {
+  button.addEventListener("click", () => runCommand(button.dataset.cmd));
+});
+
+document.addEventListener("keydown", (event) => {
+  const map = { "1": "ping", "2": "tls", "3": "verse", "4": "boot" };
+  const target = event.target;
+  if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return;
+  if (map[event.key]) runCommand(map[event.key]);
+});
 
 if (!reduced && packets && latency) {
-  let count = 1024;
-  setInterval(() => {
+  window.setInterval(() => {
     count += 1;
     packets.textContent = count.toLocaleString("en-US");
-    const ms = 8 + Math.floor(Math.random() * 11);
-    latency.textContent = ms + "ms";
-  }, 1100);
+    latency.textContent = 8 + Math.floor(Math.random() * 11) + "ms";
+  }, 1400);
 }
+
+function loadNotes() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(noteKey) || "[]");
+    return Array.isArray(saved) ? saved : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveNotes(notes) {
+  localStorage.setItem(noteKey, JSON.stringify(notes));
+}
+
+function renderNotes() {
+  if (!list) return;
+  const notes = loadNotes();
+  list.replaceChildren();
+  if (!notes.length) {
+    const empty = document.createElement("li");
+    empty.className = "empty";
+    empty.textContent = "no notes yet. say hey to the lilgriper.";
+    list.append(empty);
+    return;
+  }
+  for (const note of notes) {
+    const item = document.createElement("li");
+    item.className = "note-card";
+    const name = document.createElement("strong");
+    name.textContent = note.name;
+    const body = document.createElement("p");
+    body.textContent = note.body;
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "remove";
+    remove.addEventListener("click", () => {
+      saveNotes(loadNotes().filter((entry) => entry.id !== note.id));
+      renderNotes();
+    });
+    item.append(name, body, remove);
+    list.append(item);
+  }
+}
+
+function clean(value, max) {
+  return value.replace(/\s+/g, " ").trim().slice(0, max);
+}
+
+if (form) {
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const data = new FormData(form);
+    const body = clean(String(data.get("body") || ""), 200);
+    if (!body) return;
+    const name = clean(String(data.get("name") || ""), 24) || "anon";
+    const notes = loadNotes();
+    notes.unshift({ id: Date.now().toString(36), name, body });
+    saveNotes(notes.slice(0, 40));
+    form.reset();
+    renderNotes();
+  });
+}
+
+renderNotes();
