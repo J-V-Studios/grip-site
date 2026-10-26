@@ -44,8 +44,9 @@ a {
 }
 
 img {
-  max-width: 100%;
   display: block;
+  max-width: 100%;
+  height: auto;
 }
 
 .site-header {
@@ -204,10 +205,18 @@ blockquote cite {
 
 .portrait {
   margin: 0;
+  align-self: start;
+  width: 100%;
+  max-width: 400px;
+  justify-self: end;
 }
 
 .portrait img {
   width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  object-position: center top;
   border: 1px solid var(--line);
   border-radius: calc(var(--radius) + 0.15rem);
   box-shadow: var(--shadow);
@@ -582,8 +591,10 @@ blockquote cite {
 
 .sighting-card img {
   width: 100%;
+  height: auto;
   aspect-ratio: 1;
   object-fit: cover;
+  object-position: center;
   border-radius: 0.8rem;
   background: rgba(24, 24, 37, 0.9);
 }
@@ -655,6 +666,11 @@ blockquote cite {
   .card-grid,
   .sightings-board {
     grid-template-columns: 1fr;
+  }
+
+  .portrait {
+    justify-self: start;
+    max-width: min(420px, 100%);
   }
 
   .portrait figcaption {
