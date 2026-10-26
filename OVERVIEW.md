@@ -151,18 +151,20 @@ When adding or changing a feature, update this section (or link a short subsecti
 - **Points:** `+10` per successful sighting; leaderboard aggregates by hunter name.
 - **Limits:** image ≤ 5MB; jpg/png/webp/heic; place ≤ 80 chars.
 
-#### Lilgrip screen
+#### Explore cards
 
-- **User goal:** playful interactive “server node” for brand/CS flavor.
-- **UI:** `.screen` commands `ping` / `tls` / `verse` / `boot`; gauges are decorative/live counters.
-- **Data:** none (client-only).
+- **User goal:** reach Church Apps, Fun Apps, About, and Money?? from home.
+- **UI:** `.card-grid` / `.nav-card` (real links, hover lift).
+- **Data:** none.
 
 ---
 
 ## Architecture principles
 
 1. Static first — ship HTML/CSS/JS as the source of truth.
-2. One composition for the first viewport: brand + one idea + portrait.
-3. Shared state only where everyone must see it (Supabase).
-4. No framework drift — see `.cursorrules`.
-5. Document as you go — keep `OVERVIEW.md` and `TODO.md` honest.
+2. Multi-page vanilla site with one shared `styles.css` + `script.js`.
+3. One composition for the first viewport: brand + one idea + portrait.
+4. Clean premium look — no terminal / hacker chrome.
+5. Shared state only where everyone must see it (Supabase).
+6. No framework drift — see `.cursorrules`.
+7. Document as you go — keep `OVERVIEW.md` and `TODO.md` honest.
