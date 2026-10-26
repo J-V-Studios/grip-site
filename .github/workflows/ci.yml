@@ -138,6 +138,57 @@ jobs:
             echo "Run \`bun run build && CI=true bun run test:e2e\` locally."
           } >> "$GITHUB_STEP_SUMMARY"
 
+  # Keep publishing from branch root working while Pages is still "Deploy from a branch".
+  # After switching Settings → Pages → Source to "GitHub Actions", this job can be removed.
+  publish-legacy-root:
+    name: Publish legacy Pages root
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs:
+      - quality
+      - build
+      - smoke
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Sync dist into branch root
+        run: |
+          set -euo pipefail
+          rm -rf _astro about church-apps fun-apps money images
+          cp -f dist/CNAME ./CNAME
+          cp -f dist/.nojekyll ./.nojekyll
+          cp -f dist/favicon.svg ./favicon.svg
+          cp -f dist/index.html ./index.html
+          cp -a dist/_astro ./_astro
+          cp -a dist/about ./about
+          cp -a dist/church-apps ./church-apps
+          cp -a dist/fun-apps ./fun-apps
+          cp -a dist/money ./money
+          cp -a dist/images ./images
+
+      - name: Commit published site if changed
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- CNAME .nojekyll favicon.svg index.html _astro about church-apps fun-apps money images
+          if git diff --cached --quiet; then
+            echo "No published-root changes."
+            exit 0
+          fi
+          git commit -m "chore: sync Astro dist to root for legacy Pages"
+          git push
+
   deploy:
     name: Deploy to GitHub Pages
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -167,12 +218,13 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        continue-on-error: true
 
       - name: Failure summary
         if: failure()
         run: |
           {
-            echo "## Pages deploy failed"
+            echo "## Pages Actions deploy failed (non-fatal while source is still branch deploy)"
             echo ""
-            echo "Confirm the repo Pages source is set to **GitHub Actions** and the \`github-pages\` environment is approved."
+            echo "To use Actions deploy as the primary publisher: Settings → Pages → Source → **GitHub Actions**."
           } >> "$GITHUB_STEP_SUMMARY"
