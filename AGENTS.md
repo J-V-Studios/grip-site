@@ -37,7 +37,7 @@ Optional: `bun run lint:fix`, `bun run knip` (unused exports; also in CI).
 │   ├── pages/*.astro         ← one route per file
 │   ├── layouts/BaseLayout.astro
 │   ├── components/           ← Astro chrome (header, hero, cards, footer)
-│   ├── components/islands/   ← React client islands (notes, sightings)
+│   ├── components/islands/   ← React client islands (R3F, Motion, say-hey, scroll)
 │   ├── lib/                  ← Supabase client + data helpers (only place for I/O)
 │   └── styles/global.css     ← Tailwind v4 + @theme tokens
 ├── tests/unit/               ← Vitest
@@ -50,7 +50,7 @@ Optional: `bun run lint:fix`, `bun run knip` (unused exports; also in CI).
 
 | Route | File | Notes |
 | --- | --- | --- |
-| `/` | `src/pages/index.astro` | Hero, explore cards, sightings island, say-hey island |
+| `/` | `src/pages/index.astro` | Splash + R3F field, explore cards, say-hey island |
 | `/church-apps/` | `src/pages/church-apps.astro` | Placeholder |
 | `/fun-apps/` | `src/pages/fun-apps.astro` | Placeholder |
 | `/about/` | `src/pages/about.astro` | Placeholder |

@@ -1,5 +1,6 @@
 ---
 import ExploreCards from "../components/ExploreCards.astro";
+import ExploreMotion from "../components/islands/ExploreMotion";
 import SayHeyPanel from "../components/islands/SayHeyPanel";
 import SplashPlane from "../components/SplashPlane.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
@@ -7,9 +8,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 <BaseLayout
 	title="lilgrip"
-	description="lilgrip. Just a chill guy. Deal with it. 1 Corinthians 16:14."
+	description="lilgrip. Just a chill guy. 1 Corinthians 16:14."
 >
 	<SplashPlane />
 	<ExploreCards />
+	<ExploreMotion client:load />
 	<SayHeyPanel client:load />
 </BaseLayout>

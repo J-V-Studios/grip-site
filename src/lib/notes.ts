@@ -1,3 +1,4 @@
+import { parseHeyInput } from "@/lib/hey-schema";
 import { getSupabase } from "@/lib/supabase";
 import { clean } from "@/lib/text";
 
@@ -23,15 +24,24 @@ export async function fetchNotes(): Promise<Note[]> {
 export async function insertNote(input: {
 	name: string;
 	body: string;
-}): Promise<{ error: string | null }> {
-	const body = clean(input.body, 200);
-	if (!body) {
-		return { error: "note body is empty" };
+}): Promise<{ note: Note | null; error: string | null }> {
+	const parsed = parseHeyInput(input);
+	if (!parsed.data) {
+		return { note: null, error: parsed.error ?? "invalid hey" };
 	}
-	const name = clean(input.name, 24) || "anon";
 
-	const { error } = await getSupabase().from(TABLE).insert({ name, body });
+	const body = clean(parsed.data.body, 200);
+	if (!body) {
+		return { note: null, error: "note body is empty" };
+	}
+	const name = clean(parsed.data.name, 24) || "anon";
 
-	if (error) return { error: error.message };
-	return { error: null };
+	const { data, error } = await getSupabase()
+		.from(TABLE)
+		.insert({ name, body })
+		.select("id,name,body")
+		.single();
+
+	if (error) return { note: null, error: error.message };
+	return { note: data as Note, error: null };
 }
