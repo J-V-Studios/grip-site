@@ -17,11 +17,11 @@ Check items off as they ship. Prefer small PRs / commits. Align with `AGENTS.md`
 
 ## Migration / cutover
 
-- [ ] Wire GitHub Actions CI (lint, check, test, build, optional e2e) and Pages deploy from `dist/`
-- [ ] Playwright smoke: home + four subroutes + primary nav
-- [ ] Parity check: Astro vs legacy vanilla (features, a11y, mobile)
-- [ ] Remove root `index.html`, `styles.css`, `script.js` after green build + smoke (Task 12)
-- [ ] Confirm production `lilgrip.com` serves Astro `dist/` after first deploy
+- [x] Wire GitHub Actions CI (lint, check, knip, test, build, e2e) and Pages deploy from `dist/`
+- [x] Playwright smoke: home + four subroutes + primary nav
+- [x] Remove root vanilla HTML/CSS/JS after green build + smoke (Task 12)
+- [ ] Switch GitHub Pages source to **GitHub Actions** (currently legacy `/` on `main`)
+- [ ] Confirm production `lilgrip.com` serves Astro `dist/` after first merge + Pages switch
 
 ## Astro app polish
 

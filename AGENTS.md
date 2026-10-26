@@ -2,7 +2,7 @@
 
 **the lilgriper** (`lilgrip.com`) is a chill personal site: hero, scripture quote, explore cards, shared notes, and grip sightings with photos and points. The stack is **Astro 7 + Bun + TypeScript + Tailwind v4**, with React islands for Supabase-backed interactivity. Static output deploys to **GitHub Pages** at `https://lilgrip.com`.
 
-Migration note: legacy root `index.html`, `styles.css`, and `script.js` may still exist until parity cleanup (Task 12). **Ship new work in `src/`** — do not extend the vanilla files.
+**Ship all work in `src/` + `public/`.** The vanilla root HTML/CSS/JS sources have been removed.
 
 ## Commands (Bun)
 
@@ -41,9 +41,9 @@ Optional: `bun run lint:fix`, `knip` (unused exports) — wire in CI when presen
 │   ├── lib/                  ← Supabase client + data helpers (only place for I/O)
 │   └── styles/global.css     ← Tailwind v4 + @theme tokens
 ├── tests/unit/               ← Vitest
-├── e2e/                      ← Playwright (when present)
-├── docs/superpowers/         ← specs + plans for big changes
-└── (legacy) index.html, styles.css, script.js  ← do not add features here
+├── e2e/                      ← Playwright smoke
+├── .github/workflows/ci.yml  ← quality, build, smoke, Pages deploy
+└── docs/superpowers/         ← specs + plans for big changes
 ```
 
 ## Routes / features
@@ -71,7 +71,8 @@ Copy `.env.example` → `.env` (never commit `.env`).
 
 ## Deploy
 
-- CI (when wired): install → lint → check → tests → `bun run build` → optional e2e → on green `main`, upload **`dist/`** to GitHub Pages.
+- CI (`.github/workflows/ci.yml`): quality → build → smoke → on push to `main`, deploy **`dist/`** via GitHub Pages Actions.
+- After first merge: set repo Pages source to **GitHub Actions** (was legacy `/` on `main`).
 - Custom domain: `public/CNAME` → `lilgrip.com`.
 - `astro.config.mjs` sets `site: "https://lilgrip.com"` and `output: "static"`.
 
@@ -92,8 +93,8 @@ Copy `.env.example` → `.env` (never commit `.env`).
 - Reintroduce terminal/hacker chrome or pink-primary brand accent as the main face.
 - Add secrets, service-role keys, or non-`PUBLIC_*` Supabase keys to client code.
 - Put Supabase calls directly in `.astro` pages or scattered in islands — use `src/lib/`.
-- Extend legacy root `index.html` / `styles.css` / `script.js` for new features.
 - Add a second CSS framework or turn marketing pages into a SPA.
+- Reintroduce root `index.html` / `styles.css` / `script.js` as a parallel site.
 
 ## Doc order
 

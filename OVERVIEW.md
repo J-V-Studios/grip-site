@@ -3,9 +3,9 @@
 Personal site for **the lilgriper**. Chill tone, sky/blue-led Catppuccin theme, shared notes and grip sightings. Built with **Astro 7 + Bun + TypeScript + Tailwind v4**; React islands for Supabase-backed forms.
 
 Live: [https://lilgrip.com](https://lilgrip.com)  
-Target publish: GitHub Pages from `main`, serving **`dist/`** after Astro build (CI deploy when wired).
+Target publish: GitHub Pages from `main`, serving **`dist/`** after Astro build (Actions deploy on green `main`).
 
-**Migration:** Astro app lives under `src/` and `public/`. Legacy root `index.html`, `styles.css`, and `script.js` may still be present until parity verification and removal (Task 12). Treat **`src/` as the source of truth** for new work.
+**Source of truth:** `src/` + `public/`. Legacy vanilla root HTML/CSS/JS has been removed.
 
 ---
 
@@ -33,7 +33,8 @@ Target publish: GitHub Pages from `main`, serving **`dist/`** after Astro build 
 ├── README.md
 ├── OVERVIEW.md             # This file
 ├── TODO.md
-└── (legacy, retiring) index.html, styles.css, script.js, images/ at root if duplicated
+├── e2e/
+└── .github/workflows/ci.yml
 ```
 
 ### Routes
