@@ -115,7 +115,7 @@ export default function SayHeyPanel() {
 						name="body"
 						maxLength={200}
 						required
-						placeholder="yo lilgriper ✌️"
+						placeholder="yo lilgrip ✌️"
 						className="w-full rounded-2xl border border-white/10 bg-base/85 px-4 py-3 text-base text-text focus-visible:border-sky/55 focus-visible:shadow-[0_0_0_4px_rgba(137,220,235,0.12)] focus-visible:outline-none"
 					/>
 				</label>
