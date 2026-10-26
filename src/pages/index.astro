@@ -1,4 +1,6 @@
 ---
+import ExploreCards from "../components/ExploreCards.astro";
+import Hero from "../components/Hero.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
@@ -6,8 +8,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 	title="the lilgriper"
 	description="the lilgriper. Just a chill guy. 1 Corinthians 16:14."
 >
-	<h1 class="font-display text-3xl font-semibold tracking-tight">
-		the <span class="text-sky">lilgriper</span>
-	</h1>
-	<p class="mt-2 text-subtext">Layout scaffold — migration in progress.</p>
+	<Hero />
+	<ExploreCards />
 </BaseLayout>

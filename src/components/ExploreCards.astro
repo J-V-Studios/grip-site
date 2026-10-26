@@ -1,0 +1,83 @@
+---
+const cards = [
+	{
+		href: "/church-apps",
+		kicker: "faith",
+		title: "Church Apps",
+		copy: "Tools and ideas for church life.",
+		kickerClass: "text-peach",
+		hoverBorder: "hover:border-sky/45 focus-visible:border-sky/45",
+	},
+	{
+		href: "/fun-apps",
+		kicker: "play",
+		title: "Fun Apps",
+		copy: "Projects, games, and little experiments.",
+		kickerClass: "text-mauve",
+		hoverBorder: "hover:border-mauve/50 focus-visible:border-mauve/50",
+	},
+	{
+		href: "/about",
+		kicker: "story",
+		title: "About",
+		copy: "Who the lilgriper is, minus the noise.",
+		kickerClass: "text-teal",
+		hoverBorder: "hover:border-teal/45 focus-visible:border-teal/45",
+	},
+	{
+		href: "/money",
+		kicker: "hmm",
+		title: "Money??",
+		copy: "Financial tools and ideas, maybe.",
+		kickerClass: "text-peach",
+		hoverBorder: "hover:border-peach/50 focus-visible:border-peach/50",
+	},
+];
+---
+
+<section
+	class="motion-rise pt-4 pb-12"
+	style="animation-delay: 0.12s"
+	aria-labelledby="explore-title"
+>
+	<div class="mb-[1.4rem]">
+		<h2
+			id="explore-title"
+			class="m-0 mb-[0.45rem] text-[0.78rem] font-semibold tracking-[0.18em] text-mauve uppercase"
+		>
+			explore
+		</h2>
+		<p class="m-0 max-w-[34rem] text-[1.05rem] text-subtext">
+			Pick a path. More chill stuff lives here.
+		</p>
+	</div>
+	<div class="grid grid-cols-1 gap-4 min-[521px]:grid-cols-2">
+		{
+			cards.map((card) => (
+				<a
+					href={card.href}
+					class={`group grid min-h-44 gap-[0.55rem] rounded-2xl border border-white/10 bg-surface/72 px-[1.4rem] py-[1.35rem] pb-[1.2rem] no-underline shadow-none transition-[transform,border-color,background,box-shadow] duration-[350ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:bg-surface-soft/92 hover:shadow-[0_18px_50px_rgba(0,0,0,0.35)] focus-visible:-translate-y-1.5 focus-visible:bg-surface-soft/92 focus-visible:shadow-[0_18px_50px_rgba(0,0,0,0.35)] focus-visible:outline-none ${card.hoverBorder}`}
+				>
+					<span
+						class={`text-[0.72rem] font-semibold tracking-[0.16em] uppercase ${card.kickerClass}`}
+					>
+						{card.kicker}
+					</span>
+					<strong
+						class="text-[clamp(1.35rem,2.4vw,1.7rem)] font-bold tracking-[-0.03em] text-text"
+					>
+						{card.title}
+					</strong>
+					<span class="text-[0.98rem] leading-[1.45] text-subtext">
+						{card.copy}
+					</span>
+					<span
+						class="mt-auto pt-[0.6rem] text-[0.78rem] font-semibold tracking-[0.14em] text-sky uppercase"
+					>
+						open
+					</span>
+				</a>
+			))
+		}
+	</div>
+</section>
