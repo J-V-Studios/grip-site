@@ -12,6 +12,7 @@ Check items off as they ship. Prefer small PRs / commits. Keep this list aligned
 - [x] Grip sightings + photo upload + grip points leaderboard
 - [x] GitHub Pages + `lilgrip.com` custom domain wiring
 - [x] Workspace context files (`.cursorrules`, `OVERVIEW.md`, `TODO.md`)
+- [x] Hero portrait keeps its 3:4 ratio (`img { height: auto }` honors the HTML width and height as the aspect ratio)
 
 ---
 
