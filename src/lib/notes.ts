@@ -2,7 +2,7 @@ import { getSupabase } from "@/lib/supabase";
 import { clean } from "@/lib/text";
 
 export type Note = {
-	id: number;
+	id: string;
 	name: string;
 	body: string;
 };
