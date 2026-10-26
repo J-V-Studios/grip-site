@@ -1,6 +1,6 @@
 # Project Overview — the lilgriper / lilgrip.com
 
-Personal site for **the lilgriper**. Chill tone, sky/blue-led Catppuccin theme, shared notes and grip sightings. Built with **Astro 7 + Bun + TypeScript + Tailwind v4**; React islands for Supabase-backed forms.
+Personal site for **the lilgriper**. Chill tone, sky/blue-led Catppuccin theme, goofy meme splash and say-hey pulse. Built with **Astro 7 + Bun + TypeScript + Tailwind v4**; React islands for Supabase-backed forms.
 
 Live: [https://lilgrip.com](https://lilgrip.com)  
 Target publish: GitHub Pages from `main`, serving **`dist/`** after Astro build (Actions deploy on green `main`).
@@ -41,7 +41,7 @@ Target publish: GitHub Pages from `main`, serving **`dist/`** after Astro build 
 
 | Route | File | Purpose |
 | --- | --- | --- |
-| `/` | `src/pages/index.astro` | Hero, explore cards, sightings, notes |
+| `/` | `src/pages/index.astro` | Meme splash, explore, say hey |
 | `/church-apps/` | `src/pages/church-apps.astro` | Church apps (placeholder) |
 | `/fun-apps/` | `src/pages/fun-apps.astro` | Fun projects (placeholder) |
 | `/about/` | `src/pages/about.astro` | About (placeholder) |

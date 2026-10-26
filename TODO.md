@@ -4,6 +4,8 @@ Check items off as they ship. Prefer small PRs / commits. Align with `AGENTS.md`
 
 ## Done
 
+- [x] Goofy redesign: meme splash, remove sightings UI, say-hey pulse
+
 - [x] Vanilla static shell (legacy `index.html`, `styles.css`, `script.js`) — baseline before migration
 - [x] Hero, notes, sightings, Supabase, GitHub Pages + `lilgrip.com` (vanilla era)
 - [x] Astro 7 scaffold: Bun, TypeScript, Tailwind v4, React islands

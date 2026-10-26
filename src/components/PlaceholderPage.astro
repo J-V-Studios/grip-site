@@ -10,7 +10,7 @@ const { eyebrow, title, lede, message } = Astro.props;
 ---
 
 <section
-	class="motion-rise max-w-[40rem] py-[clamp(2rem,6vh,4rem)] pb-8"
+	class="motion-rise mx-auto w-[min(1100px,calc(100%-1.5rem))] max-w-[40rem] py-[clamp(2rem,6vh,4rem)] pb-10 max-[820px]:w-[min(560px,calc(100%-1.2rem))]"
 >
 	<p
 		class="m-0 mb-[0.85rem] text-[0.78rem] font-semibold tracking-[0.2em] text-mauve uppercase"
@@ -26,7 +26,7 @@ const { eyebrow, title, lede, message } = Astro.props;
 		{lede}
 	</p>
 	<div
-		class="mt-8 rounded-[var(--radius,1rem)] border border-surface-soft/80 bg-surface/75 px-6 py-8"
+		class="mt-8 rounded-[1.25rem] border border-white/10 bg-surface/75 px-6 py-8"
 	>
 		<p
 			class="m-0 mb-5 font-display text-[clamp(1.25rem,3vw,1.6rem)] leading-snug text-text"
@@ -35,9 +35,9 @@ const { eyebrow, title, lede, message } = Astro.props;
 		</p>
 		<a
 			href="/"
-			class="inline-flex min-h-11 items-center rounded-full bg-sky px-[1.1rem] py-[0.65rem] font-bold text-base no-underline transition-[transform,box-shadow] duration-[250ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(137,220,235,0.28)] focus-visible:-translate-y-0.5 focus-visible:shadow-[0_10px_30px_rgba(137,220,235,0.28)] focus-visible:outline-none"
+			class="inline-flex min-h-11 items-center rounded-full bg-sky px-[1.1rem] py-[0.65rem] font-bold text-base no-underline transition-[transform,box-shadow] duration-[250ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(137,220,235,0.28)] focus-visible:-translate-y-0.5 focus-visible:outline-none"
 		>
-			Back to Home
+			back to the chaos
 		</a>
 	</div>
 </section>

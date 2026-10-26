@@ -1,6 +1,6 @@
 # AGENTS.md — start here
 
-**the lilgriper** (`lilgrip.com`) is a chill personal site: hero, scripture quote, explore cards, shared notes, and grip sightings with photos and points. The stack is **Astro 7 + Bun + TypeScript + Tailwind v4**, with React islands for Supabase-backed interactivity. Static output deploys to **GitHub Pages** at `https://lilgrip.com`.
+**the lilgriper** (`lilgrip.com`) is a chill personal site: hero, scripture quote, explore cards, and a goofy say-hey pulse. The stack is **Astro 7 + Bun + TypeScript + Tailwind v4**, with React islands for Supabase-backed interactivity. Static output deploys to **GitHub Pages** at `https://lilgrip.com`.
 
 **Ship all work in `src/` + `public/`.** The vanilla root HTML/CSS/JS sources have been removed.
 
@@ -50,7 +50,7 @@ Optional: `bun run lint:fix`, `bun run knip` (unused exports; also in CI).
 
 | Route | File | Notes |
 | --- | --- | --- |
-| `/` | `src/pages/index.astro` | Hero, explore cards, sightings island, notes island |
+| `/` | `src/pages/index.astro` | Hero, explore cards, sightings island, say-hey island |
 | `/church-apps/` | `src/pages/church-apps.astro` | Placeholder |
 | `/fun-apps/` | `src/pages/fun-apps.astro` | Placeholder |
 | `/about/` | `src/pages/about.astro` | Placeholder |
