@@ -2,7 +2,7 @@
 
 Personal site for **lilgrip**, published at [lilgrip.com](https://lilgrip.com).
 
-**Stack:** Astro 7, Bun, TypeScript, Tailwind v4, React islands for notes and sightings. See **`AGENTS.md`** for commands, layout, env vars, and contributor rules.
+**Stack:** Astro 7 + Bun + TypeScript + Tailwind v4 + React 19 islands, plus Motion, GSAP, Lenis, React Three Fiber, TanStack Query, Sonner, Lucide, and canvas-confetti. See **`AGENTS.md`** for commands, layout, env vars, and contributor rules.
 
 ## Quick start
 

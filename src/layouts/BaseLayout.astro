@@ -1,4 +1,7 @@
 ---
+import { ClientRouter } from "astro:transitions";
+import SmoothScroll from "../components/islands/SmoothScroll";
+import ToastHost from "../components/islands/ToastHost";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import "../styles/global.css";
@@ -26,14 +29,17 @@ const { title, description } = Astro.props;
 			href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Outfit:wght@400;500;600;700&display=swap"
 			rel="stylesheet"
 		/>
+		<ClientRouter />
 	</head>
 	<body class="min-h-full overflow-x-hidden">
+		<SmoothScroll client:load />
+		<ToastHost client:load />
 		<div
 			class="mx-auto w-[min(1100px,calc(100%-1.5rem))] max-[820px]:w-[min(560px,calc(100%-1.2rem))]"
 		>
 			<SiteHeader />
 		</div>
-		<main class="pb-4">
+		<main class="pb-4" transition:animate="fade">
 			<slot />
 		</main>
 		<div

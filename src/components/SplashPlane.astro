@@ -1,17 +1,15 @@
 ---
+import ChillField from "./islands/ChillField";
+import MemeHero from "./islands/MemeHero";
 ---
 
 <section
 	class="relative isolate min-h-[min(100svh,940px)] overflow-hidden border-b border-white/5"
 	aria-label="lilgrip splash"
 >
+	<ChillField client:load />
 	<div
-		class="motion-sky-drift pointer-events-none absolute -inset-[18%] bg-[radial-gradient(circle_at_50%_35%,rgba(137,220,235,0.28),transparent_42%),radial-gradient(circle_at_15%_80%,rgba(137,180,250,0.22),transparent_45%),radial-gradient(circle_at_90%_20%,rgba(203,166,247,0.2),transparent_40%),radial-gradient(circle_at_80%_85%,rgba(250,179,135,0.14),transparent_35%)]"
-		aria-hidden="true"
-	>
-	</div>
-	<div
-		class="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(30,30,46,0.15)_0%,rgba(30,30,46,0.55)_55%,rgba(30,30,46,0.92)_100%)]"
+		class="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(180deg,rgba(30,30,46,0.2)_0%,rgba(30,30,46,0.62)_55%,rgba(30,30,46,0.94)_100%)]"
 		aria-hidden="true"
 	>
 	</div>
@@ -27,13 +25,14 @@
 			</p>
 			<h1
 				class="m-0 font-sans text-[clamp(3rem,9vw,6.2rem)] leading-[0.9] font-bold tracking-[-0.055em]"
+				transition:name="brand-title"
 			>
 				<span class="text-sky">lilgrip</span>
 			</h1>
 			<p
 				class="mt-4 mb-0 text-[clamp(1.2rem,2.4vw,1.55rem)] font-medium text-peach"
 			>
-				just a chill guy · deal with it
+				just a chill guy
 			</p>
 			<p
 				class="mt-5 max-w-[28rem] text-[0.95rem] leading-relaxed text-subtext"
@@ -57,26 +56,8 @@
 			</div>
 		</div>
 
-		<figure
-			class="motion-rise order-1 m-0 justify-self-center min-[821px]:order-2 min-[821px]:justify-self-end"
-			style="animation-delay: 0.08s"
-		>
-			<div
-				class="motion-meme-float motion-glint relative w-[min(420px,78vw)] overflow-hidden rounded-[2rem] border border-white/15 bg-surface-soft shadow-[0_28px_80px_rgba(0,0,0,0.45)]"
-			>
-				<img
-					src="/images/lilgrip-meme.png"
-					width="945"
-					height="945"
-					alt="lilgrip meme face with deal-with-it sunglasses"
-					class="aspect-square w-full object-cover"
-				/>
-			</div>
-			<figcaption
-				class="mt-3 text-center text-[0.75rem] font-semibold tracking-[0.16em] text-subtext uppercase min-[821px]:text-right"
-			>
-				official face of chill
-			</figcaption>
-		</figure>
+		<div class="order-1 min-[821px]:order-2">
+			<MemeHero client:load />
+		</div>
 	</div>
 </section>

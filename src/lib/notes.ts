@@ -23,15 +23,19 @@ export async function fetchNotes(): Promise<Note[]> {
 export async function insertNote(input: {
 	name: string;
 	body: string;
-}): Promise<{ error: string | null }> {
+}): Promise<{ note: Note | null; error: string | null }> {
 	const body = clean(input.body, 200);
 	if (!body) {
-		return { error: "note body is empty" };
+		return { note: null, error: "note body is empty" };
 	}
 	const name = clean(input.name, 24) || "anon";
 
-	const { error } = await getSupabase().from(TABLE).insert({ name, body });
+	const { data, error } = await getSupabase()
+		.from(TABLE)
+		.insert({ name, body })
+		.select("id,name,body")
+		.single();
 
-	if (error) return { error: error.message };
-	return { error: null };
+	if (error) return { note: null, error: error.message };
+	return { note: data as Note, error: null };
 }
