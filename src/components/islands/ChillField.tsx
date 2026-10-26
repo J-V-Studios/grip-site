@@ -1,5 +1,6 @@
 import { Float, Stars } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
+import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
 import { useMemo, useRef } from "react";
 import type { Mesh, Points } from "three";
 import * as THREE from "three";
@@ -111,6 +112,15 @@ function Scene() {
 			/>
 			<AuroraOrb />
 			<ChillDust />
+			<EffectComposer multisampling={0}>
+				<Bloom
+					intensity={0.55}
+					luminanceThreshold={0.2}
+					luminanceSmoothing={0.4}
+					mipmapBlur
+				/>
+				<Vignette eskil={false} offset={0.15} darkness={0.55} />
+			</EffectComposer>
 		</>
 	);
 }

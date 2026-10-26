@@ -1,4 +1,5 @@
 ---
+import BrandHeadline from "./islands/BrandHeadline";
 import ChillField from "./islands/ChillField";
 import MemeHero from "./islands/MemeHero";
 ---
@@ -17,29 +18,10 @@ import MemeHero from "./islands/MemeHero";
 	<div
 		class="relative z-10 mx-auto grid min-h-[min(100svh,940px)] w-[min(1100px,calc(100%-1.5rem))] grid-cols-1 items-end gap-8 px-1 pt-8 pb-12 max-[820px]:w-[min(560px,calc(100%-1.2rem))] min-[821px]:grid-cols-[minmax(0,1fr)_minmax(280px,460px)] min-[821px]:items-center min-[821px]:pb-16"
 	>
-		<div class="motion-rise order-2 min-w-0 min-[821px]:order-1">
-			<p
-				class="m-0 mb-3 text-[0.78rem] font-semibold tracking-[0.22em] text-mauve uppercase"
-			>
-				lilgrip.com
-			</p>
-			<h1
-				class="m-0 font-sans text-[clamp(3rem,9vw,6.2rem)] leading-[0.9] font-bold tracking-[-0.055em]"
-				transition:name="brand-title"
-			>
-				<span class="text-sky">lilgrip</span>
-			</h1>
-			<p
-				class="mt-4 mb-0 text-[clamp(1.2rem,2.4vw,1.55rem)] font-medium text-peach"
-			>
-				just a chill guy
-			</p>
-			<p
-				class="mt-5 max-w-[28rem] text-[0.95rem] leading-relaxed text-subtext"
-			>
-				<span class="text-teal">1 Cor 16:14</span> — Let all that you do be
-				done in love. (yes, even the goofy parts.)
-			</p>
+		<div class="order-2 min-w-0 min-[821px]:order-1">
+			<div transition:name="brand-title">
+				<BrandHeadline client:load />
+			</div>
 			<div class="mt-8 flex flex-wrap gap-3">
 				<a
 					href="#explore"

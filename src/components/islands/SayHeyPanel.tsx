@@ -1,3 +1,4 @@
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import {
 	QueryClient,
 	QueryClientProvider,
@@ -9,8 +10,11 @@ import confetti from "canvas-confetti";
 import { MessageCircleHeart, Send, Sparkles } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useOptimistic, useState, useTransition } from "react";
+import Balancer from "react-wrap-balancer";
 import { toast } from "sonner";
+import { parseHeyInput } from "@/lib/hey-schema";
 import { fetchNotes, insertNote, type Note } from "@/lib/notes";
+import { usePulseStore } from "@/lib/pulse-store";
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -33,8 +37,11 @@ function firePulseConfetti() {
 function SayHeyInner() {
 	const reduce = useReducedMotion();
 	const qc = useQueryClient();
+	const recordPulse = usePulseStore((s) => s.recordPulse);
+	const pulseCount = usePulseStore((s) => s.pulseCount);
 	const [bloomText, setBloomText] = useState<string | null>(null);
 	const [, startTransition] = useTransition();
+	const [listParent] = useAutoAnimate();
 
 	const notesQuery = useQuery({
 		queryKey: ["heys"],
@@ -71,10 +78,16 @@ function SayHeyInner() {
 		event.preventDefault();
 		const form = event.currentTarget;
 		const data = new FormData(form);
-		const body = String(data.get("body") || "").trim();
-		if (!body) return;
+		const parsed = parseHeyInput({
+			name: String(data.get("name") || ""),
+			body: String(data.get("body") || ""),
+		});
+		if (!parsed.data) {
+			toast.error(parsed.error ?? "that hey bounced.");
+			return;
+		}
 
-		const name = String(data.get("name") || "").trim() || "anon";
+		const { name, body } = parsed.data;
 		const optimistic: Note = {
 			id: `optimistic-${crypto.randomUUID()}`,
 			name,
@@ -85,11 +98,12 @@ function SayHeyInner() {
 			addOptimistic(optimistic);
 		});
 
+		recordPulse(body);
 		setBloomText(body);
 		window.setTimeout(() => setBloomText(null), 900);
 		firePulseConfetti();
 		toast.success("pulse locked in", {
-			description: "it's in the pile for everyone.",
+			description: `it's in the pile for everyone.${pulseCount > 0 ? ` (${pulseCount + 1} pulses this session)` : ""}`,
 			icon: <Sparkles className="size-4 text-sky" />,
 		});
 		form.reset();
@@ -137,7 +151,9 @@ function SayHeyInner() {
 						say hey
 					</h2>
 					<p className="m-0 mt-2 max-w-[32rem] text-[1.02rem] text-subtext">
-						One shot. Big pulse. Then it chill-lists under here for everyone.
+						<Balancer>
+							One shot. Big pulse. Then it chill-lists under here for everyone.
+						</Balancer>
 					</p>
 				</div>
 				<motion.img
@@ -199,27 +215,21 @@ function SayHeyInner() {
 					: "drop a line. it blooms, then hangs out below."}
 			</p>
 
-			<ul className="m-0 mt-6 grid list-none gap-3 p-0">
+			<ul ref={listParent} className="m-0 mt-6 grid list-none gap-3 p-0">
 				{optimisticNotes.length === 0 ? (
 					<li className="text-[0.92rem] text-subtext">
 						nobody has said hey yet. be first. be legendary.
 					</li>
 				) : (
-					<AnimatePresence initial={false}>
-						{optimisticNotes.map((note) => (
-							<motion.li
-								key={note.id}
-								layout
-								initial={reduce ? false : { opacity: 0, y: 12 }}
-								animate={{ opacity: 1, y: 0 }}
-								exit={{ opacity: 0, y: -8 }}
-								className="rounded-2xl border border-white/5 bg-surface/60 px-4 py-3"
-							>
-								<strong className="text-peach">{note.name}</strong>
-								<p className="m-0 mt-1 leading-snug text-text">{note.body}</p>
-							</motion.li>
-						))}
-					</AnimatePresence>
+					optimisticNotes.map((note) => (
+						<li
+							key={note.id}
+							className="rounded-2xl border border-white/5 bg-surface/60 px-4 py-3"
+						>
+							<strong className="text-peach">{note.name}</strong>
+							<p className="m-0 mt-1 leading-snug text-text">{note.body}</p>
+						</li>
+					))
 				)}
 			</ul>
 		</section>
