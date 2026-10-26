@@ -1,3 +1,6 @@
+import { getSupabase } from "@/lib/supabase";
+import { clean } from "@/lib/text";
+
 export function aggregatePoints(
 	rows: { hunter: string; points: number }[],
 ): Map<string, number> {
@@ -32,4 +35,70 @@ export function extFor(file: { name: string; type: string }): string {
 		"image/heif": "heif",
 	};
 	return map[file.type] || "jpg";
+}
+
+export type Sighting = {
+	id: number;
+	hunter: string;
+	place: string;
+	photo_path: string;
+	points: number;
+	created_at: string;
+};
+
+export const POINTS_PER_SIGHTING = 10;
+const TABLE = "grip_sightings";
+const BUCKET = "grip-sightings";
+
+export async function fetchSightings(): Promise<Sighting[]> {
+	const { data, error } = await getSupabase()
+		.from(TABLE)
+		.select("id,hunter,place,photo_path,points,created_at")
+		.order("created_at", { ascending: false })
+		.limit(24);
+
+	if (error) throw error;
+	return (data ?? []) as Sighting[];
+}
+
+export function publicPhotoUrl(path: string): string {
+	return getSupabase().storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+}
+
+export async function uploadSightingPhoto(
+	file: File,
+): Promise<{ path: string | null; error: string | null }> {
+	const storagePath = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.${extFor(file)}`;
+
+	const { error } = await getSupabase()
+		.storage.from(BUCKET)
+		.upload(storagePath, file, {
+			cacheControl: "3600",
+			contentType: file.type || "image/jpeg",
+			upsert: false,
+		});
+
+	if (error) return { path: null, error: error.message };
+	return { path: storagePath, error: null };
+}
+
+export async function insertSighting(input: {
+	hunter: string;
+	place: string;
+	photo_path: string;
+	points?: number;
+}): Promise<{ error: string | null }> {
+	const hunter = clean(input.hunter, 24) || "anon";
+	const place = clean(input.place, 80);
+	const points = input.points ?? POINTS_PER_SIGHTING;
+
+	const { error } = await getSupabase().from(TABLE).insert({
+		hunter,
+		place,
+		photo_path: input.photo_path,
+		points,
+	});
+
+	if (error) return { error: error.message };
+	return { error: null };
 }
