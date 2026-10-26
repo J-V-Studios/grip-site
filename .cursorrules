@@ -79,10 +79,11 @@ When changing data:
 
 ## Product / content voice
 
-- Brand: **the lilgriper** / **lilgrip** — chill, playful, lightly nerdy (servers/CS flavor), not athletic.
+- Brand: **the lilgriper** / **lilgrip** — chill, playful, inviting; keep the charm without terminal/hacker chrome.
 - Keep pink as a primary accent; Catppuccin tokens for the rest.
 - Scripture quote on the hero: 1 Corinthians 16:14 (WEB): “Let all that you do be done in love.”
-- Do not reintroduce “peace” gags or cluttered sticker/tag spam unless the user asks.
+- Prefer clean whitespace, soft motion, and multi-page nav cards over dense dashboards.
+- Do not reintroduce “peace” gags, terminal consoles, or cluttered sticker/tag spam unless the user asks.
 
 ## Git / deploy awareness
 

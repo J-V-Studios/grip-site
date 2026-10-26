@@ -11,9 +11,13 @@ Repo publish: GitHub Pages from `main` (root).
 
 ```text
 /
-├── index.html          # Semantic page shell + all sections
-├── styles.css          # Design tokens + layout + components
-├── script.js           # ES module: screen, notes, sightings
+├── index.html          # Home: hero, explore cards, sightings, notes
+├── church-apps.html    # Church apps placeholder
+├── fun-apps.html       # Fun apps placeholder
+├── about.html          # About placeholder
+├── money.html          # Money?? placeholder
+├── styles.css          # Shared design system + layout
+├── script.js           # ES module: notes + sightings (home)
 ├── favicon.svg
 ├── CNAME               # lilgrip.com
 ├── .nojekyll
@@ -25,12 +29,24 @@ Repo publish: GitHub Pages from `main` (root).
     └── lilgriper.jpg   # Hero portrait
 ```
 
-### Page sections (top → bottom)
+### Pages
+
+| Page | Purpose |
+| --- | --- |
+| `index.html` | Hero, explore nav cards, grip sightings, notes |
+| `church-apps.html` | Church apps (coming soon) |
+| `fun-apps.html` | Fun projects / games (coming soon) |
+| `about.html` | About (coming soon) |
+| `money.html` | Money?? tools (coming soon) |
+
+Shared chrome: `.site-header` brand + nav, `.site-footer`. Subpages include a **Back to Home** control.
+
+### Home sections (top → bottom)
 
 | Section | Markup hook | Purpose |
 | --- | --- | --- |
-| Hero | `main` + `.intro` + `.portrait` | Brand, chill line, 1 Corinthians 16:14, photo |
-| Lilgrip screen | `.panel` / `.screen` | Interactive “node” UI (ping / tls / verse / boot) + gauges |
+| Hero | `.hero` | Brand, chill line, 1 Corinthians 16:14, photo |
+| Explore | `.explore` / `.nav-card` | Links to Church Apps, Fun Apps, About, Money?? |
 | Grip sightings | `.sightings` | Upload photo when spotting lilgriper; earn points; leaderboard |
 | Notes | `.notes` | Shared public comments |
 
