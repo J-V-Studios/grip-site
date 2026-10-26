@@ -1,6 +1,8 @@
 ---
 import ExploreCards from "../components/ExploreCards.astro";
 import Hero from "../components/Hero.astro";
+import NotesPanel from "../components/islands/NotesPanel";
+import SightingsPanel from "../components/islands/SightingsPanel";
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
@@ -10,4 +12,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 >
 	<Hero />
 	<ExploreCards />
+	<SightingsPanel client:load />
+	<NotesPanel client:load />
 </BaseLayout>
