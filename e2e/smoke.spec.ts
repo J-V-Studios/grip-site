@@ -1,10 +1,8 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test("home and explore routes render", async ({ page }) => {
 	await page.goto("/");
-	await expect(
-		page.getByRole("heading", { name: /lilgriper/i }),
-	).toBeVisible();
+	await expect(page.getByRole("heading", { name: /lilgriper/i })).toBeVisible();
 	await page.getByRole("link", { name: "Church Apps" }).first().click();
 	await expect(page.getByText(/Church apps coming soon/i)).toBeVisible();
 	await page.goto("/fun-apps");

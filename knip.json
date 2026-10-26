@@ -1,0 +1,17 @@
+{
+	"$schema": "https://unpkg.com/knip@5/schema.json",
+	"entry": ["src/**/*.{ts,tsx,astro,css}", "tests/**/*.ts", "e2e/**/*.ts"],
+	"project": ["src/**/*.{ts,tsx,astro,css}", "tests/**/*.ts", "e2e/**/*.ts"],
+	"ignore": [
+		"index.html",
+		"about.html",
+		"church-apps.html",
+		"fun-apps.html",
+		"money.html",
+		"styles.css",
+		"script.js",
+		"docs/**",
+		".superpowers/**"
+	],
+	"ignoreDependencies": ["lefthook"]
+}

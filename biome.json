@@ -8,11 +8,15 @@
 	"files": {
 		"includes": [
 			"src/**",
+			"tests/**",
+			"e2e/**",
 			"astro.config.mjs",
 			"package.json",
 			"tsconfig.json",
 			"biome.json",
-			"lefthook.yml"
+			"lefthook.yml",
+			"vitest.config.ts",
+			"playwright.config.ts"
 		]
 	},
 	"formatter": {
@@ -22,7 +26,14 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"preset": "recommended"
+		}
+	},
+	"css": {
+		"parser": {
+			"cssModules": false,
+			"allowWrongLineComments": false,
+			"tailwindDirectives": true
 		}
 	},
 	"assist": {
@@ -31,5 +42,18 @@
 				"organizeImports": "on"
 			}
 		}
-	}
+	},
+	"overrides": [
+		{
+			"includes": ["**/*.astro"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noUnusedVariables": "off",
+						"noUnusedImports": "off"
+					}
+				}
+			}
+		}
+	]
 }

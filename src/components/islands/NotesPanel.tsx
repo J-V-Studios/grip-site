@@ -28,7 +28,10 @@ export default function NotesPanel() {
 		void refresh();
 	}, [refresh]);
 
-	async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+	async function onSubmit(event: {
+		preventDefault(): void;
+		currentTarget: HTMLFormElement;
+	}) {
 		event.preventDefault();
 		const form = event.currentTarget;
 		const data = new FormData(form);
