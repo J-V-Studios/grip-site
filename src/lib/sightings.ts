@@ -38,7 +38,7 @@ export function extFor(file: { name: string; type: string }): string {
 }
 
 export type Sighting = {
-	id: number;
+	id: string;
 	hunter: string;
 	place: string;
 	photo_path: string;
