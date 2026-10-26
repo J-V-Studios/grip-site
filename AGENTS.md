@@ -1,6 +1,6 @@
 # AGENTS.md — start here
 
-**the lilgriper** (`lilgrip.com`) is a chill personal site: hero, scripture quote, explore cards, and a goofy say-hey pulse. The stack is **Astro 7 + Bun + TypeScript + Tailwind v4**, with React islands for Supabase-backed interactivity. Static output deploys to **GitHub Pages** at `https://lilgrip.com`.
+**lilgrip** (`lilgrip.com`) is a chill/goofy personal site: meme splash, explore cards, and a say-hey pulse. The stack is **Astro 7 + Bun + TypeScript + Tailwind v4**, with React islands for Supabase-backed interactivity. Static output deploys to **GitHub Pages** at `https://lilgrip.com`.
 
 **Ship all work in `src/` + `public/`.** The vanilla root HTML/CSS/JS sources have been removed.
 

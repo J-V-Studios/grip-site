@@ -1,4 +1,4 @@
-# TODO — the lilgriper site
+# TODO — lilgrip site
 
 Check items off as they ship. Prefer small PRs / commits. Align with `AGENTS.md`, `.cursorrules`, and `OVERVIEW.md`.
 
