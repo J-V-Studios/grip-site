@@ -1,0 +1,104 @@
+# AGENTS.md — start here
+
+**the lilgriper** (`lilgrip.com`) is a chill personal site: hero, scripture quote, explore cards, shared notes, and grip sightings with photos and points. The stack is **Astro 7 + Bun + TypeScript + Tailwind v4**, with React islands for Supabase-backed interactivity. Static output deploys to **GitHub Pages** at `https://lilgrip.com`.
+
+Migration note: legacy root `index.html`, `styles.css`, and `script.js` may still exist until parity cleanup (Task 12). **Ship new work in `src/`** — do not extend the vanilla files.
+
+## Commands (Bun)
+
+Ensure Bun is on `PATH`: `export PATH="$HOME/.bun/bin:$PATH"`.
+
+| Script | Command | Purpose |
+| --- | --- | --- |
+| install | `bun install --frozen-lockfile` | Dependencies (CI uses frozen lockfile) |
+| dev | `bun run dev` | Astro dev server |
+| build | `bun run build` | Production build → `dist/` |
+| preview | `bun run preview` | Serve `dist/` locally |
+| check | `bun run check` | `astro check` (types) |
+| lint | `bun run lint` | Biome format + lint |
+| test | `bun run test` | Vitest unit tests |
+| test:e2e | `bun run test:e2e` | Playwright smoke |
+
+Optional: `bun run lint:fix`, `knip` (unused exports) — wire in CI when present.
+
+## Directory map
+
+```text
+/
+├── AGENTS.md                 ← you are here
+├── .cursorrules              ← short enforceable stack rules
+├── OVERVIEW.md               ← design system + feature contracts
+├── TODO.md                   ← living checklist
+├── package.json / bun.lock
+├── astro.config.mjs          ← site URL, static output, React + Tailwind
+├── tsconfig.json             ← @/* → src/*
+├── public/                   ← static assets (CNAME, favicon, images)
+├── src/
+│   ├── pages/*.astro         ← one route per file
+│   ├── layouts/BaseLayout.astro
+│   ├── components/           ← Astro chrome (header, hero, cards, footer)
+│   ├── components/islands/   ← React client islands (notes, sightings)
+│   ├── lib/                  ← Supabase client + data helpers (only place for I/O)
+│   └── styles/global.css     ← Tailwind v4 + @theme tokens
+├── tests/unit/               ← Vitest
+├── e2e/                      ← Playwright (when present)
+├── docs/superpowers/         ← specs + plans for big changes
+└── (legacy) index.html, styles.css, script.js  ← do not add features here
+```
+
+## Routes / features
+
+| Route | File | Notes |
+| --- | --- | --- |
+| `/` | `src/pages/index.astro` | Hero, explore cards, sightings island, notes island |
+| `/church-apps/` | `src/pages/church-apps.astro` | Placeholder |
+| `/fun-apps/` | `src/pages/fun-apps.astro` | Placeholder |
+| `/about/` | `src/pages/about.astro` | Placeholder |
+| `/money/` | `src/pages/money.astro` | Placeholder |
+
+**Supabase (anon/publishable only):** tables `lilgrip_comments`, `grip_sightings`; storage bucket `grip-sightings`. All client access via `src/lib/`.
+
+## Environment
+
+Copy `.env.example` → `.env` (never commit `.env`).
+
+| Variable | Use |
+| --- | --- |
+| `PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `PUBLIC_SUPABASE_ANON_KEY` | Publishable / anon key only |
+
+**Never** put a service-role key in the repo or client bundle.
+
+## Deploy
+
+- CI (when wired): install → lint → check → tests → `bun run build` → optional e2e → on green `main`, upload **`dist/`** to GitHub Pages.
+- Custom domain: `public/CNAME` → `lilgrip.com`.
+- `astro.config.mjs` sets `site: "https://lilgrip.com"` and `output: "static"`.
+
+## Do / don’t
+
+**Do**
+
+- Use sky/blue-led Catppuccin theme tokens in `src/styles/global.css` (`--color-sky`, `--color-blue`).
+- Put shared layout in `src/layouts/` and `src/components/`; one route per `src/pages/*.astro`.
+- Route all Supabase reads/writes through `src/lib/` (`supabase.ts`, `notes.ts`, `sightings.ts`).
+- Start each island `*.tsx` with a one-line comment stating its purpose.
+- Use path alias `@/` for imports under `src/`.
+- Keep commits small; conventional messages (`feat:`, `fix:`, `docs:`).
+- Update `OVERVIEW.md` / `TODO.md` when behavior or structure changes.
+
+**Don’t**
+
+- Reintroduce terminal/hacker chrome or pink-primary brand accent as the main face.
+- Add secrets, service-role keys, or non-`PUBLIC_*` Supabase keys to client code.
+- Put Supabase calls directly in `.astro` pages or scattered in islands — use `src/lib/`.
+- Extend legacy root `index.html` / `styles.css` / `script.js` for new features.
+- Add a second CSS framework or turn marketing pages into a SPA.
+
+## Doc order
+
+1. `AGENTS.md` (this file)
+2. `.cursorrules`
+3. `OVERVIEW.md`
+4. `docs/superpowers/specs/` + `plans/`
+5. `TODO.md`
