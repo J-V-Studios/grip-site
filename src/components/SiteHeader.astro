@@ -1,0 +1,40 @@
+---
+const pathname = Astro.url.pathname;
+
+const navLinks = [
+	{ href: "/", label: "Home" },
+	{ href: "/church-apps", label: "Church Apps" },
+	{ href: "/fun-apps", label: "Fun Apps" },
+	{ href: "/about", label: "About" },
+	{ href: "/money", label: "Money??" },
+];
+
+function isCurrent(href: string): boolean {
+	if (href === "/") return pathname === "/";
+	return pathname === href || pathname.startsWith(`${href}/`);
+}
+---
+
+<header
+	class="mx-auto flex w-[min(1080px,calc(100%-2.5rem))] flex-wrap items-center justify-between gap-x-6 gap-y-4 pt-[1.35rem] pb-2 max-[820px]:w-[min(560px,calc(100%-1.4rem))]"
+>
+	<a
+		href="/"
+		class="text-[1.15rem] font-bold tracking-tight text-text no-underline"
+	>
+		the <span class="text-sky">lilgriper</span>
+	</a>
+	<nav class="flex flex-wrap gap-x-0.5 gap-y-1" aria-label="Primary">
+		{
+			navLinks.map(({ href, label }) => (
+				<a
+					href={href}
+					class="rounded-full px-[0.85rem] py-[0.55rem] text-[0.92rem] font-medium text-subtext no-underline transition-[color,background,transform] duration-[250ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-surface-soft/85 hover:text-text focus-visible:bg-surface-soft/85 focus-visible:text-text focus-visible:outline-none aria-[current=page]:bg-sky aria-[current=page]:text-base"
+					aria-current={isCurrent(href) ? "page" : undefined}
+				>
+					{label}
+				</a>
+			))
+		}
+	</nav>
+</header>

@@ -1,17 +1,13 @@
 ---
-
+import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<meta name="generator" content={Astro.generator} />
-		<title>lilgrip</title>
-	</head>
-	<body>
-		<h1>lilgrip</h1>
-		<p>Astro scaffold — site migration in progress.</p>
-	</body>
-</html>
+<BaseLayout
+	title="the lilgriper"
+	description="the lilgriper. Just a chill guy. 1 Corinthians 16:14."
+>
+	<h1 class="font-display text-3xl font-semibold tracking-tight">
+		the <span class="text-sky">lilgriper</span>
+	</h1>
+	<p class="mt-2 text-subtext">Layout scaffold — migration in progress.</p>
+</BaseLayout>
