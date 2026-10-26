@@ -1,71 +1,69 @@
 # TODO — the lilgriper site
 
-Check items off as they ship. Prefer small PRs / commits. Keep this list aligned with `.cursorrules` and `OVERVIEW.md`.
+Check items off as they ship. Prefer small PRs / commits. Align with `AGENTS.md`, `.cursorrules`, and `OVERVIEW.md`.
 
 ## Done
 
-- [x] Vanilla static shell (`index.html`, `styles.css`, `script.js`)
-- [x] Hero: brand, chill line, 1 Corinthians 16:14, portrait
-- [x] Catppuccin-leaning color tokens + responsive layout
-- [x] Lilgrip interactive screen + gauges
-- [x] Shared notes via Supabase
-- [x] Grip sightings + photo upload + grip points leaderboard
-- [x] GitHub Pages + `lilgrip.com` custom domain wiring
-- [x] Workspace context files (`.cursorrules`, `OVERVIEW.md`, `TODO.md`)
+- [x] Vanilla static shell (legacy `index.html`, `styles.css`, `script.js`) — baseline before migration
+- [x] Hero, notes, sightings, Supabase, GitHub Pages + `lilgrip.com` (vanilla era)
+- [x] Astro 7 scaffold: Bun, TypeScript, Tailwind v4, React islands
+- [x] Routes: home + church-apps, fun-apps, about, money placeholders
+- [x] `src/lib/` for Supabase + notes/sightings helpers
+- [x] Sky/blue theme tokens in `src/styles/global.css`
+- [x] Vitest unit tests for lib helpers
+- [x] Agent docs refresh: `AGENTS.md`, Astro `.cursorrules`, updated OVERVIEW/README
 
 ---
 
-## Wireframing / layout
+## Migration / cutover
 
-- [ ] Sketch mobile scroll order: hero → screen → sightings → notes (confirm no section fights for the first viewport)
-- [ ] Decide whether sightings gallery should be a denser grid on desktop
-- [ ] Optional sticky mini-nav (brand only) — only if multi-section length becomes hard to scan
-- [ ] Empty-state illustrations vs plain copy for notes/sightings
+- [x] Wire GitHub Actions CI (lint, check, knip, test, build, e2e) and Pages deploy from `dist/`
+- [x] Playwright smoke: home + four subroutes + primary nav
+- [x] Remove root vanilla HTML/CSS/JS after green build + smoke (Task 12)
+- [ ] Switch GitHub Pages source to **GitHub Actions** (currently legacy `/` on `main`)
+- [ ] Confirm production `lilgrip.com` serves Astro `dist/` after first merge + Pages switch
 
-## Core styling
+## Astro app polish
 
-- [ ] Formalize remaining design tokens (`--surface0`, `--line`, `--success`) in `:root`
-- [ ] Document type scale in `OVERVIEW.md` (H1 / lede / body / mono label)
-- [ ] Normalize form focus rings for keyboard users (visible, on-brand)
-- [ ] Audit gauge bar markup: move `--level` from HTML attributes to JS `setProperty` (no presentational inline styles)
-- [ ] Compress / responsive `srcset` for `images/lilgriper.jpg` if load weight becomes an issue
-- [ ] Confirm favicon + social preview look correct on real devices
+- [ ] Island files: one-line purpose comment at top of each `*.tsx`
+- [ ] Formalize type scale / spacing docs in `OVERVIEW.md` if design settles
+- [ ] Normalize form focus rings (keyboard-visible, on-brand)
+- [ ] Responsive `srcset` for hero image if weight matters
+- [ ] OG image / social preview for link shares
 
-## JavaScript interactions
+## JavaScript / islands
 
-- [ ] Split `script.js` into clear regions or tiny modules *without* a bundler (still one entry `script.js`, or ES module imports colocated) if file growth continues
-- [ ] Sightings: client-side image resize/compress before upload (mobile friendliness)
-- [ ] Sightings: optimistic UI + clearer progress for slow uploads
-- [ ] Notes/sightings: basic rate-limit / duplicate-submit guard
-- [ ] Optional: realtime refresh (Supabase channel) for notes + sightings
+- [ ] Sightings: client-side image resize/compress before upload
+- [ ] Sightings: clearer upload progress and error copy
+- [ ] Notes/sightings: duplicate-submit guard
+- [ ] Optional: Supabase realtime refresh for notes + sightings
 - [ ] Optional: “my sightings” filter using saved hunter name
 
-## Accessibility audit
+## Accessibility
 
-- [ ] Keyboard path through screen commands, forms, and file picker
-- [ ] Screen reader pass on sightings cards (name, place, points)
-- [ ] Color contrast check (pink/peach on base)
-- [ ] `prefers-reduced-motion` verification for shimmer / bits / halo / counters
-- [ ] Form errors announced via `aria-live` where failures happen
-- [ ] Ensure tap targets stay ≥ 44–48px on the smallest phones
+- [ ] Keyboard path through forms and file picker
+- [ ] Screen reader pass on sightings cards
+- [ ] Contrast check (sky/blue/peach on base)
+- [ ] `prefers-reduced-motion` verification
+- [ ] Form errors via `aria-live` where needed
+- [ ] Tap targets ≥ 44–48px on small phones
 
 ## Content / product
 
-- [ ] Write short house rules for sightings (consent / chill / no harassment)
-- [ ] Decide if grip points stay flat `+10` or get bonuses (first of day, etc.)
-- [ ] Moderation path for bad uploads (owner-only delete or report) — needs non-anon privileges
-- [ ] Refresh README DNS section if Squarespace/GitHub details change
+- [ ] House rules for sightings (consent / chill / no harassment)
+- [ ] Grip points rules (flat +10 vs bonuses)
+- [ ] Moderation path for bad uploads (needs non-anon tooling)
+- [ ] Fill placeholder pages when content exists
 
-## Quality / launch hygiene
+## Quality / hygiene
 
-- [ ] Lighthouse pass (perf / a11y / best practices) on mobile + desktop
-- [ ] Smoke-test HTTPS enforce on `lilgrip.com` and `www` redirect
-- [ ] Verify Supabase RLS: anon cannot update/delete comments or sightings
-- [ ] Backup note: document which Supabase tables/buckets this site owns
+- [ ] Lighthouse pass on Astro build (mobile + desktop)
+- [ ] Verify Supabase RLS: anon cannot update/delete rows
+- [ ] Document owned tables/buckets in `OVERVIEW.md`
+- [ ] knip / audit in CI for unused exports and dependency advisories
 
 ## Nice-to-haves (parked)
 
-- [ ] Offline shell / simple PWA manifest
-- [ ] OG image tailored for link previews
+- [ ] Simple PWA manifest
 - [ ] Seasonal skins via CSS variables only
-- [ ] Export leaderboard as shareable image (canvas) — still vanilla
+- [ ] Shareable leaderboard image export

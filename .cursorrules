@@ -1,100 +1,66 @@
-# lilgrip.com — Cursor Rules
+# lilgrip.com — Cursor Rules (Astro 7 + Bun)
 
-You are working on **the lilgriper** site: a static, vanilla web project hosted on GitHub Pages at `lilgrip.com`.
+You are working on **the lilgriper** site: Astro 7 static site on GitHub Pages at `lilgrip.com`.
 
 ## Stack (non-negotiable)
 
-- **Vanilla only:** HTML5, CSS3, and ES6+ JavaScript modules.
-- **Never** introduce React, Vue, Svelte, Angular, Next, Nuxt, or similar.
-- **Never** introduce Tailwind, Bootstrap, Bulma, or CSS-in-JS libraries.
-- **Never** add a bundler or build step (no Vite, Webpack, Parcel, npm scripts for UI).
-- Allowed third-party use: Google Fonts CDN, and the existing Supabase JS client via ESM CDN (`esm.sh`) for shared comments/sightings only.
-- Prefer progressive enhancement: the page must remain readable if JS fails.
+- **Runtime / package manager:** Bun (`bun install`, `bun run …`). Do not switch to npm/yarn/pnpm for this repo.
+- **Framework:** Astro 7, TypeScript, static output (`output: "static"`).
+- **Styling:** Tailwind CSS v4 via `@tailwindcss/vite`; design tokens in `src/styles/global.css` (`@theme`).
+- **Interactivity:** React islands in `src/components/islands/` only where client state or Supabase I/O is needed. Marketing pages stay mostly `.astro`.
+- **Do not** add Next, Remix, Vue, SvelteKit, or a separate SPA router for static routes.
+- **Do not** add Bootstrap, Bulma, or a second CSS framework alongside Tailwind.
 
-## File split (enforce)
+## Migration boundary
 
-Keep a clean root layout. Do not collapse everything into one file.
+- **Source of truth for new work:** `src/`, `public/`, `astro.config.mjs`.
+- Do not reintroduce a parallel vanilla root `index.html` / `styles.css` / `script.js` site.
 
-| File | Role |
+## File layout
+
+| Area | Role |
 | --- | --- |
-| `index.html` | Structure, semantics, meta, content sections |
-| `styles.css` | All presentation (this repo uses `styles.css`, not `style.css`) |
-| `script.js` | Behavior as an ES module (`type="module"`) |
-| `images/` | Static assets (e.g. `lilgriper.jpg`) |
-| `favicon.svg` | Site icon |
-| `CNAME` | GitHub Pages custom domain (`lilgrip.com`) |
-| `.nojekyll` | Disable Jekyll on Pages |
+| `src/pages/*.astro` | One file per route |
+| `src/layouts/` | Shared document shell |
+| `src/components/` | Astro UI (header, hero, cards, footer) |
+| `src/components/islands/*.tsx` | Client React (notes, sightings); start file with one-line purpose comment |
+| `src/lib/` | Supabase client + all data helpers — **only** place for Supabase I/O |
+| `src/styles/global.css` | Global styles + theme tokens |
+| `public/` | `CNAME`, favicon, images (copied to `dist/` as-is) |
 
-- Do **not** invent parallel entrypoints (`app.js`, `main.css`) without a clear need.
-- Do **not** rename `styles.css` to `style.css` unless the user explicitly asks; keep the existing name for continuity.
-- Keep `README.md`, `OVERVIEW.md`, and `TODO.md` accurate when architecture or features change.
+- Path alias: `@/*` → `src/*` (e.g. `@/lib/notes`, `@/components/Hero.astro`).
+- Prefer splitting files that exceed ~200 lines by responsibility.
+- Keep `README.md`, `OVERVIEW.md`, `TODO.md`, and `AGENTS.md` accurate when architecture changes.
 
-## HTML standards
+## Visual / brand
 
-- Use **semantic HTML5**: `main`, `header`, `section`, `figure`/`figcaption`, `blockquote`, `form`, `label`, `nav` when navigation exists.
-- Every interactive control needs a real `<button>` or labeled form control — no clickable bare `<div>`s.
-- Associate labels with inputs (`<label>` wrapping or `for`/`id`).
-- Provide meaningful `alt` text for meaningful images; decorative images may use empty `alt` only when truly decorative.
-- Prefer one `h1` per page; nest headings in order.
-- Use `aria-labelledby` / `aria-live` where dynamic UI needs it (points chip, status readouts).
-- Mobile-first markup: forms and buttons must be usable on small screens (adequate tap targets).
+- **Theme:** Cooler Catppuccin — **sky and blue** as primary accents (`--color-sky`, `--color-blue` in `@theme`).
+- **Not** pink-primary brand face; peach/mauve/teal are supporting warmth, not candy-pink hero accent.
+- **No** terminal / hacker / localhost-console chrome, fake shell prompts, or dense dashboard clutter unless the user explicitly asks.
+- Chill tone: whitespace, soft motion; respect `prefers-reduced-motion`.
+- Hero scripture: 1 Corinthians 16:14 (WEB): “Let all that you do be done in love.”
 
-## CSS standards
+## Supabase / data
 
-- **No inline styles** for presentation. No `style="color:…"` / layout hacks in HTML.
-- Exception: dynamic CSS custom properties may be set from JS via `element.style.setProperty('--token', value)` — never dump full CSS rules inline.
-- Centralize design tokens in `:root` CSS variables (Catppuccin-inspired palette already in use).
-- Prefer **Flexbox** and **Grid** for layout. Avoid float-based layouts.
-- Prefer responsive sizing with `clamp()`, `minmax()`, and fluid type — avoid hard-coded breakpoints as the only strategy.
-- Respect `prefers-reduced-motion`: disable or simplify non-essential animation.
-- Support safe areas (`env(safe-area-inset-*)`) and avoid horizontal overflow (`overflow-x: hidden` on body is already established).
-- Keep selectors readable; avoid deep nesting and `!important` unless fixing a proven conflict.
-- Match the existing chill aesthetic: Catppuccin mocha tones, pink accent, no athletic/dashboard-clutter rewrites unless asked.
+- Env (client-safe only): `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` — see `.env.example`.
+- **Never** commit `.env` or use service-role keys in the browser.
+- Tables: `lilgrip_comments`, `grip_sightings`; bucket: `grip-sightings` (anon select/insert as designed).
+- Sanitize/clamp user text in `src/lib/` before insert; cap upload size/MIME for sightings.
+- Document schema or RLS changes in `OVERVIEW.md`.
 
-## JavaScript standards
+## Code quality
 
-- Write **modular, event-driven** ES6+ code in `script.js`.
-- Use `const`/`let`, arrow functions where clear, async/await for network work.
-- Bind behavior with `addEventListener` — no inline `onclick=` attributes.
-- Query the DOM once at the top (or in small scoped helpers); null-check before use.
-- Keep concerns separated: screen commands, notes, sightings/points should not become one tangled mega-function.
-- Sanitize/clamp user text before insert (`clean()` pattern already used).
-- Do not store secrets in the client. Only the Supabase **publishable/anon** key may appear in `script.js`.
-- Prefer `localStorage` only for non-sensitive UX state (e.g. hunter name). Shared data (comments, sightings) lives in Supabase.
-- Honor `prefers-reduced-motion` when choosing to animate or tick live counters.
+- Run `bun run lint`, `bun run check`, `bun run test` before claiming done; `bun run build` for deploy-related changes.
+- Biome for format/lint; `astro check` for types; Vitest for pure helpers; Playwright for smoke when e2e exists.
+- Conventional commits (`feat:`, `fix:`, `docs:`, `chore:`).
 
-## Supabase / data rules
+## Deploy awareness
 
-Existing shared features:
-
-- Table `lilgrip_comments` — public notes (select/insert for anon).
-- Table `grip_sightings` — hunter, place, photo path, points (select/insert for anon).
-- Storage bucket `grip-sightings` — public image uploads for sightings.
-
-When changing data:
-
-- Prefer migrations/SQL through the project’s Supabase tooling; document new tables in `OVERVIEW.md`.
-- Keep RLS tight: anon should not get unrestricted update/delete unless the user explicitly requests moderation tooling.
-- Cap file size and MIME types for uploads; give clear user-facing error text.
-
-## Product / content voice
-
-- Brand: **the lilgriper** / **lilgrip** — chill, playful, inviting; keep the charm without terminal/hacker chrome.
-- Keep pink as a primary accent; Catppuccin tokens for the rest.
-- Scripture quote on the hero: 1 Corinthians 16:14 (WEB): “Let all that you do be done in love.”
-- Prefer clean whitespace, soft motion, and multi-page nav cards over dense dashboards.
-- Do not reintroduce “peace” gags, terminal consoles, or cluttered sticker/tag spam unless the user asks.
-
-## Git / deploy awareness
-
-- Publish source: GitHub Pages from `main` root.
-- Domain: `lilgrip.com` via `CNAME`.
-- Prefer small, focused commits with conventional messages (`feat:`, `fix:`, `docs:`, `chore:`).
-- Do not invent frameworks “to make Pages easier.” Static files are the product.
+- GitHub Pages serves **`dist/`** from CI on `main` (when workflow is wired).
+- Domain: `lilgrip.com` via `public/CNAME`; `site` in `astro.config.mjs` must stay `https://lilgrip.com`.
 
 ## When unsure
 
-- Inspect existing `index.html` / `styles.css` / `script.js` before inventing new patterns.
-- Prefer extending current sections (hero, lilgrip screen, grip sightings, notes) over adding unrelated pages.
+- Read `AGENTS.md` first, then `OVERVIEW.md`.
+- Match existing patterns in `src/lib/` and island components before inventing new data layers.
 - Update `TODO.md` when finishing or discovering follow-up work.
-- Update `OVERVIEW.md` when structure, tokens, or features change materially.

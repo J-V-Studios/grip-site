@@ -1,0 +1,17 @@
+---
+import ExploreCards from "../components/ExploreCards.astro";
+import Hero from "../components/Hero.astro";
+import NotesPanel from "../components/islands/NotesPanel";
+import SightingsPanel from "../components/islands/SightingsPanel";
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+	title="the lilgriper"
+	description="the lilgriper. Just a chill guy. 1 Corinthians 16:14."
+>
+	<Hero />
+	<ExploreCards />
+	<SightingsPanel client:load />
+	<NotesPanel client:load />
+</BaseLayout>
