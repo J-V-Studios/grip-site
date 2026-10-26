@@ -1,3 +1,4 @@
+// Shared notes form + list backed by Supabase lilgrip_comments.
 import { useCallback, useEffect, useState } from "react";
 import { fetchNotes, insertNote, type Note } from "@/lib/notes";
 

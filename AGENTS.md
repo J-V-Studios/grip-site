@@ -19,7 +19,7 @@ Ensure Bun is on `PATH`: `export PATH="$HOME/.bun/bin:$PATH"`.
 | test | `bun run test` | Vitest unit tests |
 | test:e2e | `bun run test:e2e` | Playwright smoke |
 
-Optional: `bun run lint:fix`, `knip` (unused exports) — wire in CI when present.
+Optional: `bun run lint:fix`, `bun run knip` (unused exports; also in CI).
 
 ## Directory map
 

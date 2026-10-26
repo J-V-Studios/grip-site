@@ -1,3 +1,4 @@
+// Grip sightings form, gallery, and leaderboard (+10 pts).
 import { useCallback, useEffect, useId, useState } from "react";
 import {
 	aggregatePoints,

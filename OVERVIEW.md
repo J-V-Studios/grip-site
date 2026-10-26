@@ -91,7 +91,7 @@ Tokens live in `src/styles/global.css` (`@theme`). Visual direction: **cooler Ca
 | `--color-peach` | Warmth | `#fab387` |
 | `--color-mauve` | Secondary | `#cba6f7` |
 
-Legacy `styles.css` at repo root (if still present) used pink accent — **do not** copy that as the Astro theme default.
+Do **not** reintroduce pink as the primary brand accent — keep sky/blue lead.
 
 ### Typography
 

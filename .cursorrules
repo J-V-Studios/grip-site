@@ -14,7 +14,7 @@ You are working on **the lilgriper** site: Astro 7 static site on GitHub Pages a
 ## Migration boundary
 
 - **Source of truth for new work:** `src/`, `public/`, `astro.config.mjs`.
-- Legacy root `index.html`, `styles.css`, `script.js` may remain until Task 12 cleanup — **do not** add features or fix bugs only in those files unless explicitly asked for parity during migration.
+- Do not reintroduce a parallel vanilla root `index.html` / `styles.css` / `script.js` site.
 
 ## File layout
 
