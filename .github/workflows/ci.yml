@@ -1,0 +1,158 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        id: lint
+        run: bun run lint
+
+      - name: Astro check
+        id: check
+        run: bun run check
+
+      - name: Knip
+        id: knip
+        run: bun run knip
+
+      - name: Unit tests
+        id: unit
+        run: bun run test
+
+      - name: Failure summary
+        if: failure()
+        run: |
+          {
+            echo "## Quality checks failed"
+            echo ""
+            echo "| Step | Command |"
+            echo "| --- | --- |"
+            echo "| Lint | \`bun run lint\` |"
+            echo "| Check | \`bun run check\` |"
+            echo "| Knip | \`bun run knip\` |"
+            echo "| Unit tests | \`bun run test\` |"
+            echo ""
+            echo "Re-run locally after \`bun install --frozen-lockfile\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build site
+        id: build
+        run: bun run build
+
+      - name: Assert dist/CNAME
+        run: test -f dist/CNAME
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          if-no-files-found: error
+
+      - name: Failure summary
+        if: failure()
+        run: |
+          {
+            echo "## Build failed"
+            echo ""
+            echo "Run \`bun run build\` locally and confirm \`dist/CNAME\` exists."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  smoke:
+    name: Smoke (Playwright)
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Install Playwright Chromium
+        run: bunx playwright install --with-deps chromium
+
+      - name: E2E smoke tests
+        id: e2e
+        run: bun run test:e2e
+
+      - name: Failure summary
+        if: failure()
+        run: |
+          {
+            echo "## Smoke tests failed"
+            echo ""
+            echo "Run \`bun run build && CI=true bun run test:e2e\` locally."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs:
+      - build
+      - smoke
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
