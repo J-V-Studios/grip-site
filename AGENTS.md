@@ -71,9 +71,10 @@ Copy `.env.example` → `.env` (never commit `.env`).
 
 ## Deploy
 
-- CI (`.github/workflows/ci.yml`): quality → build → smoke → on push to `main`, deploy **`dist/`** via GitHub Pages Actions.
-- After first merge: set repo Pages source to **GitHub Actions** (was legacy `/` on `main`).
-- Custom domain: `public/CNAME` → `lilgrip.com`.
+- CI (`.github/workflows/ci.yml`): quality → build → smoke → on push to `main`, sync `dist/` to the branch root (legacy Pages) and attempt Actions deploy.
+- **Pages today:** still “Deploy from a branch” (`main` `/`). Root `CNAME`, `.nojekyll`, `index.html`, `_astro/`, etc. are the **published** site for that mode — do not hand-edit them; they are overwritten from `dist/` by CI.
+- **Preferred:** Settings → Pages → Source → **GitHub Actions**, then remove the `publish-legacy-root` job and root publish artifacts.
+- Custom domain source of truth in the app: `public/CNAME` → `lilgrip.com`.
 - `astro.config.mjs` sets `site: "https://lilgrip.com"` and `output: "static"`.
 
 ## Do / don’t

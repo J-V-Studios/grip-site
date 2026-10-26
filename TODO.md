@@ -21,7 +21,8 @@ Check items off as they ship. Prefer small PRs / commits. Align with `AGENTS.md`
 - [x] Playwright smoke: home + four subroutes + primary nav
 - [x] Remove root vanilla HTML/CSS/JS after green build + smoke (Task 12)
 - [ ] Switch GitHub Pages source to **GitHub Actions** (currently legacy `/` on `main`)
-- [ ] Confirm production `lilgrip.com` serves Astro `dist/` after first merge + Pages switch
+- [ ] After Actions switch: remove `publish-legacy-root` CI job + stop committing root publish artifacts (`index.html`, `_astro/`, …)
+- [ ] Confirm production `lilgrip.com` custom domain stays attached after Pages switch
 
 ## Astro app polish
 
