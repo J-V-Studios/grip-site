@@ -132,6 +132,7 @@ jobs:
     name: Deploy to GitHub Pages
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs:
+      - quality
       - build
       - smoke
     runs-on: ubuntu-latest
@@ -156,3 +157,12 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Failure summary
+        if: failure()
+        run: |
+          {
+            echo "## Pages deploy failed"
+            echo ""
+            echo "Confirm the repo Pages source is set to **GitHub Actions** and the \`github-pages\` environment is approved."
+          } >> "$GITHUB_STEP_SUMMARY"
