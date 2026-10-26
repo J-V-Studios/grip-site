@@ -16,13 +16,20 @@ function isCurrent(href: string): boolean {
 ---
 
 <header
-	class="mx-auto flex w-[min(1080px,calc(100%-2.5rem))] flex-wrap items-center justify-between gap-x-6 gap-y-4 pt-[1.35rem] pb-2 max-[820px]:w-[min(560px,calc(100%-1.4rem))]"
+	class="relative z-20 flex flex-wrap items-center justify-between gap-x-6 gap-y-4 pt-[1.2rem] pb-2"
 >
 	<a
 		href="/"
-		class="text-[1.15rem] font-bold tracking-tight text-text no-underline"
+		class="flex items-center gap-2.5 text-[1.15rem] font-bold tracking-tight text-text no-underline"
 	>
-		the <span class="text-sky">lilgriper</span>
+		<img
+			src="/images/lilgrip-meme.png"
+			alt=""
+			width="36"
+			height="36"
+			class="size-9 rounded-xl border border-white/10 object-cover"
+		/>
+		<span>the <span class="text-sky">lilgriper</span></span>
 	</a>
 	<nav class="flex flex-wrap gap-x-0.5 gap-y-1" aria-label="Primary">
 		{

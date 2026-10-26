@@ -15,6 +15,10 @@
 	--font-display: "Fraunces", Georgia, serif;
 }
 
+html {
+	scroll-behavior: smooth;
+}
+
 html,
 body {
 	margin: 0;
@@ -33,7 +37,7 @@ img {
 @keyframes rise {
 	from {
 		opacity: 0;
-		transform: translateY(16px);
+		transform: translateY(18px);
 	}
 	to {
 		opacity: 1;
@@ -41,8 +45,109 @@ img {
 	}
 }
 
+@keyframes meme-float {
+	0%,
+	100% {
+		transform: translateY(0) rotate(-1.5deg);
+	}
+	50% {
+		transform: translateY(-14px) rotate(2deg);
+	}
+}
+
+@keyframes sky-drift {
+	0%,
+	100% {
+		transform: translate3d(0, 0, 0) scale(1);
+	}
+	50% {
+		transform: translate3d(-2%, 1.5%, 0) scale(1.06);
+	}
+}
+
+@keyframes glint {
+	0%,
+	100% {
+		opacity: 0.35;
+		transform: translateX(-120%) skewX(-18deg);
+	}
+	40% {
+		opacity: 0.85;
+	}
+	55%,
+	100% {
+		opacity: 0;
+		transform: translateX(160%) skewX(-18deg);
+	}
+}
+
+@keyframes hey-bloom {
+	0% {
+		opacity: 0;
+		transform: scale(0.55);
+	}
+	35% {
+		opacity: 1;
+		transform: scale(1.12);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(1.55);
+	}
+}
+
+@keyframes explore-wiggle {
+	0%,
+	100% {
+		transform: translateY(0) rotate(0deg);
+	}
+	40% {
+		transform: translateY(-6px) rotate(-1.4deg);
+	}
+	70% {
+		transform: translateY(-4px) rotate(1.2deg);
+	}
+}
+
 @media (prefers-reduced-motion: no-preference) {
 	.motion-rise {
-		animation: rise 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+		animation: rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+
+	.motion-meme-float {
+		animation: meme-float 5.5s ease-in-out infinite;
+	}
+
+	.motion-sky-drift {
+		animation: sky-drift 16s ease-in-out infinite;
+	}
+
+	.motion-glint::after {
+		content: "";
+		position: absolute;
+		inset: 12% -20%;
+		background: linear-gradient(
+			90deg,
+			transparent,
+			rgba(255, 255, 255, 0.55),
+			transparent
+		);
+		animation: glint 4.8s ease-in-out infinite;
+		pointer-events: none;
+	}
+
+	.motion-explore:hover,
+	.motion-explore:focus-visible {
+		animation: explore-wiggle 0.55s ease-out both;
+	}
+
+	.motion-hey-bloom {
+		animation: hey-bloom 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
 	}
 }

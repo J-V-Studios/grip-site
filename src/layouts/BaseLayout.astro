@@ -19,7 +19,7 @@ const { title, description } = Astro.props;
 		<title>{title}</title>
 		<meta name="description" content={description} />
 		<meta name="theme-color" content="#1e1e2e" />
-		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<link rel="icon" href="/images/lilgrip-meme.png" type="image/png" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -27,13 +27,19 @@ const { title, description } = Astro.props;
 			rel="stylesheet"
 		/>
 	</head>
-	<body class="min-h-full">
-		<SiteHeader />
-		<main
-			class="mx-auto w-[min(1080px,calc(100%-2.5rem))] px-0 py-6 pb-12 max-[820px]:w-[min(560px,calc(100%-1.4rem))]"
+	<body class="min-h-full overflow-x-hidden">
+		<div
+			class="mx-auto w-[min(1100px,calc(100%-1.5rem))] max-[820px]:w-[min(560px,calc(100%-1.2rem))]"
 		>
+			<SiteHeader />
+		</div>
+		<main class="pb-4">
 			<slot />
 		</main>
-		<SiteFooter />
+		<div
+			class="mx-auto w-[min(1100px,calc(100%-1.5rem))] max-[820px]:w-[min(560px,calc(100%-1.2rem))]"
+		>
+			<SiteFooter />
+		</div>
 	</body>
 </html>
