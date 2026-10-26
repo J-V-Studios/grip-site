@@ -73,16 +73,31 @@ jobs:
           PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
           PUBLIC_SUPABASE_ANON_KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY }}
         run: |
+          set -euo pipefail
           # Prefer repo Variables when set; otherwise Astro loads committed .env.production
           # (PUBLIC_* anon/publishable only — same class of key formerly in script.js).
-          if [ -n "$PUBLIC_SUPABASE_URL" ] && [ -n "$PUBLIC_SUPABASE_ANON_KEY" ]; then
+          #
+          # Critical: unset GitHub Actions vars that expand to empty strings.
+          # Vite gives process.env highest priority, so empty PUBLIC_* would
+          # override .env.production and ship a site where heys always bounce.
+          if [ -n "${PUBLIC_SUPABASE_URL:-}" ] && [ -n "${PUBLIC_SUPABASE_ANON_KEY:-}" ]; then
             printf 'PUBLIC_SUPABASE_URL=%s\nPUBLIC_SUPABASE_ANON_KEY=%s\n' \
               "$PUBLIC_SUPABASE_URL" "$PUBLIC_SUPABASE_ANON_KEY" > .env.production
+          else
+            unset PUBLIC_SUPABASE_URL PUBLIC_SUPABASE_ANON_KEY
           fi
           bun run build
 
       - name: Assert dist/CNAME
         run: test -f dist/CNAME
+
+      - name: Assert Supabase env was inlined
+        run: |
+          set -euo pipefail
+          if ! grep -R -q 'supabase\.co' dist/_astro; then
+            echo "::error::Build is missing PUBLIC_SUPABASE_* inlining — say-hey will bounce."
+            exit 1
+          fi
 
       - name: Upload dist artifact
         uses: actions/upload-artifact@v4

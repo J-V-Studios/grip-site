@@ -59,15 +59,12 @@ function SayHeyInner() {
 
 	const mutation = useMutation({
 		mutationFn: insertNote,
-		onSuccess: async (result) => {
-			if (result.error || !result.note) {
-				toast.error("that hey bounced. try again.");
-				return;
-			}
-			await qc.invalidateQueries({ queryKey: ["heys"] });
-		},
-		onError: () => {
-			toast.error("that hey bounced. try again.");
+		onError: (error) => {
+			const message =
+				error instanceof Error ? error.message : "that hey bounced. try again.";
+			toast.error(
+				message.includes("Supabase") ? "heys are offline right now." : message,
+			);
 		},
 	});
 
@@ -98,6 +95,16 @@ function SayHeyInner() {
 			addOptimistic(optimistic);
 		});
 
+		const result = await mutation.mutateAsync({ name, body });
+		if (result.error || !result.note) {
+			toast.error(
+				result.error?.includes("Supabase")
+					? "heys are offline right now."
+					: "that hey bounced. try again.",
+			);
+			return;
+		}
+
 		recordPulse(body);
 		setBloomText(body);
 		window.setTimeout(() => setBloomText(null), 900);
@@ -107,11 +114,7 @@ function SayHeyInner() {
 			icon: <Sparkles className="size-4 text-sky" />,
 		});
 		form.reset();
-
-		const result = await mutation.mutateAsync({ name, body });
-		if (result.error) {
-			toast.error("that hey bounced. try again.");
-		}
+		await qc.invalidateQueries({ queryKey: ["heys"] });
 	}
 
 	return (

@@ -11,14 +11,19 @@ export type Note = {
 const TABLE = "lilgrip_comments";
 
 export async function fetchNotes(): Promise<Note[]> {
-	const { data, error } = await getSupabase()
-		.from(TABLE)
-		.select("id,name,body")
-		.order("created_at", { ascending: false })
-		.limit(40);
+	try {
+		const { data, error } = await getSupabase()
+			.from(TABLE)
+			.select("id,name,body")
+			.order("created_at", { ascending: false })
+			.limit(40);
 
-	if (error) throw error;
-	return (data ?? []) as Note[];
+		if (error) throw error;
+		return (data ?? []) as Note[];
+	} catch (error) {
+		if (error instanceof Error) throw error;
+		throw new Error("heys could not load");
+	}
 }
 
 export async function insertNote(input: {
@@ -36,12 +41,17 @@ export async function insertNote(input: {
 	}
 	const name = clean(parsed.data.name, 24) || "anon";
 
-	const { data, error } = await getSupabase()
-		.from(TABLE)
-		.insert({ name, body })
-		.select("id,name,body")
-		.single();
+	try {
+		const { data, error } = await getSupabase()
+			.from(TABLE)
+			.insert({ name, body })
+			.select("id,name,body")
+			.single();
 
-	if (error) return { note: null, error: error.message };
-	return { note: data as Note, error: null };
+		if (error) return { note: null, error: error.message };
+		return { note: data as Note, error: null };
+	} catch (error) {
+		const message = error instanceof Error ? error.message : "that hey bounced";
+		return { note: null, error: message };
+	}
 }
