@@ -4,9 +4,11 @@ export type CreateAgentResult =
 	| { ok: true; agentId: string; runId?: string }
 	| { ok: false; error: string };
 
-function basicAuthHeader(apiKey: string): string {
-	const token = btoa(`${apiKey}:`);
-	return `Authorization: Basic ${token}`;
+/** Value for the Authorization header (Basic auth: API key as username, empty password). */
+function basicAuthValue(apiKey: string): string {
+	const trimmed = apiKey.trim();
+	const token = btoa(`${trimmed}:`);
+	return `Basic ${token}`;
 }
 
 export async function createCloudAgent(options: {
@@ -32,7 +34,7 @@ export async function createCloudAgent(options: {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
-			Authorization: basicAuthHeader(options.apiKey),
+			Authorization: basicAuthValue(options.apiKey),
 		},
 		body: JSON.stringify(body),
 	});

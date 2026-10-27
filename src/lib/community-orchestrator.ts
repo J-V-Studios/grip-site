@@ -37,8 +37,12 @@ function orchestratorHeaders(): HeadersInit {
 	};
 	const anon = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 	if (anon && !anon.includes("your_publishable")) {
-		headers.Authorization = `Bearer ${anon}`;
+		// Publishable keys (`sb_publishable_…`) are not JWTs — only send them on `apikey`.
+		// Legacy anon JWTs may also go on Authorization for older gateways.
 		headers.apikey = anon;
+		if (anon.startsWith("eyJ")) {
+			headers.Authorization = `Bearer ${anon}`;
+		}
 	}
 	return headers;
 }

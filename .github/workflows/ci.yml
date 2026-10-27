@@ -74,6 +74,7 @@ jobs:
         env:
           PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
           PUBLIC_SUPABASE_ANON_KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY }}
+          PUBLIC_COMMUNITY_ORCHESTRATOR_URL: ${{ vars.PUBLIC_COMMUNITY_ORCHESTRATOR_URL }}
         run: |
           set -euo pipefail
           # Prefer repo Variables when set; otherwise Astro loads committed .env.production
@@ -83,10 +84,16 @@ jobs:
           # Vite gives process.env highest priority, so empty PUBLIC_* would
           # override .env.production and ship a site where heys always bounce.
           if [ -n "${PUBLIC_SUPABASE_URL:-}" ] && [ -n "${PUBLIC_SUPABASE_ANON_KEY:-}" ]; then
-            printf 'PUBLIC_SUPABASE_URL=%s\nPUBLIC_SUPABASE_ANON_KEY=%s\n' \
-              "$PUBLIC_SUPABASE_URL" "$PUBLIC_SUPABASE_ANON_KEY" > .env.production
+            {
+              printf 'PUBLIC_SUPABASE_URL=%s\nPUBLIC_SUPABASE_ANON_KEY=%s\n' \
+                "$PUBLIC_SUPABASE_URL" "$PUBLIC_SUPABASE_ANON_KEY"
+              if [ -n "${PUBLIC_COMMUNITY_ORCHESTRATOR_URL:-}" ]; then
+                printf 'PUBLIC_COMMUNITY_ORCHESTRATOR_URL=%s\n' \
+                  "$PUBLIC_COMMUNITY_ORCHESTRATOR_URL"
+              fi
+            } > .env.production
           else
-            unset PUBLIC_SUPABASE_URL PUBLIC_SUPABASE_ANON_KEY
+            unset PUBLIC_SUPABASE_URL PUBLIC_SUPABASE_ANON_KEY PUBLIC_COMMUNITY_ORCHESTRATOR_URL
           fi
           bun run build
           # Guarantee .nojekyll ships even if Astro/artifact tooling drops dotfiles.

@@ -54,10 +54,12 @@ Check items off as they ship. Prefer small PRs / commits. Align with `AGENTS.md`
 
 ## Community builds (staging / ops)
 
-- [ ] Deploy `community-orchestrator` + set edge secrets (`CURSOR_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `EDIT_CODE_PEPPER`)
-- [ ] Set `PUBLIC_COMMUNITY_ORCHESTRATOR_URL` on production site build
-- [ ] Live smoke: claim handle, enqueue harmless prompt, confirm agent PR + `/community/<handle>/`
-- [ ] Confirm daily enqueue limit and moderation rejection (`kill people`) in staging
+- [x] Deploy `community-orchestrator` (live; apikey gate; `verify_jwt` off for publishable keys)
+- [x] Set `PUBLIC_COMMUNITY_ORCHESTRATOR_URL` in `.env.production` (+ CI var passthrough)
+- [x] Confirm daily enqueue limit and moderation rejection (`kill people`) against live function
+- [x] Fix Cursor API Basic-auth header bug (was sending `Authorization: Authorization: Basic …`)
+- [ ] Optional: set `EDIT_CODE_PEPPER` in Edge Function secrets
+- [ ] Live smoke: enqueue harmless prompt → agent PR + `/community/<handle>/`
 
 ## Content / product
 

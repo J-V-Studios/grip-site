@@ -33,6 +33,52 @@ function corsHeaders(origin: string | null): HeadersInit {
 	};
 }
 
+/**
+ * Gateway `verify_jwt` is off so publishable (`sb_publishable_…`) keys work.
+ * Authorize callers by matching the `apikey` header to project anon/publishable keys.
+ */
+function collectAllowedApiKeys(): Set<string> {
+	const allowed = new Set<string>();
+	const anon = Deno.env.get("SUPABASE_ANON_KEY");
+	if (anon) allowed.add(anon);
+
+	const publishableJson = Deno.env.get("SUPABASE_PUBLISHABLE_KEYS");
+	if (publishableJson) {
+		try {
+			const parsed = JSON.parse(publishableJson) as Record<string, unknown>;
+			for (const value of Object.values(parsed)) {
+				if (typeof value === "string" && value.length > 0) {
+					allowed.add(value);
+				}
+			}
+		} catch {
+			// ignore malformed env
+		}
+	}
+	return allowed;
+}
+
+function unauthorized(origin: string | null): Response {
+	return json({ error: "unauthorized" }, 401, origin);
+}
+
+function assertApiKey(
+	req: Request,
+	origin: string | null,
+): Response | null {
+	const key = req.headers.get("apikey")?.trim() ?? "";
+	if (!key) return unauthorized(origin);
+	const allowed = collectAllowedApiKeys();
+	// If platform keys are missing (local smoke), allow any non-empty key only when empty set
+	// would lock us out — require at least one configured key in production.
+	if (allowed.size === 0) {
+		console.error("No SUPABASE_ANON_KEY / SUPABASE_PUBLISHABLE_KEYS configured");
+		return json({ error: "server misconfigured" }, 500, origin);
+	}
+	if (!allowed.has(key)) return unauthorized(origin);
+	return null;
+}
+
 function json(
 	body: unknown,
 	status = 200,
@@ -223,7 +269,7 @@ async function runPipeline(buildId: string, handle: string, prompt: string) {
 	const brief = elaborateBrief(handle, prompt);
 	await setBuild({ elaborated_brief: brief, status: "planning" });
 
-	const apiKey = Deno.env.get("CURSOR_API_KEY");
+	const apiKey = Deno.env.get("CURSOR_API_KEY")?.trim();
 	if (!apiKey) {
 		await setBuild({
 			status: "failed",
@@ -398,6 +444,9 @@ Deno.serve(async (req) => {
 	if (req.method === "OPTIONS") {
 		return new Response(null, { status: 204, headers: corsHeaders(origin) });
 	}
+
+	const authError = assertApiKey(req, origin);
+	if (authError) return authError;
 
 	try {
 		if (req.method === "GET") {

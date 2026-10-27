@@ -36,3 +36,4 @@ playwright/.cache/
 
 # bun
 bun.lockb
+supabase/.temp/
