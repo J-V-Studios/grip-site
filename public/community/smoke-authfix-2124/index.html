@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta
+			name="description"
+			content="A chill blue square bouncing around a little room."
+		/>
+		<title>Bouncy Blue</title>
+		<style>
+			:root {
+				color-scheme: dark;
+				--base: #1e1e2e;
+				--surface: #262637;
+				--text: #cdd6f4;
+				--sub: #a6adc8;
+				--sky: #89dceb;
+				--blue: #89b4fa;
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			html,
+			body {
+				margin: 0;
+				min-height: 100%;
+				background: var(--base);
+				color: var(--text);
+			}
+
+			body {
+				min-height: 100dvh;
+				display: flex;
+				flex-direction: column;
+				gap: 0.75rem;
+				padding: max(1rem, env(safe-area-inset-top))
+					max(1rem, env(safe-area-inset-right))
+					max(1.25rem, env(safe-area-inset-bottom))
+					max(1rem, env(safe-area-inset-left));
+				font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+			}
+
+			header {
+				text-align: center;
+			}
+
+			.kicker {
+				margin: 0;
+			}
+
+			.kicker a {
+				color: var(--sky);
+				text-decoration-thickness: 1px;
+				text-underline-offset: 0.2em;
+			}
+
+			h1 {
+				margin: 0.35rem 0 0;
+				font-size: clamp(1.7rem, 5vw, 2.4rem);
+				font-weight: 650;
+				letter-spacing: -0.03em;
+			}
+
+			.blurb {
+				margin: 0.35rem 0 0;
+				color: var(--sub);
+			}
+
+			.arena {
+				position: relative;
+				flex: 1;
+				min-height: 16rem;
+				overflow: hidden;
+				background: var(--surface);
+				border-radius: 1.25rem;
+				box-shadow: inset 0 0 0 1px rgba(137, 220, 235, 0.16);
+			}
+
+			.square {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 4.75rem;
+				height: 4.75rem;
+				background: var(--blue);
+				border-radius: 0.2rem;
+				box-shadow:
+					inset 0 0 0 3px rgba(137, 220, 235, 0.7),
+					0 12px 28px rgba(137, 180, 250, 0.28);
+				will-change: transform;
+			}
+
+			.status {
+				min-height: 1.4rem;
+				margin: 0;
+				color: var(--sub);
+				text-align: center;
+			}
+
+			.controls {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.75rem;
+				justify-content: center;
+			}
+
+			button {
+				min-width: 7.5rem;
+				min-height: 2.75rem;
+				padding: 0.6rem 1.2rem;
+				border: 2px solid var(--blue);
+				border-radius: 999px;
+				background: transparent;
+				color: inherit;
+				font: inherit;
+				cursor: pointer;
+				touch-action: manipulation;
+			}
+
+			button:hover {
+				background: rgba(137, 180, 250, 0.12);
+			}
+
+			button:focus-visible {
+				outline: 2px solid var(--sky);
+				outline-offset: 3px;
+			}
+
+			@media (max-width: 380px) {
+				.square {
+					width: 3.75rem;
+					height: 3.75rem;
+				}
+			}
+
+			@media (prefers-reduced-motion: no-preference) {
+				button:active {
+					transform: scale(0.98);
+				}
+			}
+
+			@media (prefers-reduced-motion: reduce) {
+				.square {
+					box-shadow: inset 0 0 0 3px rgba(137, 220, 235, 0.7);
+				}
+			}
+		</style>
+		<noscript>
+			<style>
+				.square {
+					top: 50%;
+					left: 50%;
+					transform: translate(-50%, -50%);
+				}
+			</style>
+		</noscript>
+	</head>
+	<body>
+		<header>
+			<p class="kicker"><a href="/community/">community</a></p>
+			<h1>Bouncy Blue</h1>
+			<p class="blurb">a chill square that refuses to sit still</p>
+		</header>
+		<div class="arena" id="arena">
+			<div
+				class="square"
+				id="square"
+				role="img"
+				aria-label="Blue square bouncing around the room"
+			></div>
+		</div>
+		<p class="status" id="status" aria-live="polite"></p>
+		<div class="controls">
+			<button type="button" id="pause">Pause</button>
+			<button type="button" id="nudge">Nudge</button>
+		</div>
+		<script>
+			const arena = document.getElementById("arena");
+			const square = document.getElementById("square");
+			const status = document.getElementById("status");
+			const pauseBtn = document.getElementById("pause");
+			const nudgeBtn = document.getElementById("nudge");
+			const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+			const maxSpeed = 420;
+			let x = 24;
+			let y = 28;
+			let vx = 180;
+			let vy = 140;
+			let running = !reduce.matches;
+			let userPaused = false;
+			let last = 0;
+			let raf = 0;
+
+			function limits() {
+				return {
+					maxX: Math.max(0, arena.clientWidth - square.offsetWidth),
+					maxY: Math.max(0, arena.clientHeight - square.offsetHeight),
+				};
+			}
+
+			function place() {
+				square.style.transform = `translate(${x}px, ${y}px)`;
+			}
+
+			function centerStill() {
+				const { maxX, maxY } = limits();
+				x = maxX / 2;
+				y = maxY / 2;
+				place();
+			}
+
+			function setStatus() {
+				if (running) {
+					status.textContent = "boing. the square is doing laps.";
+					pauseBtn.textContent = "Pause";
+					pauseBtn.setAttribute("aria-pressed", "false");
+					return;
+				}
+				pauseBtn.textContent = "Play";
+				pauseBtn.setAttribute("aria-pressed", "true");
+				status.textContent =
+					reduce.matches && !userPaused
+						? "motion's off, so the square is parked. hit play if you want the bounce."
+						: "paused. even squares need a breather.";
+			}
+
+			function step(now) {
+				if (!running) return;
+				if (!last) {
+					last = now;
+					raf = requestAnimationFrame(step);
+					return;
+				}
+				const dt = Math.min(0.05, (now - last) / 1000);
+				last = now;
+				x += vx * dt;
+				y += vy * dt;
+				const { maxX, maxY } = limits();
+				if (x <= 0) {
+					x = 0;
+					vx = Math.abs(vx);
+				} else if (x >= maxX) {
+					x = maxX;
+					vx = -Math.abs(vx);
+				}
+				if (y <= 0) {
+					y = 0;
+					vy = Math.abs(vy);
+				} else if (y >= maxY) {
+					y = maxY;
+					vy = -Math.abs(vy);
+				}
+				place();
+				raf = requestAnimationFrame(step);
+			}
+
+			function start() {
+				cancelAnimationFrame(raf);
+				last = 0;
+				if (running) raf = requestAnimationFrame(step);
+			}
+
+			function stop() {
+				running = false;
+				cancelAnimationFrame(raf);
+			}
+
+			pauseBtn.addEventListener("click", () => {
+				if (running) {
+					userPaused = true;
+					stop();
+				} else {
+					userPaused = false;
+					running = true;
+					start();
+				}
+				setStatus();
+			});
+
+			nudgeBtn.addEventListener("click", () => {
+				const fasterX = Math.min(maxSpeed, Math.abs(vx) + 80);
+				const fasterY = Math.min(maxSpeed, Math.abs(vy) + 60);
+				const toppedOut = fasterX === maxSpeed && Math.abs(vx) >= maxSpeed;
+				vx = Math.sign(vx || 1) * (toppedOut ? -fasterX : fasterX);
+				vy = Math.sign(vy || 1) * fasterY;
+				userPaused = false;
+				running = true;
+				setStatus();
+				if (toppedOut) {
+					status.textContent = "max zoom. it flipped out of spite.";
+				}
+				start();
+			});
+
+			reduce.addEventListener("change", () => {
+				if (reduce.matches) {
+					stop();
+					centerStill();
+				} else if (!userPaused) {
+					running = true;
+					start();
+				}
+				setStatus();
+			});
+
+			window.addEventListener("resize", () => {
+				if (reduce.matches && !running && !userPaused) {
+					centerStill();
+					return;
+				}
+				const { maxX, maxY } = limits();
+				x = Math.min(Math.max(0, x), maxX);
+				y = Math.min(Math.max(0, y), maxY);
+				place();
+			});
+
+			if (reduce.matches) {
+				requestAnimationFrame(centerStill);
+			} else {
+				place();
+				start();
+			}
+			setStatus();
+		</script>
+	</body>
+</html>
