@@ -102,6 +102,12 @@ jobs:
       - name: Assert dist/CNAME
         run: test -f dist/CNAME
 
+      - name: Assert GripApps shared runtime in dist
+        run: |
+          set -euo pipefail
+          test -f dist/gripapps/runtime.js
+          test -f dist/gripapps/VERSION
+
       - name: Assert Supabase env was inlined
         run: |
           set -euo pipefail
@@ -210,13 +216,22 @@ jobs:
           if [ -d dist/community ]; then
             cp -a dist/community ./community
           fi
+          # Shared GripApps runtime CDN: /gripapps/runtime.js
+          # Do NOT rm -rf ./gripapps — that dir also holds the gripc compiler package.
+          if [ ! -f dist/gripapps/runtime.js ] || [ ! -f dist/gripapps/VERSION ]; then
+            echo "dist/gripapps/{runtime.js,VERSION} missing — public/gripapps must ship in the Astro build" >&2
+            exit 1
+          fi
+          mkdir -p gripapps
+          cp -f dist/gripapps/runtime.js ./gripapps/runtime.js
+          cp -f dist/gripapps/VERSION ./gripapps/VERSION
 
       - name: Commit published site if changed
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A -- CNAME .nojekyll favicon.svg index.html _astro about church-apps fun-apps money images community
+          git add -A -- CNAME .nojekyll favicon.svg index.html _astro about church-apps fun-apps money images community gripapps/runtime.js gripapps/VERSION
           if git diff --cached --quiet; then
             echo "No published-root changes."
             exit 0
