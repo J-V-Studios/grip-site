@@ -33,10 +33,11 @@
 			}
 
 			body {
-				min-height: 100dvh;
+				height: 100dvh;
 				display: flex;
 				flex-direction: column;
-				gap: 0.75rem;
+				gap: 0.65rem;
+				overflow: auto;
 				padding: max(0.85rem, env(safe-area-inset-top))
 					max(1rem, env(safe-area-inset-right))
 					max(1.1rem, env(safe-area-inset-bottom))
@@ -73,7 +74,7 @@
 			.arena {
 				position: relative;
 				flex: 1 1 auto;
-				min-height: max(15rem, min(62dvh, 34rem));
+				min-height: 12rem;
 				overflow: hidden;
 				border-radius: 1.25rem;
 				background:
@@ -152,8 +153,8 @@
 			.toy {
 				position: absolute;
 				display: grid;
-				width: 3rem;
-				height: 3rem;
+				width: 3.5rem;
+				height: 3.5rem;
 				place-items: center;
 				padding: 0;
 				font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
@@ -308,7 +309,7 @@
 				}
 
 				.toy.pop {
-					animation: pop 0.26s ease forwards;
+					animation: pop 0.32s ease forwards;
 				}
 
 				.spark {
@@ -540,10 +541,10 @@
 				}
 
 				function farEnough(x, y) {
-					return living().every((toy) => {
+					return toys.every((toy) => {
 						const dx = toy.x - x;
 						const dy = toy.y - y;
-						return dx * dx + dy * dy > 15 * 15;
+						return dx * dx + dy * dy > 12 * 12;
 					});
 				}
 
@@ -589,7 +590,10 @@
 				}
 
 				function makeToy() {
-					const kind = CATALOG[Math.floor(Math.random() * CATALOG.length)];
+					const used = new Set(living().map((toy) => toy.name));
+					const pool = CATALOG.filter((kind) => !used.has(kind.name));
+					const choices = pool.length ? pool : CATALOG;
+					const kind = choices[Math.floor(Math.random() * choices.length)];
 					const spot = randomSpot();
 					const el = document.createElement("button");
 					el.type = "button";
@@ -610,12 +614,24 @@
 						el,
 						x: spot.x,
 						y: spot.y,
-						vx: rand(7, 13) * (Math.random() < 0.5 ? -1 : 1),
-						vy: rand(5, 11) * (Math.random() < 0.5 ? -1 : 1),
+						vx: rand(1.6, 3.4) * (Math.random() < 0.5 ? -1 : 1),
+						vy: rand(1.2, 2.6) * (Math.random() < 0.5 ? -1 : 1),
+						pinned: false,
 						aimed: false,
 						dead: false,
 					};
 					idSeq += 1;
+					el.addEventListener("pointerenter", () => {
+						toy.pinned = true;
+					});
+					el.addEventListener("pointerleave", () => {
+						toy.pinned = false;
+					});
+					el.addEventListener("pointerdown", (event) => {
+						if (event.button !== 0) return;
+						toy.pinned = true;
+						pop(toy);
+					});
 					el.addEventListener("click", () => pop(toy));
 					toysEl.append(el);
 					toys.push(toy);
@@ -639,6 +655,14 @@
 				}
 
 				function showBeam(target) {
+					const token = beamToken + 1;
+					beamToken = token;
+					shark.classList.add("blasting");
+					window.setTimeout(() => {
+						if (token !== beamToken) return;
+						beam.hidden = true;
+						shark.classList.remove("blasting");
+					}, reduce.matches ? 180 : 380);
 					if (reduce.matches) {
 						beam.hidden = true;
 						return;
@@ -647,17 +671,9 @@
 					const to = pointOf(target);
 					const dx = to.x - from.x;
 					const dy = to.y - from.y;
-					const token = beamToken + 1;
-					beamToken = token;
 					beam.hidden = false;
 					beam.style.width = `${Math.hypot(dx, dy)}px`;
 					beam.style.transform = `translate(${from.x}px, ${from.y - 3}px) rotate(${(Math.atan2(dy, dx) * 180) / Math.PI}deg)`;
-					shark.classList.add("blasting");
-					window.setTimeout(() => {
-						if (token !== beamToken) return;
-						beam.hidden = true;
-						shark.classList.remove("blasting");
-					}, 220);
 				}
 
 				function burst(target) {
@@ -720,7 +736,7 @@
 					if (reduce.matches) cleanup();
 					else {
 						toy.el.classList.add("pop");
-						window.setTimeout(cleanup, 260);
+						window.setTimeout(cleanup, 320);
 					}
 					if (wasFocused) born.el.focus();
 				}
@@ -754,7 +770,7 @@
 					last = now;
 					const left = minX();
 					for (const toy of toys) {
-						if (toy.dead) continue;
+						if (toy.dead || toy.pinned) continue;
 						toy.x += toy.vx * dt;
 						toy.y += toy.vy * dt;
 						if (toy.x < left || toy.x > 92) {
