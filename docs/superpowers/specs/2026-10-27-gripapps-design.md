@@ -1,7 +1,7 @@
 # GripApps — Design Spec
 
 **Date:** 2026-10-27  
-**Status:** Approved — implementation plan in `docs/superpowers/plans/2026-10-27-gripapps.md`  
+**Status:** Implemented with caveats (2026-10-27) — plan executed in `docs/superpowers/plans/2026-10-27-gripapps.md` (tasks 1–9). Compiler, shared runtime, demo, CI `gripc check`, and agent docs are in tree. Caveats: `toggle`, `slider`, `timer`, and scene-level `toast` are rejected by `gripc check` until the runtime implements them (use an action `toast` for messages); `grid` / `hero` / `card` / `modal` / `tabs` render as visible containers. Live enqueue still needs `CURSOR_API_KEY` and a redeploy of `community-orchestrator` after prompt edits. The public gallery omits `gripapps-demo` and handles that start with `_`.  
 **Site:** lilgrip.com (`J-V-Studios/grip-site`)  
 **Goal:** Extremely robust community mini-pages via an AI-first custom language (GripLang), cross-compiler (`gripc`), shared+vendored runtime, and a specialized agent skill that **replaces** freeform community Vite/React builds.
 

@@ -43,7 +43,10 @@ export function parseGrip(
 		if (ctx.eof()) break;
 
 		const kw = ctx.readWord();
-		if (!kw) break;
+		if (!kw) {
+			reportUnexpected(ctx);
+			continue;
+		}
 
 		if (!TOP_LEVEL_KEYWORDS.has(kw)) {
 			const at = ctx.spanAt(ctx.pos - kw.length);
@@ -60,6 +63,12 @@ export function parseGrip(
 		}
 
 		if (kw === "meta") {
+			if (sawMeta) {
+				const at = ctx.spanAt(ctx.pos - kw.length);
+				diagnostics.push(
+					diagnostic(fileName, at.line, at.column, "Duplicate meta block"),
+				);
+			}
 			parseMetaBlock(ctx, meta);
 			sawMeta = true;
 		} else if (kw === "shell") {
@@ -79,6 +88,10 @@ export function parseGrip(
 		diagnostics.push(
 			diagnostic(fileName, 1, 1, "Missing required meta block"),
 		);
+		return { ok: false, diagnostics };
+	}
+
+	if (diagnostics.length > 0) {
 		return { ok: false, diagnostics };
 	}
 
@@ -106,6 +119,7 @@ function createContext(
 	source: string,
 	fileName: string,
 	diagnostics: Diagnostic[],
+	origin?: Span,
 ): ParseContext {
 	const lineStarts = [0];
 	for (let i = 0; i < source.length; i++) {
@@ -133,7 +147,15 @@ function createContext(
 			line = i + 1;
 		}
 		const lineStart = lineStarts[line - 1] ?? 0;
-		return { line, column: index - lineStart + 1 };
+		const column = index - lineStart + 1;
+		if (!origin) return { line, column };
+		if (line <= 1) {
+			return {
+				line: origin.line,
+				column: origin.column + column - 1,
+			};
+		}
+		return { line: origin.line + line - 1, column };
 	};
 
 	ctx.eof = () => ctx.pos >= source.length;
@@ -188,12 +210,40 @@ function createContext(
 	return ctx;
 }
 
+function nestedContext(
+	parent: ParseContext,
+	body: string,
+	bodyStart: number,
+): ParseContext {
+	return createContext(
+		body,
+		parent.fileName,
+		parent.diagnostics,
+		parent.spanAt(bodyStart),
+	);
+}
+
 function isIdentStart(ch: string): boolean {
 	return /[A-Za-z_]/.test(ch);
 }
 
 function isIdentPart(ch: string): boolean {
 	return /[A-Za-z0-9_]/.test(ch);
+}
+
+function reportUnexpected(ctx: ParseContext): void {
+	if (ctx.eof()) return;
+	const at = ctx.spanAt(ctx.pos);
+	const ch = sourceChar(ctx) || "?";
+	ctx.diagnostics.push(
+		diagnostic(
+			ctx.fileName,
+			at.line,
+			at.column,
+			`Unexpected token "${ch}"`,
+		),
+	);
+	ctx.pos += 1;
 }
 
 function readString(ctx: ParseContext): string {
@@ -227,10 +277,29 @@ function sourceChar(ctx: ParseContext): string {
 	return ctx.source[ctx.pos] ?? "";
 }
 
+function readArrow(ctx: ParseContext): boolean {
+	ctx.skipWhitespaceAndComments();
+	if (ctx.source[ctx.pos] === "-" && ctx.source[ctx.pos + 1] === ">") {
+		ctx.pos += 2;
+		return true;
+	}
+	return false;
+}
+
 function readScalar(ctx: ParseContext): GripScalar {
 	ctx.skipWhitespaceAndComments();
 	if (sourceChar(ctx) === '"') {
 		return readString(ctx);
+	}
+	const numStart = ctx.pos;
+	if (sourceChar(ctx) === "-" || /[0-9]/.test(sourceChar(ctx))) {
+		if (sourceChar(ctx) === "-") ctx.pos++;
+		while (ctx.pos < ctx.source.length && /[0-9.]/.test(ctx.source[ctx.pos])) {
+			ctx.pos++;
+		}
+		const num = ctx.source.slice(numStart, ctx.pos);
+		if (/^-?\d+(\.\d+)?$/.test(num)) return Number(num);
+		ctx.pos = numStart;
 	}
 	const word = ctx.readWord();
 	if (word === "true") return true;
@@ -239,27 +308,50 @@ function readScalar(ctx: ParseContext): GripScalar {
 	return word;
 }
 
-function readBlockBody(ctx: ParseContext): string {
+function readBlockBody(ctx: ParseContext): { body: string; start: number } {
 	ctx.skipWhitespaceAndComments();
-	if (!ctx.expect("{")) return "";
+	if (!ctx.expect("{")) return { body: "", start: ctx.pos };
 	const start = ctx.pos;
 	let depth = 1;
+	let inString = false;
 	while (ctx.pos < ctx.source.length && depth > 0) {
 		const ch = ctx.source[ctx.pos];
-		if (ch === "{") depth++;
-		else if (ch === "}") depth--;
-		if (depth > 0) ctx.pos++;
+		if (inString) {
+			if (ch === "\\") {
+				ctx.pos += 1;
+				if (ctx.pos < ctx.source.length) ctx.pos += 1;
+				continue;
+			}
+			if (ch === '"') inString = false;
+			ctx.pos += 1;
+			continue;
+		}
+		if (ch === '"') {
+			inString = true;
+			ctx.pos += 1;
+			continue;
+		}
+		if (ch === "/" && ctx.source[ctx.pos + 1] === "/") {
+			while (ctx.pos < ctx.source.length && ctx.source[ctx.pos] !== "\n") {
+				ctx.pos += 1;
+			}
+			continue;
+		}
+		if (ch === "{") depth += 1;
+		else if (ch === "}") depth -= 1;
+		if (depth === 0) break;
+		ctx.pos += 1;
 	}
-	const end = ctx.pos - 1;
+	const end = ctx.pos;
 	if (ctx.pos < ctx.source.length && ctx.source[ctx.pos] === "}") {
-		ctx.pos++;
+		ctx.pos += 1;
 	}
-	return ctx.source.slice(start, end);
+	return { body: ctx.source.slice(start, end), start };
 }
 
 function parseMetaBlock(ctx: ParseContext, meta: MetaBlock): void {
-	const body = readBlockBody(ctx);
-	const inner = createContext(body, ctx.fileName, ctx.diagnostics);
+	const block = readBlockBody(ctx);
+	const inner = nestedContext(ctx, block.body, block.start);
 	const props = parsePropertyLines(inner);
 	meta.title = String(props.title ?? "");
 	meta.blurb = String(props.blurb ?? "");
@@ -299,8 +391,8 @@ function parsePropertyBlock(ctx: ParseContext): Record<string, GripScalar> {
 function parseSceneBlock(ctx: ParseContext): SceneBlock {
 	const id = ctx.readWord();
 	ctx.skipWhitespaceAndComments();
-	const body = readBlockBody(ctx);
-	const inner = createContext(body, ctx.fileName, ctx.diagnostics);
+	const block = readBlockBody(ctx);
+	const inner = nestedContext(ctx, block.body, block.start);
 	const root = parseUiNodes(inner);
 	if (!root) {
 		return { id, root: { kind: "stack", children: [] } };
@@ -325,7 +417,11 @@ function parseUiNodeList(ctx: ParseContext): UiNode[] {
 		ctx.skipWhitespaceAndComments();
 		if (ctx.eof()) break;
 		const kw = ctx.peekWord();
-		if (!kw || kw === "}") break;
+		if (kw === "}") break;
+		if (!kw) {
+			reportUnexpected(ctx);
+			continue;
+		}
 		nodes.push(parseUiNode(ctx));
 	}
 	return nodes;
@@ -334,7 +430,7 @@ function parseUiNodeList(ctx: ParseContext): UiNode[] {
 function parseUiNode(ctx: ParseContext): UiNode {
 	const kw = ctx.readWord();
 	if (!SCENE_CHILD_KEYWORDS.has(kw)) {
-		const at = ctx.spanAt(ctx.pos);
+		const at = ctx.spanAt(Math.max(0, ctx.pos - kw.length));
 		ctx.diagnostics.push(
 			diagnostic(
 				ctx.fileName,
@@ -347,8 +443,8 @@ function parseUiNode(ctx: ParseContext): UiNode {
 	}
 
 	if (LAYOUT_BLOCK_KEYWORDS.has(kw)) {
-		const body = readBlockBody(ctx);
-		const inner = createContext(body, ctx.fileName, ctx.diagnostics);
+		const block = readBlockBody(ctx);
+		const inner = nestedContext(ctx, block.body, block.start);
 		const children = parseUiNodeList(inner);
 		return { kind: kw as LayoutKind, children };
 	}
@@ -367,8 +463,7 @@ function parseUiNode(ctx: ParseContext): UiNode {
 			label = String(readScalar(ctx));
 		}
 		ctx.skipWhitespaceAndComments();
-		if (ctx.peekWord() === "->") {
-			ctx.readWord();
+		if (readArrow(ctx)) {
 			const actionKw = ctx.readWord();
 			const actionId = ctx.readWord();
 			if (actionKw !== "action") {
@@ -401,6 +496,16 @@ function parseUiNode(ctx: ParseContext): UiNode {
 		return { kind: "emoji_stage", emoji };
 	}
 
+	if (kw === "clear") {
+		const color = String(readScalar(ctx));
+		return { kind: "clear", color };
+	}
+
+	if (kw === "raw_slot") {
+		const id = ctx.readWord();
+		return { kind: "raw_slot", id };
+	}
+
 	if (kw === "score_hud" || kw === "particles") {
 		return { kind: kw };
 	}
@@ -414,15 +519,19 @@ type LayoutKind = "stack" | "grid" | "hero" | "card" | "modal" | "canvas" | "tab
 function parseActionBlock(ctx: ParseContext): ActionBlock {
 	const id = ctx.readWord();
 	ctx.skipWhitespaceAndComments();
-	const body = readBlockBody(ctx);
-	const inner = createContext(body, ctx.fileName, ctx.diagnostics);
+	const block = readBlockBody(ctx);
+	const inner = nestedContext(ctx, block.body, block.start);
 	const steps: ActionStep[] = [];
 
 	while (!inner.eof()) {
 		inner.skipWhitespaceAndComments();
 		if (inner.eof()) break;
 		const op = inner.readWord();
-		if (!op) break;
+		if (!op) {
+			if (inner.eof()) break;
+			reportUnexpected(inner);
+			continue;
+		}
 
 		if (op === "set") {
 			const key = inner.readWord();
@@ -436,23 +545,80 @@ function parseActionBlock(ctx: ParseContext): ActionBlock {
 		} else if (op === "toast") {
 			const message = String(readScalar(inner));
 			steps.push({ op: "toast", message });
+		} else {
+			const at = inner.spanAt(inner.pos - op.length);
+			inner.diagnostics.push(
+				diagnostic(
+					inner.fileName,
+					at.line,
+					at.column,
+					`Unknown action step "${op}"`,
+					"Expected one of: set, goto, back, toast",
+				),
+			);
 		}
 	}
 
 	return { id, steps };
 }
 
+function skipHorizontal(ctx: ParseContext): void {
+	while (ctx.pos < ctx.source.length) {
+		const ch = ctx.source[ctx.pos];
+		if (ch === " " || ch === "\t" || ch === "\r") {
+			ctx.pos += 1;
+			continue;
+		}
+		break;
+	}
+}
+
+function readLineWord(ctx: ParseContext): string {
+	skipHorizontal(ctx);
+	if (ctx.pos >= ctx.source.length) return "";
+	const ch = ctx.source[ctx.pos];
+	if (ch === "\n") return "";
+	if (ch === "/" && ctx.source[ctx.pos + 1] === "/") {
+		while (ctx.pos < ctx.source.length && ctx.source[ctx.pos] !== "\n") {
+			ctx.pos += 1;
+		}
+		return "";
+	}
+	if (!isIdentStart(ch)) return "";
+	const start = ctx.pos;
+	ctx.pos += 1;
+	while (ctx.pos < ctx.source.length && isIdentPart(ctx.source[ctx.pos])) {
+		ctx.pos += 1;
+	}
+	return ctx.source.slice(start, ctx.pos);
+}
+
+function finishRawModuleLine(ctx: ParseContext): void {
+	skipHorizontal(ctx);
+	if (ctx.pos >= ctx.source.length || ctx.source[ctx.pos] === "\n") return;
+	if (ctx.source[ctx.pos] === "/" && ctx.source[ctx.pos + 1] === "/") {
+		while (ctx.pos < ctx.source.length && ctx.source[ctx.pos] !== "\n") {
+			ctx.pos += 1;
+		}
+		return;
+	}
+	reportUnexpected(ctx);
+	while (ctx.pos < ctx.source.length && ctx.source[ctx.pos] !== "\n") {
+		ctx.pos += 1;
+	}
+}
+
 function parseRawModuleLine(ctx: ParseContext): RawModuleBlock {
 	const path = String(readScalar(ctx));
-	let exportName = "";
-	let slot = "";
 	const words: string[] = [];
 	while (!ctx.eof()) {
-		ctx.skipWhitespaceAndComments();
-		const w = ctx.readWord();
+		const w = readLineWord(ctx);
 		if (!w) break;
 		words.push(w);
 	}
+	finishRawModuleLine(ctx);
+	let exportName = "";
+	let slot = "";
 	const exportIdx = words.indexOf("export");
 	if (exportIdx >= 0 && words[exportIdx + 1]) {
 		exportName = words[exportIdx + 1];

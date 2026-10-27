@@ -1,6 +1,9 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import type { CommunityGalleryItem } from "@/lib/community";
+import {
+	type CommunityGalleryItem,
+	isPublicGalleryHandle,
+} from "@/lib/community";
 
 type ManifestJson = {
 	handle?: string;
@@ -27,12 +30,15 @@ export async function fetchGalleryFromDisk(
 
 	const items: CommunityGalleryItem[] = [];
 	for (const handle of entries) {
+		if (!isPublicGalleryHandle(handle)) continue;
 		const manifestPath = path.join(communityRoot, handle, "manifest.json");
 		try {
 			const raw = await readFile(manifestPath, "utf8");
 			const manifest = JSON.parse(raw) as ManifestJson;
+			const publicHandle = manifest.handle?.trim() || handle;
+			if (!isPublicGalleryHandle(publicHandle)) continue;
 			items.push({
-				handle: manifest.handle?.trim() || handle,
+				handle: publicHandle,
 				title: manifest.title?.trim() || null,
 				blurb: manifest.blurb?.trim() || null,
 				updatedAt: manifest.builtAt?.trim() || new Date(0).toISOString(),

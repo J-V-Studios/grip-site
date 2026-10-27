@@ -66,14 +66,15 @@ export function plannerPrompt(handle: string, elaboratedBrief: string): string {
 	return `You are the Community Builds PLANNER for lilgrip.com.
 
 Read and follow:
-- .cursor/skills/community-builder/SKILL.md
-- docs/community/AGENT_GUIDE.md
+- .cursor/skills/gripapps/SKILL.md
+- docs/gripapps/AGENT_GUIDE.md
+- docs/gripapps/COOKBOOK.md
 - docs/community/MODERATION.md
 
 Handle: ${handle}
 Sandbox writes ONLY: public/community/${handle}/**
 
-Produce a markdown plan (plan_md) with: gallery title, blurb, UX sketch, tech inside sandbox, moderation confirmation.
+Produce a markdown plan (plan_md) with: gallery title, blurb, UX sketch, GripApps scenes/actions inside sandbox, moderation confirmation.
 
 Visitor brief:
 ${elaboratedBrief}
@@ -88,16 +89,17 @@ export function builderPrompt(
 	return `You are the Community Builds BUILDER for lilgrip.com.
 
 Read and follow:
-- .cursor/skills/community-builder/SKILL.md
-- docs/community/AGENT_GUIDE.md
-- docs/community/SCAFFOLD.md
+- .cursor/skills/gripapps/SKILL.md
+- docs/gripapps/AGENT_GUIDE.md
+- docs/gripapps/COOKBOOK.md
+- docs/community/MODERATION.md
 
 Handle: ${handle}
 Branch: ${branchName}
 Writes ONLY under: public/community/${handle}/**
-Required: public/community/${handle}/index.html and manifest.json
+Required: app.grip, index.html, app.grip.js, manifest.json, vendor/gripapps/runtime.js
 
-Implement the approved plan as static output (commit built assets). Wipe prior built files in this handle folder when replacing.
+Implement the approved plan with GripApps: write app.grip, run bun run gripc -- check, then bun run gripc -- build ... --out public/community/${handle} --handle ${handle}. Commit built assets. Wipe prior built files in this handle folder when replacing.
 
 Plan / brief:
 ${planOrBrief}

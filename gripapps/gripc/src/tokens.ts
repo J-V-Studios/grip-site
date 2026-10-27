@@ -26,6 +26,8 @@ export const SCENE_CHILD_KEYWORDS = new Set([
 	"particles",
 	"image",
 	"emoji_stage",
+	"clear",
+	"raw_slot",
 ]);
 
 export const LAYOUT_BLOCK_KEYWORDS = new Set([

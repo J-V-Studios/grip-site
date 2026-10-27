@@ -22,6 +22,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
       - name: Validate community sandbox paths
         if: github.event_name == 'pull_request'
         run: |
@@ -30,6 +35,37 @@ jobs:
             "${{ github.head_ref }}" \
             "${{ github.event.pull_request.base.sha }}" \
             "${{ github.event.pull_request.head.sha }}"
+
+      - name: gripc check (GripApps)
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          branch="${{ github.head_ref }}"
+          suffix="${branch#community/}"
+          if [[ ! "$suffix" =~ ^([a-z0-9]([a-z0-9-]{1,22}[a-z0-9])?)-[0-9a-f]{8}$ ]]; then
+            echo "Skipping gripc check (branch name does not match community handle pattern)"
+            exit 0
+          fi
+          handle="${BASH_REMATCH[1]}"
+          app_grip="public/community/${handle}/app.grip"
+          if git cat-file -e "${{ github.event.pull_request.head.sha }}:${app_grip}" 2>/dev/null; then
+            bun run gripc -- check "$app_grip"
+          else
+            echo "No app.grip at PR tip for ${handle}; skipping gripc check"
+          fi
+
+      - name: gripc build parity (app.grip.js)
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          branch="${{ github.head_ref }}"
+          suffix="${branch#community/}"
+          if [[ ! "$suffix" =~ ^([a-z0-9]([a-z0-9-]{1,22}[a-z0-9])?)-[0-9a-f]{8}$ ]]; then
+            echo "Skipping build parity (branch name does not match community handle pattern)"
+            exit 0
+          fi
+          handle="${BASH_REMATCH[1]}"
+          bash scripts/gripapps-build-parity.sh "public/community/${handle}"
 
       - name: Enable auto-merge (squash)
         if: github.event_name == 'pull_request'

@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/supabase", () => ({
@@ -50,6 +51,40 @@ describe("fetchLiveCommunityPages", () => {
 		]);
 	});
 
+	it("drops reserved and underscore handles", async () => {
+		mockGalleryQuery({
+			data: [
+				{
+					handle: "gripapps-demo",
+					title: "Demo",
+					blurb: "hidden",
+					updated_at: "2026-10-27T12:00:00.000Z",
+				},
+				{
+					handle: "_gripapps_fixture",
+					title: "Fixture",
+					blurb: "hidden",
+					updated_at: "2026-10-27T12:00:00.000Z",
+				},
+				{
+					handle: "cool-page",
+					title: "Cool",
+					blurb: "A build",
+					updated_at: "2026-10-26T12:00:00.000Z",
+				},
+			],
+			error: null,
+		});
+		await expect(fetchLiveCommunityPages()).resolves.toEqual([
+			{
+				handle: "cool-page",
+				title: "Cool",
+				blurb: "A build",
+				updatedAt: "2026-10-26T12:00:00.000Z",
+			},
+		]);
+	});
+
 	it("returns an empty list when there is no data", async () => {
 		mockGalleryQuery({ data: null, error: null });
 		await expect(fetchLiveCommunityPages()).resolves.toEqual([]);
@@ -92,6 +127,26 @@ describe("mergeGalleryLists", () => {
 				},
 			],
 		);
+		expect(
+			mergeGalleryLists(
+				[
+					{
+						handle: "gripapps-demo",
+						title: "Demo",
+						blurb: null,
+						updatedAt: "2026-10-28T12:00:00.000Z",
+					},
+				],
+				[
+					{
+						handle: "_secret",
+						title: "Secret",
+						blurb: null,
+						updatedAt: "2026-10-28T12:00:00.000Z",
+					},
+				],
+			),
+		).toEqual([]);
 		expect(merged).toEqual([
 			{
 				handle: "a",
@@ -106,5 +161,19 @@ describe("mergeGalleryLists", () => {
 				updatedAt: "2026-10-27T11:00:00.000Z",
 			},
 		]);
+	});
+});
+
+describe("elaborateBrief", () => {
+	it("describes GripApps only", async () => {
+		const src = await readFile(
+			"supabase/functions/community-orchestrator/index.ts",
+			"utf8",
+		);
+		const start = src.indexOf("function elaborateBrief");
+		const end = src.indexOf("function serviceClient");
+		const body = src.slice(start, end);
+		expect(body).toContain("app.grip");
+		expect(body).not.toMatch(/Vite|_src_/);
 	});
 });

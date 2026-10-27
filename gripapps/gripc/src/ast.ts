@@ -28,7 +28,9 @@ export type UiNode =
 	| { kind: "score_hud" }
 	| { kind: "particles" }
 	| { kind: "image"; src: string }
-	| { kind: "emoji_stage"; emoji: string };
+	| { kind: "emoji_stage"; emoji: string }
+	| { kind: "clear"; color: string }
+	| { kind: "raw_slot"; id: string };
 
 export type SceneBlock = {
 	id: string;
