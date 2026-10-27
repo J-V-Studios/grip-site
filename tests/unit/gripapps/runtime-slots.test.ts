@@ -25,7 +25,9 @@ describe("gripapps runtime slot registry", () => {
 		expect(src).toContain("data-grip-shell-slot");
 		expect(src).toContain("new URL(path, base)");
 		expect(src).toContain("document.baseURI");
-		expect(src).toContain('path.indexOf("..") === -1');
+		expect(src).toContain('path.indexOf("%") !== -1');
+		expect(src).toContain("decodeURIComponent(path)");
+		expect(src).toContain("rawDirPathname");
 		expect(src).toContain("is not a function");
 		expect(src).toContain("grip-grid");
 		expect(src).toContain("grip-hero");
