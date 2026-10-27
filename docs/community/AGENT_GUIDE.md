@@ -1,6 +1,8 @@
 # Community builds — agent handbook
 
-Cloud Agents that plan or build visitor mini-pages on lilgrip.com must follow this handbook. The skill at [`.cursor/skills/community-builder/SKILL.md`](../../.cursor/skills/community-builder/SKILL.md) is the short entry point; this document is the full reference.
+Cloud Agents that plan or build visitor mini-pages on lilgrip.com must follow this handbook.
+
+**New builds use GripApps.** Start at [`.cursor/skills/gripapps/SKILL.md`](../../.cursor/skills/gripapps/SKILL.md) and [docs/gripapps/AGENT_GUIDE.md](../gripapps/AGENT_GUIDE.md). This document covers sandbox rules and moderation; the GripApps docs cover `app.grip` and `gripc`.
 
 ## Modes
 
@@ -13,7 +15,7 @@ Planner should specify:
 
 - Page title and one-line blurb for the gallery
 - UX sketch (what the visitor sees and does)
-- Tech choices **inside** `public/community/<handle>/` (e.g. Vite + React in `_src`, static output in handle root)
+- Tech choices **inside** `public/community/<handle>/` (GripApps: scenes, actions, optional `raw_module`; see [COOKBOOK.md](../gripapps/COOKBOOK.md))
 - Asset and performance notes (mobile, reduced motion)
 - Explicit confirmation that the idea passes [MODERATION.md](./MODERATION.md)
 
@@ -24,13 +26,15 @@ Planner must **not** instruct edits to core site code, other handles, or CI.
 **When:** Orchestrator passes an approved plan and the target `handle`.  
 **Output:** Static files under `public/community/<handle>/` only, plus required `manifest.json`.
 
-Builder steps (typical):
+Builder steps (GripApps — typical):
 
 1. If replacing a prior build, clear old generated assets in that handle folder (keep folder; do not touch sibling handles).
-2. Scaffold or edit under `public/community/<handle>/` (optional `_src/`).
-3. Run production build; copy `dist/*` into `public/community/<handle>/` (see [SCAFFOLD.md](./SCAFFOLD.md)).
-4. Write or update `manifest.json` with handle, title, blurb, `builtAt`.
-5. Verify `index.html` loads with relative asset paths.
+2. Write or edit `public/community/<handle>/app.grip`.
+3. `bun run gripc -- check public/community/<handle>/app.grip`
+4. `bun run gripc -- build public/community/<handle>/app.grip --out public/community/<handle> --handle <handle>`
+5. Confirm `index.html`, `app.grip.js`, `manifest.json`, and `vendor/gripapps/runtime.js`.
+
+Legacy Vite workflow: [SCAFFOLD.md](./SCAFFOLD.md) (do not use for new builds unless requested).
 
 ## Filesystem sandbox
 
@@ -88,7 +92,8 @@ For the **same** handle:
 ## Checklist before finishing (builder)
 
 - [ ] All changes under `public/community/<handle>/` only
-- [ ] `index.html` + `manifest.json` present
+- [ ] `app.grip` present; `bun run gripc -- check` passes
+- [ ] `index.html`, `app.grip.js`, `manifest.json`, `vendor/gripapps/runtime.js` present
 - [ ] Static build works without a dev server
 - [ ] Plan moderation rules still satisfied
 - [ ] Mobile layout sanity; reduced motion considered for flashy motion

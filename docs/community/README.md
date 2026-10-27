@@ -2,6 +2,8 @@
 
 Visitor mini-pages on lilgrip.com live at `/community/<handle>/` as static files under `public/community/<handle>/`. Cursor Cloud Agents plan and build those pages under a strict filesystem sandbox.
 
+**New builds use [GripApps](../gripapps/README.md)** (`app.grip` + `gripc`). The Vite scaffold below is legacy reference only.
+
 ## For humans
 
 | Topic | Doc |
@@ -15,9 +17,11 @@ Visitor mini-pages on lilgrip.com live at `/community/<handle>/` as static files
 
 | Doc | Purpose |
 | --- | --- |
-| [`.cursor/skills/community-builder/SKILL.md`](../../.cursor/skills/community-builder/SKILL.md) | Skill entry — planner vs builder, paths, manifest |
-| [AGENT_GUIDE.md](./AGENT_GUIDE.md) | Full planner/builder handbook |
-| [SCAFFOLD.md](./SCAFFOLD.md) | Vite scaffold, build, copy to `public/community/<handle>/` |
+| [`.cursor/skills/gripapps/SKILL.md`](../../.cursor/skills/gripapps/SKILL.md) | Skill entry — GripApps planner vs builder |
+| [docs/gripapps/AGENT_GUIDE.md](../gripapps/AGENT_GUIDE.md) | Full GripApps agent handbook |
+| [docs/gripapps/COOKBOOK.md](../gripapps/COOKBOOK.md) | Templates and build flow |
+| [AGENT_GUIDE.md](./AGENT_GUIDE.md) | Community sandbox + moderation (see GripApps guide for builds) |
+| [SCAFFOLD.md](./SCAFFOLD.md) | Legacy Vite scaffold (prefer GripApps) |
 | [MODERATION.md](./MODERATION.md) | Policy and examples |
 
 ## Scaffold template
