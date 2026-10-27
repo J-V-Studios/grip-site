@@ -1,0 +1,39 @@
+---
+import { fetchLiveCommunityPages } from "@/lib/community";
+import CommunityHub from "../../components/islands/CommunityHub";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+let gallery: Awaited<ReturnType<typeof fetchLiveCommunityPages>> = [];
+let galleryError = false;
+
+try {
+	gallery = await fetchLiveCommunityPages();
+} catch {
+	galleryError = true;
+}
+---
+
+<BaseLayout
+	title="Community · lilgrip"
+	description="Claim a handle, ship a goofy mini-page, and browse live community builds on lilgrip."
+>
+	<section
+		class="motion-rise mx-auto w-[min(1100px,calc(100%-1.5rem))] max-w-[40rem] py-[clamp(2rem,6vh,3.5rem)] pb-6 max-[820px]:w-[min(560px,calc(100%-1.2rem))]"
+	>
+		<p
+			class="m-0 mb-[0.85rem] text-[0.78rem] font-semibold tracking-[0.2em] text-mauve uppercase"
+		>
+			main feature
+		</p>
+		<h1
+			class="m-0 font-sans text-[clamp(2.4rem,7vw,3.6rem)] leading-[0.92] font-bold tracking-[-0.05em] text-text"
+		>
+			Community builds
+		</h1>
+		<p class="m-0 mt-4 max-w-[34rem] text-[1.05rem] text-subtext">
+			Your own sandboxed page on lilgrip. Claim once, prompt daily, let the
+			agents cook.
+		</p>
+	</section>
+	<CommunityHub client:load gallery={gallery} galleryError={galleryError} />
+</BaseLayout>
