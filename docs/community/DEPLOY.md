@@ -22,7 +22,7 @@ Set these under [Edge Function secrets](https://supabase.com/dashboard/project/l
 
 | Secret | Required | Purpose |
 | --- | --- | --- |
-| `CURSOR_API_KEY` | Yes | Launch planner/builder Cloud Agents. A value is already present on the project but returns Cursor `401 Invalid User API Key` — replace it with a valid Cloud Agents API key from the Cursor dashboard. |
+| `CURSOR_API_KEY` | Yes | Launch planner/builder Cloud Agents (Cursor Dashboard → API Keys). |
 | `SUPABASE_SERVICE_ROLE_KEY` | Auto | Injected by Supabase for Edge Functions — do not override unless rotating |
 | `EDIT_CODE_PEPPER` | Recommended | Extra entropy mixed into edit-code hashes |
 | `COMMUNITY_REPO_URL` | No | Defaults to `https://github.com/J-V-Studios/grip-site` |

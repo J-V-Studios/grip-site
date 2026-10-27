@@ -57,7 +57,8 @@ Check items off as they ship. Prefer small PRs / commits. Align with `AGENTS.md`
 - [x] Deploy `community-orchestrator` (live; apikey gate; `verify_jwt` off for publishable keys)
 - [x] Set `PUBLIC_COMMUNITY_ORCHESTRATOR_URL` in `.env.production` (+ CI var passthrough)
 - [x] Confirm daily enqueue limit and moderation rejection (`kill people`) against live function
-- [ ] Replace invalid edge secret `CURSOR_API_KEY` (current value → Cursor 401) + optional `EDIT_CODE_PEPPER`
+- [x] Fix Cursor API Basic-auth header bug (was sending `Authorization: Authorization: Basic …`)
+- [ ] Optional: set `EDIT_CODE_PEPPER` in Edge Function secrets
 - [ ] Live smoke: enqueue harmless prompt → agent PR + `/community/<handle>/`
 
 ## Content / product

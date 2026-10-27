@@ -269,7 +269,7 @@ async function runPipeline(buildId: string, handle: string, prompt: string) {
 	const brief = elaborateBrief(handle, prompt);
 	await setBuild({ elaborated_brief: brief, status: "planning" });
 
-	const apiKey = Deno.env.get("CURSOR_API_KEY");
+	const apiKey = Deno.env.get("CURSOR_API_KEY")?.trim();
 	if (!apiKey) {
 		await setBuild({
 			status: "failed",
