@@ -197,7 +197,7 @@ jobs:
       - name: Sync dist into branch root
         run: |
           set -euo pipefail
-          rm -rf _astro about church-apps fun-apps money images community gripapps
+          rm -rf _astro about church-apps fun-apps money images community
           cp -f dist/CNAME ./CNAME
           # Artifact uploads sometimes omit dotfiles; always ensure .nojekyll exists.
           if [ -f dist/.nojekyll ]; then
@@ -216,19 +216,22 @@ jobs:
           if [ -d dist/community ]; then
             cp -a dist/community ./community
           fi
-          # Shared GripApps runtime (CDN URL: /gripapps/runtime.js)
-          if [ ! -d dist/gripapps ]; then
-            echo "dist/gripapps missing — public/gripapps must ship in the Astro build" >&2
+          # Shared GripApps runtime CDN: /gripapps/runtime.js
+          # Do NOT rm -rf ./gripapps — that dir also holds the gripc compiler package.
+          if [ ! -f dist/gripapps/runtime.js ] || [ ! -f dist/gripapps/VERSION ]; then
+            echo "dist/gripapps/{runtime.js,VERSION} missing — public/gripapps must ship in the Astro build" >&2
             exit 1
           fi
-          cp -a dist/gripapps ./gripapps
+          mkdir -p gripapps
+          cp -f dist/gripapps/runtime.js ./gripapps/runtime.js
+          cp -f dist/gripapps/VERSION ./gripapps/VERSION
 
       - name: Commit published site if changed
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A -- CNAME .nojekyll favicon.svg index.html _astro about church-apps fun-apps money images community gripapps
+          git add -A -- CNAME .nojekyll favicon.svg index.html _astro about church-apps fun-apps money images community gripapps/runtime.js gripapps/VERSION
           if git diff --cached --quiet; then
             echo "No published-root changes."
             exit 0
