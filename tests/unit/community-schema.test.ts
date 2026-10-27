@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-	type BuildStatus,
+	buildStatusSchema,
 	isValidHandle,
 	normalizeHandle,
 	parsePrompt,
@@ -91,9 +91,9 @@ describe("parsePrompt", () => {
 	});
 });
 
-describe("BuildStatus", () => {
-	it("includes all pipeline statuses from the spec", () => {
-		const statuses: BuildStatus[] = [
+describe("buildStatusSchema", () => {
+	it("accepts all pipeline statuses from the spec", () => {
+		const statuses = [
 			"queued",
 			"moderating",
 			"planning",
@@ -101,9 +101,19 @@ describe("BuildStatus", () => {
 			"live",
 			"rejected",
 			"failed",
-		];
+		] as const;
 		for (const status of statuses) {
-			expect(status).toBeTruthy();
+			expect(buildStatusSchema.safeParse(status).success).toBe(true);
 		}
+	});
+
+	it("accepts live", () => {
+		expect(buildStatusSchema.safeParse("live").success).toBe(true);
+	});
+
+	it("rejects unknown or invalid status values", () => {
+		expect(buildStatusSchema.safeParse("pending").success).toBe(false);
+		expect(buildStatusSchema.safeParse("").success).toBe(false);
+		expect(buildStatusSchema.safeParse("LIVE").success).toBe(false);
 	});
 });
