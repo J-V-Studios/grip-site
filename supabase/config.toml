@@ -1,0 +1,5 @@
+# Community orchestrator is called with the project publishable/anon key on
+# the `apikey` header (not a user JWT). Platform JWT verify only accepts legacy
+# JWT API keys, so keep verify_jwt off and authorize inside the function.
+[functions.community-orchestrator]
+verify_jwt = false
