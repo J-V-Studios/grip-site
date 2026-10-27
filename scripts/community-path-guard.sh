@@ -65,4 +65,22 @@ if [[ "$index_size" -lt 1 ]]; then
 	die "${index_path} is empty"
 fi
 
+app_grip_path="public/community/${handle}/app.grip"
+if git cat-file -e "${HEAD_SHA}:${app_grip_path}" 2>/dev/null; then
+	gripapps_required=(
+		"app.grip"
+		"app.grip.js"
+		"index.html"
+		"manifest.json"
+		"vendor/gripapps/runtime.js"
+	)
+	for rel in "${gripapps_required[@]}"; do
+		req_path="public/community/${handle}/${rel}"
+		if ! git cat-file -e "${HEAD_SHA}:${req_path}" 2>/dev/null; then
+			die "GripApps build missing required file at PR tip: ${req_path}"
+		fi
+	done
+	echo "GripApps artifact check passed for ${handle}"
+fi
+
 echo "Path guard passed for handle: ${handle} (${#changed_files[@]} file(s) changed)"
