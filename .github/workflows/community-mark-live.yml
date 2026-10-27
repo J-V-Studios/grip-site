@@ -66,16 +66,8 @@ jobs:
               blurb="$(python3 -c "import json;print(json.load(open('$manifest')).get('blurb') or '')")"
             fi
             echo "Marking @${handle} live…"
-            payload=$(HANDLE="$handle" TITLE="$title" BLURB="$blurb" python3 - <<'PY'
-import json, os
-print(json.dumps({
-  "action": "markLive",
-  "handle": os.environ["HANDLE"],
-  "title": os.environ.get("TITLE") or None,
-  "blurb": os.environ.get("BLURB") or None,
-}))
-PY
-)
+            export HANDLE="$handle" TITLE="$title" BLURB="$blurb"
+            payload=$(python3 -c 'import json,os; print(json.dumps({"action":"markLive","handle":os.environ["HANDLE"],"title":os.environ.get("TITLE") or None,"blurb":os.environ.get("BLURB") or None}))')
             code=$(curl -sS -o /tmp/mark-live.json -w "%{http_code}" -X POST "$ORCH_URL" \
               -H "Content-Type: application/json" \
               -H "apikey: $ANON_KEY" \
