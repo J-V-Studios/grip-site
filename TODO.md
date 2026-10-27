@@ -14,6 +14,7 @@ Check items off as they ship. Prefer small PRs / commits. Align with `AGENTS.md`
 - [x] Sky/blue theme tokens in `src/styles/global.css`
 - [x] Vitest unit tests for lib helpers
 - [x] Agent docs refresh: `AGENTS.md`, Astro `.cursorrules`, updated OVERVIEW/README
+- [x] Community builds: hub UI, orchestrator edge function, path guard CI, moderation unit tests, [DEPLOY.md](./docs/community/DEPLOY.md)
 
 ---
 
@@ -50,6 +51,13 @@ Check items off as they ship. Prefer small PRs / commits. Align with `AGENTS.md`
 - [ ] `prefers-reduced-motion` verification
 - [ ] Form errors via `aria-live` where needed
 - [ ] Tap targets ≥ 44–48px on small phones
+
+## Community builds (staging / ops)
+
+- [ ] Deploy `community-orchestrator` + set edge secrets (`CURSOR_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `EDIT_CODE_PEPPER`)
+- [ ] Set `PUBLIC_COMMUNITY_ORCHESTRATOR_URL` on production site build
+- [ ] Live smoke: claim handle, enqueue harmless prompt, confirm agent PR + `/community/<handle>/`
+- [ ] Confirm daily enqueue limit and moderation rejection (`kill people`) in staging
 
 ## Content / product
 

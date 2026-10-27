@@ -1,0 +1,42 @@
+name: Community path guard
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+concurrency:
+  group: community-path-guard-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  path-guard:
+    name: Path guard + auto-merge
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.head_ref, 'community/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate community sandbox paths
+        if: github.event_name == 'pull_request'
+        run: |
+          chmod +x scripts/community-path-guard.sh
+          scripts/community-path-guard.sh \
+            "${{ github.head_ref }}" \
+            "${{ github.event.pull_request.base.sha }}" \
+            "${{ github.event.pull_request.head.sha }}"
+
+      - name: Enable auto-merge (squash)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.COMMUNITY_MERGE_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          pr="${{ github.event.pull_request.number }}"
+          gh pr merge "$pr" --squash --auto
+          echo "Auto-merge enabled for PR #${pr} when required checks pass."

@@ -1,6 +1,15 @@
 ---
 const cards = [
 	{
+		href: "/community",
+		kicker: "build",
+		title: "Community",
+		copy: "Claim a handle. Ship a goofy mini-page. Main character energy.",
+		kickerClass: "text-sky",
+		hoverBorder: "hover:border-sky/55 focus-visible:border-sky/55",
+		featured: true,
+	},
+	{
 		href: "/church-apps",
 		kicker: "faith",
 		title: "Church Apps",
@@ -57,7 +66,7 @@ const cards = [
 				<a
 					href={card.href}
 					data-explore-card
-					class={`motion-explore group grid min-h-40 gap-[0.5rem] rounded-[1.35rem] border border-white/10 bg-surface/65 px-[1.35rem] py-[1.25rem] no-underline shadow-none transition-[border-color,background,box-shadow] duration-300 hover:bg-surface-soft/90 hover:shadow-[0_18px_50px_rgba(0,0,0,0.35)] focus-visible:bg-surface-soft/90 focus-visible:outline-none ${card.hoverBorder}`}
+					class={`motion-explore group grid min-h-40 gap-[0.5rem] rounded-[1.35rem] border border-white/10 bg-surface/65 px-[1.35rem] py-[1.25rem] no-underline shadow-none transition-[border-color,background,box-shadow] duration-300 hover:bg-surface-soft/90 hover:shadow-[0_18px_50px_rgba(0,0,0,0.35)] focus-visible:bg-surface-soft/90 focus-visible:outline-none ${card.hoverBorder} ${card.featured ? "min-[821px]:col-span-2 min-h-44 border-sky/25 bg-surface-soft/50" : ""}`}
 				>
 					<span
 						class={`text-[0.72rem] font-semibold tracking-[0.16em] uppercase ${card.kickerClass}`}

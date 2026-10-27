@@ -23,7 +23,7 @@ Target publish: GitHub Pages from `main`, serving **`dist/`** after Astro build 
 │   ├── favicon.svg
 │   └── images/lilgriper.jpg
 ├── src/
-│   ├── pages/              # index, church-apps, fun-apps, about, money
+│   ├── pages/              # index, community, church-apps, fun-apps, about, money
 │   ├── layouts/BaseLayout.astro
 │   ├── components/         # SiteHeader, Hero, ExploreCards, SiteFooter, …
 │   ├── components/islands/ # NotesPanel, SightingsPanel (React)
@@ -46,6 +46,8 @@ Target publish: GitHub Pages from `main`, serving **`dist/`** after Astro build 
 | `/fun-apps/` | `src/pages/fun-apps.astro` | Fun projects (placeholder) |
 | `/about/` | `src/pages/about.astro` | About (placeholder) |
 | `/money/` | `src/pages/money.astro` | Money?? (placeholder) |
+| `/community/` | `src/pages/community/index.astro` | Visitor builds hub + gallery |
+| `/community/<handle>/` | `public/community/<handle>/` | Static mini-pages (agent-built) |
 
 Shared chrome: `SiteHeader`, `SiteFooter` via `BaseLayout`.
 
@@ -65,8 +67,10 @@ Shared chrome: `SiteHeader`, `SiteFooter` via `BaseLayout`.
 - **Data:** `@supabase/supabase-js` via `src/lib/supabase.ts`
   - `lilgrip_comments` — notes
   - `grip_sightings` — sightings metadata + points
+  - `community_gallery` — live community page metadata (anon read)
   - Storage bucket `grip-sightings` — public photos
-- **Env:** `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` (see `.env.example`)
+- **Community orchestrator:** Supabase Edge Function `community-orchestrator` — claim handle, enqueue build, poll status; secrets on function only (see `docs/community/DEPLOY.md`)
+- **Env:** `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `PUBLIC_COMMUNITY_ORCHESTRATOR_URL` (see `.env.example`)
 - **Hosting:** GitHub Pages + custom domain `lilgrip.com`
 
 Local dev: `bun run dev`. Production artifact: `bun run build` → `dist/`.
@@ -147,6 +151,15 @@ When adding or changing a feature, update this section using:
 - **User goal:** reach Church Apps, Fun Apps, About, Money?? from home.
 - **UI:** `ExploreCards.astro`.
 - **Data:** none.
+
+#### Community builds
+
+- **User goal:** claim a handle, submit one goofy build idea per UTC day, get a static mini-page at `/community/<handle>/`.
+- **UI:** `CommunityHub.tsx` on `/community`; live pages under `public/community/<handle>/`.
+- **Data:** `community_gallery` (build-time gallery list); orchestrator tables via edge function (`community_handles`, `community_builds`).
+- **Permissions:** anon read gallery; claim/enqueue via orchestrator with edit code; no service role in the browser.
+- **Moderation:** `src/lib/community-moderation.ts` before agent spend; rejected prompts show vibe-check copy.
+- **Deploy:** [docs/community/DEPLOY.md](./docs/community/DEPLOY.md).
 
 ---
 
