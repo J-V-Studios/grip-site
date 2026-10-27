@@ -1,0 +1,80 @@
+name: Community mark live
+
+# After a community page lands on main, flip the build row to `live` so the
+# gallery view stays in sync (disk manifests already show on the next Pages build).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "public/community/**"
+
+concurrency:
+  group: community-mark-live-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  mark-live:
+    name: Mark community builds live
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Mark changed handles live via orchestrator
+        env:
+          ORCH_URL: ${{ vars.PUBLIC_COMMUNITY_ORCHESTRATOR_URL }}
+          ANON_KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY }}
+          CI_SECRET: ${{ secrets.COMMUNITY_CI_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${ORCH_URL:-}" ]; then
+            ORCH_URL="https://lendvtrjkehanndudjfd.supabase.co/functions/v1/community-orchestrator"
+          fi
+          if [ -z "${ANON_KEY:-}" ]; then
+            echo "::warning::PUBLIC_SUPABASE_ANON_KEY var missing; trying .env.production"
+            ANON_KEY="$(sed -n 's/^PUBLIC_SUPABASE_ANON_KEY=//p' .env.production | head -1)"
+          fi
+          if [ -z "${CI_SECRET:-}" ]; then
+            echo "::warning::COMMUNITY_CI_SECRET not set — skip DB mark-live (disk gallery still works)."
+            exit 0
+          fi
+          if [ -z "${ANON_KEY:-}" ]; then
+            echo "::error::No anon key available"
+            exit 1
+          fi
+
+          mapfile -t manifests < <(
+            git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" -- \
+              'public/community/*/manifest.json' \
+              'public/community/*/index.html' \
+              | sed -n 's#^public/community/\([^/]*\)/.*#\1#p' \
+              | sort -u
+          )
+
+          if [ "${#manifests[@]}" -eq 0 ]; then
+            echo "No community handle changes."
+            exit 0
+          fi
+
+          for handle in "${manifests[@]}"; do
+            [ -z "$handle" ] && continue
+            manifest="public/community/${handle}/manifest.json"
+            title=""
+            blurb=""
+            if [ -f "$manifest" ]; then
+              title="$(python3 -c "import json;print(json.load(open('$manifest')).get('title') or '')")"
+              blurb="$(python3 -c "import json;print(json.load(open('$manifest')).get('blurb') or '')")"
+            fi
+            echo "Marking @${handle} live…"
+            export HANDLE="$handle" TITLE="$title" BLURB="$blurb"
+            payload=$(python3 -c 'import json,os; print(json.dumps({"action":"markLive","handle":os.environ["HANDLE"],"title":os.environ.get("TITLE") or None,"blurb":os.environ.get("BLURB") or None}))')
+            code=$(curl -sS -o /tmp/mark-live.json -w "%{http_code}" -X POST "$ORCH_URL" \
+              -H "Content-Type: application/json" \
+              -H "apikey: $ANON_KEY" \
+              -H "x-community-ci-secret: $CI_SECRET" \
+              -d "$payload")
+            echo "HTTP $code $(cat /tmp/mark-live.json)"
+            if [ "$code" != "200" ]; then
+              echo "::warning::markLive failed for ${handle} (HTTP ${code})"
+            fi
+          done

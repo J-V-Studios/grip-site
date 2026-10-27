@@ -438,6 +438,138 @@ async function handleStatus(
 	return json(publicFields, 200, origin);
 }
 
+function assertCiSecret(
+	req: Request,
+	origin: string | null,
+): Response | null {
+	const expected = Deno.env.get("COMMUNITY_CI_SECRET")?.trim();
+	if (!expected) {
+		return json(
+			{ error: "COMMUNITY_CI_SECRET not configured" },
+			503,
+			origin,
+		);
+	}
+	const got = req.headers.get("x-community-ci-secret")?.trim() ?? "";
+	if (!got || got !== expected) {
+		return unauthorized(origin);
+	}
+	return null;
+}
+
+async function handleMarkLive(
+	req: Request,
+	body: Record<string, unknown>,
+	origin: string | null,
+): Promise<Response> {
+	const ciError = assertCiSecret(req, origin);
+	if (ciError) return ciError;
+
+	const handle = normalizeHandle(String(body.handle ?? ""));
+	if (!handle) {
+		return json({ error: "invalid handle" }, 400, origin);
+	}
+
+	const title =
+		typeof body.title === "string" && body.title.trim()
+			? body.title.trim().slice(0, 120)
+			: null;
+	const blurb =
+		typeof body.blurb === "string" && body.blurb.trim()
+			? body.blurb.trim().slice(0, 280)
+			: null;
+	const prUrl =
+		typeof body.prUrl === "string" && body.prUrl.trim()
+			? body.prUrl.trim()
+			: null;
+	const branchName =
+		typeof body.branchName === "string" && body.branchName.trim()
+			? body.branchName.trim()
+			: null;
+
+	const supabase = serviceClient();
+
+	let findQuery = supabase
+		.from("community_builds")
+		.select("id, status")
+		.eq("handle", handle)
+		.order("created_at", { ascending: false })
+		.limit(1);
+
+	if (branchName) {
+		findQuery = findQuery.eq("branch_name", branchName);
+	} else {
+		findQuery = findQuery.in("status", [
+			"building",
+			"planning",
+			"queued",
+			"moderating",
+		]);
+	}
+
+	const { data: rows, error: findError } = await findQuery;
+	if (findError) {
+		return json({ error: findError.message }, 500, origin);
+	}
+
+	const row = rows?.[0];
+	if (!row) {
+		// Already live or unknown — upsert gallery fields on latest live row
+		const { data: liveRows, error: liveError } = await supabase
+			.from("community_builds")
+			.select("id")
+			.eq("handle", handle)
+			.eq("status", "live")
+			.order("created_at", { ascending: false })
+			.limit(1);
+		if (liveError) {
+			return json({ error: liveError.message }, 500, origin);
+		}
+		const live = liveRows?.[0];
+		if (!live) {
+			return json({ error: "no build row to mark live" }, 404, origin);
+		}
+		const { error: patchError } = await supabase
+			.from("community_builds")
+			.update({
+				title,
+				blurb,
+				...(prUrl ? { pr_url: prUrl } : {}),
+			})
+			.eq("id", live.id);
+		if (patchError) {
+			return json({ error: patchError.message }, 500, origin);
+		}
+		await supabase
+			.from("community_creators")
+			.update({ last_build_at: new Date().toISOString() })
+			.eq("handle", handle);
+		return json({ handle, buildId: live.id, status: "live" }, 200, origin);
+	}
+
+	const { error: updateError } = await supabase
+		.from("community_builds")
+		.update({
+			status: "live",
+			title,
+			blurb,
+			...(prUrl ? { pr_url: prUrl } : {}),
+			error: null,
+		})
+		.eq("id", row.id);
+
+	if (updateError) {
+		return json({ error: updateError.message }, 500, origin);
+	}
+
+	await supabase
+		.from("community_creators")
+		.update({ last_build_at: new Date().toISOString() })
+		.eq("handle", handle);
+
+	return json({ handle, buildId: row.id, status: "live" }, 200, origin);
+}
+
 Deno.serve(async (req) => {
 	const origin = req.headers.get("Origin");
 
@@ -473,6 +605,9 @@ Deno.serve(async (req) => {
 			}
 			if (action === "enqueue") {
 				return await handleEnqueue(body, origin);
+			}
+			if (action === "markLive") {
+				return await handleMarkLive(req, body, origin);
 			}
 			return json({ error: "unknown action" }, 400, origin);
 		}

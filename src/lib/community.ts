@@ -41,3 +41,20 @@ export async function fetchLiveCommunityPages(): Promise<
 		throw new Error("community gallery could not load");
 	}
 }
+
+/** Prefer Supabase live rows; fill gaps from on-disk manifests. */
+export function mergeGalleryLists(
+	primary: CommunityGalleryItem[],
+	fallback: CommunityGalleryItem[],
+): CommunityGalleryItem[] {
+	const byHandle = new Map<string, CommunityGalleryItem>();
+	for (const item of fallback) {
+		byHandle.set(item.handle, item);
+	}
+	for (const item of primary) {
+		byHandle.set(item.handle, item);
+	}
+	return [...byHandle.values()].sort((a, b) =>
+		b.updatedAt.localeCompare(a.updatedAt),
+	);
+}

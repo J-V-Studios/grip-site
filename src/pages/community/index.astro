@@ -1,16 +1,20 @@
 ---
-import { fetchLiveCommunityPages } from "@/lib/community";
+import { fetchLiveCommunityPages, mergeGalleryLists } from "@/lib/community";
+import { fetchGalleryFromDisk } from "@/lib/community-disk";
 import CommunityHub from "../../components/islands/CommunityHub";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
-let gallery: Awaited<ReturnType<typeof fetchLiveCommunityPages>> = [];
+const diskGallery = await fetchGalleryFromDisk();
+let remoteGallery: Awaited<ReturnType<typeof fetchLiveCommunityPages>> = [];
 let galleryError = false;
 
 try {
-	gallery = await fetchLiveCommunityPages();
+	remoteGallery = await fetchLiveCommunityPages();
 } catch {
-	galleryError = true;
+	galleryError = diskGallery.length === 0;
 }
+
+const gallery = mergeGalleryLists(remoteGallery, diskGallery);
 ---
 
 <BaseLayout

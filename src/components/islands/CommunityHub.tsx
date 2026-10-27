@@ -8,7 +8,10 @@ import { Hammer, KeyRound, Loader2, Sparkles, Wand2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import Balancer from "react-wrap-balancer";
 import { toast } from "sonner";
-import type { CommunityGalleryItem } from "@/lib/community";
+import {
+	type CommunityGalleryItem,
+	fetchLiveCommunityPages,
+} from "@/lib/community";
 import {
 	claimHandle,
 	enqueueBuild,
@@ -412,53 +415,78 @@ type CommunityHubProps = {
 	galleryError?: boolean;
 };
 
+function CommunityGallery({
+	initialGallery,
+	initialError,
+}: {
+	initialGallery: CommunityGalleryItem[];
+	initialError: boolean;
+}) {
+	const { data, isError, isPending } = useQuery({
+		queryKey: ["community-gallery"],
+		queryFn: fetchLiveCommunityPages,
+		initialData: initialGallery.length > 0 ? initialGallery : undefined,
+		staleTime: 30_000,
+		retry: 1,
+	});
+
+	const gallery = data ?? initialGallery;
+	const showError = (isError || initialError) && gallery.length === 0;
+
+	return (
+		<section
+			className="mx-auto w-[min(1100px,calc(100%-1.5rem))] max-[820px]:w-[min(560px,calc(100%-1.2rem))] pt-4"
+			aria-labelledby="community-gallery-title"
+		>
+			<h2
+				id="community-gallery-title"
+				className="m-0 mb-4 text-[0.78rem] font-semibold tracking-[0.2em] text-mauve uppercase"
+			>
+				community pages
+			</h2>
+			{showError ? (
+				<p className="m-0 mb-6 text-[0.92rem] text-subtext">
+					gallery could not load. Supabase may be offline or not configured.
+				</p>
+			) : isPending && gallery.length === 0 ? (
+				<p className="m-0 mb-6 text-[0.92rem] text-subtext">loading pages…</p>
+			) : gallery.length === 0 ? (
+				<p className="m-0 mb-6 text-[0.92rem] text-subtext">
+					no community pages yet. claim a handle below and be the first legend.
+				</p>
+			) : (
+				<ul className="m-0 mb-8 grid list-none gap-3 p-0 sm:grid-cols-2">
+					{gallery.map((item) => (
+						<li key={item.handle}>
+							<a
+								href={`/community/${item.handle}/`}
+								className="grid gap-1 rounded-2xl border border-white/10 bg-surface/60 px-4 py-3 no-underline transition-[border-color,background] hover:border-sky/45 hover:bg-surface-soft/90 focus-visible:border-sky/45 focus-visible:outline-none"
+							>
+								<span className="font-bold text-sky">@{item.handle}</span>
+								<strong className="text-text">
+									{item.title ?? "untitled build"}
+								</strong>
+								{item.blurb ? (
+									<span className="text-[0.9rem] text-subtext">
+										{item.blurb}
+									</span>
+								) : null}
+							</a>
+						</li>
+					))}
+				</ul>
+			)}
+		</section>
+	);
+}
+
 export default function CommunityHub({
 	gallery = [],
 	galleryError = false,
 }: CommunityHubProps) {
 	return (
 		<QueryClientProvider client={queryClient}>
-			<section
-				className="mx-auto w-[min(1100px,calc(100%-1.5rem))] max-[820px]:w-[min(560px,calc(100%-1.2rem))] pt-4"
-				aria-labelledby="community-gallery-title"
-			>
-				<h2
-					id="community-gallery-title"
-					className="m-0 mb-4 text-[0.78rem] font-semibold tracking-[0.2em] text-mauve uppercase"
-				>
-					live builds
-				</h2>
-				{galleryError ? (
-					<p className="m-0 mb-6 text-[0.92rem] text-subtext">
-						gallery could not load. Supabase may be offline or not configured.
-					</p>
-				) : gallery.length === 0 ? (
-					<p className="m-0 mb-6 text-[0.92rem] text-subtext">
-						no live community pages yet. be the first legend.
-					</p>
-				) : (
-					<ul className="m-0 mb-8 grid list-none gap-3 p-0 sm:grid-cols-2">
-						{gallery.map((item) => (
-							<li key={item.handle}>
-								<a
-									href={`/community/${item.handle}/`}
-									className="grid gap-1 rounded-2xl border border-white/10 bg-surface/60 px-4 py-3 no-underline transition-[border-color,background] hover:border-sky/45 hover:bg-surface-soft/90 focus-visible:border-sky/45 focus-visible:outline-none"
-								>
-									<span className="font-bold text-sky">@{item.handle}</span>
-									<strong className="text-text">
-										{item.title ?? "untitled build"}
-									</strong>
-									{item.blurb ? (
-										<span className="text-[0.9rem] text-subtext">
-											{item.blurb}
-										</span>
-									) : null}
-								</a>
-							</li>
-						))}
-					</ul>
-				)}
-			</section>
+			<CommunityGallery initialGallery={gallery} initialError={galleryError} />
 			<CommunityHubInner />
 		</QueryClientProvider>
 	);

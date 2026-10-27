@@ -25,6 +25,7 @@ Set these under [Edge Function secrets](https://supabase.com/dashboard/project/l
 | `CURSOR_API_KEY` | Yes | Launch planner/builder Cloud Agents (Cursor Dashboard → API Keys). |
 | `SUPABASE_SERVICE_ROLE_KEY` | Auto | Injected by Supabase for Edge Functions — do not override unless rotating |
 | `EDIT_CODE_PEPPER` | Recommended | Extra entropy mixed into edit-code hashes |
+| `COMMUNITY_CI_SECRET` | Recommended | Shared with GitHub Actions secret of the same name so merges can mark builds `live` |
 | `COMMUNITY_REPO_URL` | No | Defaults to `https://github.com/J-V-Studios/grip-site` |
 
 ```bash
