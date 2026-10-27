@@ -5,6 +5,7 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "./src"),
+			"@gripc": path.resolve(__dirname, "./gripapps/gripc/src"),
 		},
 	},
 	test: {
