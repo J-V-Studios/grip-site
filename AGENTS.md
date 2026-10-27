@@ -55,8 +55,11 @@ Optional: `bun run lint:fix`, `bun run knip` (unused exports; also in CI).
 | `/fun-apps/` | `src/pages/fun-apps.astro` | Placeholder |
 | `/about/` | `src/pages/about.astro` | Placeholder |
 | `/money/` | `src/pages/money.astro` | Placeholder |
+| `/community/` | `src/pages/community/index.astro` | Claim handle, enqueue builds, gallery (`CommunityHub.tsx`) |
 
-**Supabase (anon/publishable only):** tables `lilgrip_comments`, `grip_sightings`; storage bucket `grip-sightings`. All client access via `src/lib/`.
+**Supabase (anon/publishable only):** tables `lilgrip_comments`, `grip_sightings`, `community_gallery` (read); storage bucket `grip-sightings`. Community writes go through the **edge orchestrator** (service role on server only). All client access via `src/lib/`.
+
+**Community:** `docs/community/` (deploy: [DEPLOY.md](./docs/community/DEPLOY.md)); moderation rules in `src/lib/community-moderation.ts` (mirrored in `supabase/functions/community-orchestrator/moderation.ts`).
 
 ## Environment
 
@@ -66,8 +69,9 @@ Copy `.env.example` → `.env` (never commit `.env`).
 | --- | --- |
 | `PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `PUBLIC_SUPABASE_ANON_KEY` | Publishable / anon key only |
+| `PUBLIC_COMMUNITY_ORCHESTRATOR_URL` | Supabase Edge Function URL for claim/enqueue/status |
 
-**Never** put a service-role key in the repo or client bundle.
+**Never** put `CURSOR_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, or `EDIT_CODE_PEPPER` in the repo, `.env.production`, or client bundle.
 
 ## Deploy
 

@@ -8,6 +8,7 @@ Visitor mini-pages on lilgrip.com live at `/community/<handle>/` as static files
 | --- | --- |
 | Product and architecture | [Community builds design spec](../superpowers/specs/2026-10-26-community-builds-design.md) |
 | Moderation (what we allow / block) | [MODERATION.md](./MODERATION.md) |
+| Deploy orchestrator + smoke checklist | [DEPLOY.md](./DEPLOY.md) |
 | Claim, edit, gallery | Site UI at `/community` (orchestrator + Supabase; see spec) |
 
 ## For agents

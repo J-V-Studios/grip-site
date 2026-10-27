@@ -1,6 +1,5 @@
 /**
- * Rule-based prompt/plan moderation (see docs/community/MODERATION.md).
- * Guns / toy chaos OK; real harm, hate, escape attempts blocked.
+ * Keep in sync with `src/lib/community-moderation.ts` (Deno edge runtime cannot import app src).
  */
 
 export type ModerationResult =
@@ -75,7 +74,6 @@ export function moderateText(text: string): ModerationResult {
 		}
 	}
 
-	// Other-handle escape: "public/community/foo" where foo might not be self — handled in enqueue for plan; flag generic overwrite
 	if (/\boverwrite\s+public\/community\//i.test(normalized)) {
 		return {
 			ok: false,
