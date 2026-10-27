@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime.BZnA9PEq.js";import{t}from"./dist.BqIpDiyW.js";var n=e();function r(){return(0,n.jsx)(t,{theme:`dark`,position:`bottom-center`,toastOptions:{classNames:{toast:`!rounded-2xl !border !border-white/10 !bg-surface !text-text !shadow-[0_18px_50px_rgba(0,0,0,0.45)]`,description:`!text-subtext`}}})}export{r as default};
