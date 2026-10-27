@@ -75,28 +75,7 @@ export function validateGrip(ast: GripApp, fileName: string): Diagnostic[] {
 	}
 
 	for (const raw of ast.rawModules) {
-		if (!raw.path.startsWith("./raw/")) {
-			diags.push(
-				diagnostic(
-					fileName,
-					1,
-					1,
-					`raw_module path must start with "./raw/"`,
-					`Got "${raw.path}"`,
-				),
-			);
-		}
-		if (raw.path.includes("..")) {
-			diags.push(
-				diagnostic(
-					fileName,
-					1,
-					1,
-					`raw_module path must not contain ".."`,
-					`Got "${raw.path}"`,
-				),
-			);
-		}
+		validateRawModulePath(raw.path, fileName, diags);
 		if (!raw.exportName.trim()) {
 			diags.push(
 				diagnostic(fileName, 1, 1, "raw_module requires export name"),
@@ -123,6 +102,88 @@ export function validateGrip(ast: GripApp, fileName: string): Diagnostic[] {
 	}
 
 	return diags;
+}
+
+function validateRawModulePath(
+	path: string,
+	fileName: string,
+	diags: Diagnostic[],
+): void {
+	if (!path.startsWith("./raw/")) {
+		diags.push(
+			diagnostic(
+				fileName,
+				1,
+				1,
+				`raw_module path must start with "./raw/"`,
+				`Got "${path}"`,
+			),
+		);
+	}
+	if (path.includes("..")) {
+		diags.push(
+			diagnostic(
+				fileName,
+				1,
+				1,
+				`raw_module path must not contain ".."`,
+				`Got "${path}"`,
+			),
+		);
+	}
+	if (path.includes("%")) {
+		diags.push(
+			diagnostic(
+				fileName,
+				1,
+				1,
+				`raw_module path must not contain percent-encoding`,
+				`Got "${path}"`,
+			),
+		);
+		return;
+	}
+	let decoded: string;
+	try {
+		decoded = decodeURIComponent(path);
+	} catch {
+		diags.push(
+			diagnostic(
+				fileName,
+				1,
+				1,
+				`raw_module path is not valid percent-encoding`,
+				`Got "${path}"`,
+			),
+		);
+		return;
+	}
+	if (decoded.includes("..")) {
+		diags.push(
+			diagnostic(
+				fileName,
+				1,
+				1,
+				`raw_module path must not contain ".." after decoding`,
+				`Got "${path}"`,
+			),
+		);
+	}
+	if (
+		decoded.startsWith("/") ||
+		decoded.startsWith("//") ||
+		/^[a-zA-Z]:[\\/]/.test(decoded)
+	) {
+		diags.push(
+			diagnostic(
+				fileName,
+				1,
+				1,
+				`raw_module path must stay relative under "./raw/"`,
+				`Got "${path}"`,
+			),
+		);
+	}
 }
 
 function validateUiReferences(

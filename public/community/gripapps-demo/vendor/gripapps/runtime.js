@@ -255,11 +255,41 @@
 		}
 
 		function isAllowedRawPath(path) {
-			return (
-				typeof path === "string" &&
-				path.indexOf("./raw/") === 0 &&
-				path.indexOf("..") === -1
-			);
+			if (
+				typeof path !== "string" ||
+				path.indexOf("./raw/") !== 0 ||
+				path.indexOf("..") !== -1 ||
+				path.indexOf("%") !== -1
+			) {
+				return false;
+			}
+			var decoded;
+			try {
+				decoded = decodeURIComponent(path);
+			} catch (err) {
+				return false;
+			}
+			if (decoded.indexOf("..") !== -1) {
+				return false;
+			}
+			if (
+				decoded.charAt(0) === "/" ||
+				decoded.indexOf("//") === 0 ||
+				/^[a-zA-Z]:[\\/]/.test(decoded)
+			) {
+				return false;
+			}
+			return true;
+		}
+
+		function pathnameUnderRawDir(pathname, rawDirPathname) {
+			if (pathname.indexOf(rawDirPathname) !== 0) {
+				return false;
+			}
+			if (pathname.length === rawDirPathname.length) {
+				return true;
+			}
+			return pathname.charAt(rawDirPathname.length) === "/";
 		}
 
 		function resolveRawModuleUrl(path) {
@@ -267,7 +297,12 @@
 				typeof document !== "undefined" && document.baseURI
 					? document.baseURI
 					: "https://lilgrip.com/";
-			return new URL(path, base).href;
+			var url = new URL(path, base);
+			var rawDirPathname = new URL("./raw/", base).pathname;
+			if (!pathnameUnderRawDir(url.pathname, rawDirPathname)) {
+				throw new Error("raw_module path escapes ./raw/");
+			}
+			return url.href;
 		}
 
 		function loadRawModules() {

@@ -53,6 +53,21 @@ meta { title "T" blurb "B" theme lilgrip_default }
 		expect(diags.some((d) => /at least one scene/i.test(d.message))).toBe(true);
 	});
 
+	it("rejects raw_module paths with percent-encoded ..", () => {
+		const parsed = parseGrip(
+			`
+meta { title "T" blurb "B" theme lilgrip_default }
+raw_module "./raw/%2e%2e/%2e%2e/secret.js" export mount into slot stage
+scene home { text "hi" }
+`,
+			"app.grip",
+		);
+		expect(parsed.ok).toBe(true);
+		if (!parsed.ok) return;
+		const diags = validateGrip(parsed.ast, "app.grip");
+		expect(diags.some((d) => /percent-encoding/i.test(d.message))).toBe(true);
+	});
+
 	it("rejects raw_module paths that contain ..", () => {
 		const parsed = parseGrip(
 			`
