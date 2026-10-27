@@ -42,4 +42,46 @@ describe("parseGrip", () => {
 		expect(result.diagnostics[0]?.message).toMatch(/unknown/i);
 		expect(result.diagnostics[0]?.line).toBe(1);
 	});
+
+	it("fails parse on unknown scene child keyword", () => {
+		const source = `
+meta {
+  title "t"
+  blurb "b"
+  theme lilgrip_default
+}
+
+scene home {
+  widget foo
+}
+`;
+		const result = parseGrip(source, "app.grip");
+		expect(result.ok).toBe(false);
+		if (result.ok) return;
+		expect(result.diagnostics[0]?.message).toMatch(/unknown scene child/i);
+		expect(result.diagnostics[0]?.message).toContain("widget");
+	});
+
+	it("fails parse on unknown action step keyword", () => {
+		const source = `
+meta {
+  title "t"
+  blurb "b"
+  theme lilgrip_default
+}
+
+action wave {
+  jump somewhere
+}
+`;
+		const result = parseGrip(source, "app.grip");
+		expect(result.ok).toBe(false);
+		if (result.ok) return;
+		expect(
+			result.diagnostics.some((d) => /unknown action step/i.test(d.message)),
+		).toBe(true);
+		expect(result.diagnostics.some((d) => d.message.includes("jump"))).toBe(
+			true,
+		);
+	});
 });

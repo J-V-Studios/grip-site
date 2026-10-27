@@ -82,6 +82,10 @@ export function parseGrip(
 		return { ok: false, diagnostics };
 	}
 
+	if (diagnostics.length > 0) {
+		return { ok: false, diagnostics };
+	}
+
 	return {
 		ok: true,
 		ast: { meta, shell, state, scenes, actions, rawModules },
@@ -436,6 +440,17 @@ function parseActionBlock(ctx: ParseContext): ActionBlock {
 		} else if (op === "toast") {
 			const message = String(readScalar(inner));
 			steps.push({ op: "toast", message });
+		} else {
+			const at = inner.spanAt(inner.pos - op.length);
+			inner.diagnostics.push(
+				diagnostic(
+					inner.fileName,
+					at.line,
+					at.column,
+					`Unknown action step "${op}"`,
+					'Expected one of: set, goto, back, toast',
+				),
+			);
 		}
 	}
 
