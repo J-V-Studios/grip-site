@@ -214,7 +214,7 @@
 					mount: function (slotName, node) {
 						if (!slotName || !node) return;
 						var target =
-							slotRegistry[slotName] ||
+							getRegisteredSlot(slotName) ||
 							rootEl.querySelector(
 								'[data-grip-slot="' + slotName + '"]',
 							);
@@ -286,6 +286,26 @@
 			canvasCleanups = [];
 		}
 
+		function isSlotConnected(el) {
+			return el && el.isConnected;
+		}
+
+		/** Drop registry entries whose nodes were removed from the document (e.g. scene change). */
+		function reconcileSlotRegistry() {
+			for (var key in slotRegistry) {
+				if (!isSlotConnected(slotRegistry[key])) {
+					delete slotRegistry[key];
+				}
+			}
+		}
+
+		function getRegisteredSlot(name) {
+			var el = slotRegistry[name];
+			if (isSlotConnected(el)) return el;
+			if (el) delete slotRegistry[name];
+			return null;
+		}
+
 		function registerSlot(name, el) {
 			if (name && el) slotRegistry[name] = el;
 		}
@@ -295,7 +315,7 @@
 			if (!Array.isArray(mods)) return;
 			for (var i = 0; i < mods.length; i++) {
 				var slotName = mods[i].slot;
-				if (!slotName || slotRegistry[slotName]) continue;
+				if (!slotName || getRegisteredSlot(slotName)) continue;
 				var slot = document.createElement("div");
 				slot.className = "grip-raw-slot";
 				slot.setAttribute("data-grip-slot", slotName);
@@ -439,6 +459,7 @@
 			if (!sceneHost) return;
 			teardownCanvasLoops();
 			sceneHost.innerHTML = "";
+			reconcileSlotRegistry();
 			sceneHost.className = "grip-scene";
 			var rootNode = renderNode(scene.root);
 			if (rootNode) sceneHost.appendChild(rootNode);
