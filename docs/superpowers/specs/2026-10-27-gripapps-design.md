@@ -1,7 +1,7 @@
 # GripApps — Design Spec
 
 **Date:** 2026-10-27  
-**Status:** Approved for implementation planning (pending final user review of this file)  
+**Status:** Approved — implementation plan in `docs/superpowers/plans/2026-10-27-gripapps.md`  
 **Site:** lilgrip.com (`J-V-Studios/grip-site`)  
 **Goal:** Extremely robust community mini-pages via an AI-first custom language (GripLang), cross-compiler (`gripc`), shared+vendored runtime, and a specialized agent skill that **replaces** freeform community Vite/React builds.
 
