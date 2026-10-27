@@ -87,6 +87,8 @@ jobs:
             unset PUBLIC_SUPABASE_URL PUBLIC_SUPABASE_ANON_KEY
           fi
           bun run build
+          # Guarantee .nojekyll ships even if Astro/artifact tooling drops dotfiles.
+          : > dist/.nojekyll
 
       - name: Assert dist/CNAME
         run: test -f dist/CNAME
@@ -181,7 +183,12 @@ jobs:
           set -euo pipefail
           rm -rf _astro about church-apps fun-apps money images
           cp -f dist/CNAME ./CNAME
-          cp -f dist/.nojekyll ./.nojekyll
+          # Artifact uploads sometimes omit dotfiles; always ensure .nojekyll exists.
+          if [ -f dist/.nojekyll ]; then
+            cp -f dist/.nojekyll ./.nojekyll
+          else
+            : > ./.nojekyll
+          fi
           cp -f dist/favicon.svg ./favicon.svg
           cp -f dist/index.html ./index.html
           cp -a dist/_astro ./_astro
