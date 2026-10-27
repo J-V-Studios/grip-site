@@ -245,6 +245,16 @@ function readScalar(ctx: ParseContext): GripScalar {
 	if (sourceChar(ctx) === '"') {
 		return readString(ctx);
 	}
+	const numStart = ctx.pos;
+	if (sourceChar(ctx) === "-" || /[0-9]/.test(sourceChar(ctx))) {
+		if (sourceChar(ctx) === "-") ctx.pos++;
+		while (ctx.pos < ctx.source.length && /[0-9.]/.test(ctx.source[ctx.pos])) {
+			ctx.pos++;
+		}
+		const num = ctx.source.slice(numStart, ctx.pos);
+		if (/^-?\d+(\.\d+)?$/.test(num)) return Number(num);
+		ctx.pos = numStart;
+	}
 	const word = ctx.readWord();
 	if (word === "true") return true;
 	if (word === "false") return false;
@@ -411,6 +421,16 @@ function parseUiNode(ctx: ParseContext): UiNode {
 	if (kw === "emoji_stage") {
 		const emoji = String(readScalar(ctx));
 		return { kind: "emoji_stage", emoji };
+	}
+
+	if (kw === "clear") {
+		const color = String(readScalar(ctx));
+		return { kind: "clear", color };
+	}
+
+	if (kw === "raw_slot") {
+		const id = ctx.readWord();
+		return { kind: "raw_slot", id };
 	}
 
 	if (kw === "score_hud" || kw === "particles") {

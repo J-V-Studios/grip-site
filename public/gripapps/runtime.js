@@ -91,8 +91,15 @@
 			".grip-boundary h2{margin:0 0 0.5rem;color:var(--color-peach)}" +
 			".grip-boundary pre{white-space:pre-wrap;font-size:0.85rem;color:var(--color-subtext)}" +
 			".grip-boundary button{margin-top:1rem}" +
+			".grip-canvas-wrap{position:relative;display:inline-block;max-width:100%}" +
+			".grip-canvas{display:block;width:100%;max-width:20rem;height:auto;border-radius:0.5rem;background:var(--color-surface-soft)}" +
+			".grip-score-hud{position:absolute;top:0.5rem;left:0.5rem;padding:0.25rem 0.5rem;border-radius:0.35rem;background:rgba(0,0,0,0.45);color:var(--color-text);font-size:0.85rem;font-weight:600}" +
+			".grip-particles{pointer-events:none;position:absolute;inset:0;border-radius:0.5rem;overflow:hidden}" +
+			".grip-emoji-stage{font-size:4rem;line-height:1;text-align:center}" +
+			".grip-image{max-width:100%;border-radius:0.5rem}" +
+			".grip-raw-slot{min-height:0.5rem}" +
 			(!prefersReducedMotion()
-				? ".grip-scene{animation:grip-fade-in 0.2s ease}.grip-toast{transition:opacity 0.2s ease}@keyframes grip-fade-in{from{opacity:0}to{opacity:1}}"
+				? ".grip-scene{animation:grip-fade-in 0.2s ease}.grip-toast{transition:opacity 0.2s ease}.grip-particles::after{content:'';position:absolute;width:6px;height:6px;border-radius:50%;background:var(--color-peach);animation:grip-sparkle 1.4s ease-in-out infinite}@keyframes grip-fade-in{from{opacity:0}to{opacity:1}}@keyframes grip-sparkle{0%,100%{opacity:0.2;transform:translate(20%,60%)}50%{opacity:1;transform:translate(70%,20%)}}"
 				: "");
 		root.appendChild(style);
 	}
@@ -156,6 +163,8 @@
 		var toastTimer = null;
 		var sceneHost = null;
 		var toastEl = null;
+		var slotRegistry = {};
+		var canvasCleanups = [];
 
 		function clearToastTimer() {
 			if (toastTimer) {
@@ -190,6 +199,177 @@
 			renderScene();
 		}
 
+		function applyHostSteps(steps) {
+			snapshot = applySteps(snapshot, steps);
+			if (snapshot.toast) {
+				showToast(snapshot.toast);
+				snapshot.toast = null;
+			}
+			renderScene();
+		}
+
+		function buildHostApi() {
+			return {
+				ui: {
+					mount: function (slotName, node) {
+						if (!slotName || !node) return;
+						var target =
+							slotRegistry[slotName] ||
+							rootEl.querySelector(
+								'[data-grip-slot="' + slotName + '"]',
+							);
+						if (!target) return;
+						target.innerHTML = "";
+						target.appendChild(node);
+					},
+				},
+				state: {
+					get: function (key) {
+						return snapshot.state[key];
+					},
+					set: function (key, value) {
+						snapshot.state[key] = value;
+						renderScene();
+					},
+				},
+				scene: {
+					goto: function (sceneId) {
+						applyHostSteps([{ op: "goto", scene: sceneId }]);
+					},
+					back: function () {
+						applyHostSteps([{ op: "back" }]);
+					},
+				},
+				toast: function (message) {
+					showToast(String(message));
+				},
+			};
+		}
+
+		function isAllowedRawPath(path) {
+			return typeof path === "string" && path.indexOf("./raw/") === 0;
+		}
+
+		function loadRawModules() {
+			var mods = ir.rawModules;
+			if (!Array.isArray(mods) || mods.length === 0) return;
+			var host = buildHostApi();
+			for (var m = 0; m < mods.length; m++) {
+				(function (mod) {
+					if (!isAllowedRawPath(mod.path)) return;
+					var exportName = mod.exportName;
+					import(mod.path)
+						.then(function (ns) {
+							var fn = ns[exportName];
+							if (typeof fn === "function") {
+								fn(host);
+							}
+						})
+						.catch(function (err) {
+							showToast(
+								"raw_module failed: " +
+									(err && err.message
+										? err.message
+										: String(err)),
+							);
+						});
+				})(mods[m]);
+			}
+		}
+
+		function teardownCanvasLoops() {
+			for (var i = 0; i < canvasCleanups.length; i++) {
+				if (typeof canvasCleanups[i] === "function") {
+					canvasCleanups[i]();
+				}
+			}
+			canvasCleanups = [];
+		}
+
+		function registerSlot(name, el) {
+			if (name && el) slotRegistry[name] = el;
+		}
+
+		function ensureRawModuleSlots(shell) {
+			var mods = ir.rawModules;
+			if (!Array.isArray(mods)) return;
+			for (var i = 0; i < mods.length; i++) {
+				var slotName = mods[i].slot;
+				if (!slotName || slotRegistry[slotName]) continue;
+				var slot = document.createElement("div");
+				slot.className = "grip-raw-slot";
+				slot.setAttribute("data-grip-slot", slotName);
+				shell.appendChild(slot);
+				registerSlot(slotName, slot);
+			}
+		}
+
+		function renderCanvasNode(node) {
+			var wrap = document.createElement("div");
+			wrap.className = "grip-canvas-wrap";
+			wrap.setAttribute("data-grip-canvas-wrap", "1");
+
+			var clearColor = "#262637";
+			var spriteIds = [];
+			var showHud = false;
+			var showParticles = false;
+			var kids = node.children || [];
+			for (var k = 0; k < kids.length; k++) {
+				var ch = kids[k];
+				if (ch.type === "clear" && ch.color) clearColor = String(ch.color);
+				if (ch.type === "sprite" && ch.id) spriteIds.push(ch.id);
+				if (ch.type === "score_hud") showHud = true;
+				if (ch.type === "particles") showParticles = true;
+			}
+
+			var canvas = document.createElement("canvas");
+			canvas.className = "grip-canvas";
+			canvas.width = 320;
+			canvas.height = 200;
+			canvas.setAttribute("role", "img");
+			canvas.setAttribute("aria-label", "play canvas");
+			wrap.appendChild(canvas);
+
+			if (showHud) {
+				var hud = document.createElement("div");
+				hud.className = "grip-score-hud";
+				var scoreVal = snapshot.state.score;
+				hud.textContent =
+					"Score: " + (scoreVal != null ? String(scoreVal) : "0");
+				wrap.appendChild(hud);
+			}
+
+			if (showParticles && !prefersReducedMotion()) {
+				var particles = document.createElement("div");
+				particles.className = "grip-particles";
+				particles.setAttribute("aria-hidden", "true");
+				wrap.appendChild(particles);
+			}
+
+			var ctx = canvas.getContext("2d");
+			var running = true;
+			function frame() {
+				if (!running || !ctx) return;
+				ctx.fillStyle = clearColor;
+				ctx.fillRect(0, 0, canvas.width, canvas.height);
+				for (var s = 0; s < spriteIds.length; s++) {
+					var sid = spriteIds[s];
+					var sx = Number(snapshot.state[sid + "_x"]);
+					var sy = Number(snapshot.state[sid + "_y"]);
+					if (!sx && sx !== 0) sx = 24 + s * 36;
+					if (!sy && sy !== 0) sy = 80;
+					ctx.fillStyle = "#89b4fa";
+					ctx.fillRect(sx, sy, 28, 28);
+				}
+				if (running) global.requestAnimationFrame(frame);
+			}
+			canvasCleanups.push(function () {
+				running = false;
+			});
+			frame();
+			return wrap;
+		}
+
 		function renderNode(node) {
 			if (!node || !node.type) return null;
 			if (node.type === "stack") {
@@ -220,6 +400,30 @@
 				});
 				return btn;
 			}
+			if (node.type === "canvas") {
+				return renderCanvasNode(node);
+			}
+			if (node.type === "emoji_stage") {
+				var stage = document.createElement("div");
+				stage.className = "grip-emoji-stage";
+				stage.textContent = node.emoji != null ? String(node.emoji) : "";
+				return stage;
+			}
+			if (node.type === "image") {
+				var img = document.createElement("img");
+				img.className = "grip-image";
+				img.alt = "";
+				img.src = node.src != null ? String(node.src) : "";
+				return img;
+			}
+			if (node.type === "raw_slot") {
+				var slotEl = document.createElement("div");
+				slotEl.className = "grip-raw-slot";
+				var slotId = node.id || "";
+				slotEl.setAttribute("data-grip-slot", slotId);
+				registerSlot(slotId, slotEl);
+				return slotEl;
+			}
 			if (node.type === "particles" && prefersReducedMotion()) {
 				return null;
 			}
@@ -233,6 +437,7 @@
 		function renderScene() {
 			var scene = sceneMap[snapshot.scene];
 			if (!sceneHost) return;
+			teardownCanvasLoops();
 			sceneHost.innerHTML = "";
 			sceneHost.className = "grip-scene";
 			var rootNode = renderNode(scene.root);
@@ -242,6 +447,7 @@
 		function mount() {
 			rootEl.innerHTML = "";
 			rootEl.className = "grip-app";
+			slotRegistry = {};
 			injectStyles(rootEl);
 			var themeName =
 				ir.meta && ir.meta.theme ? ir.meta.theme : "lilgrip_default";
@@ -273,8 +479,10 @@
 			sceneHost = document.createElement("main");
 			sceneHost.setAttribute("aria-live", "polite");
 			shell.appendChild(sceneHost);
+			ensureRawModuleSlots(shell);
 			rootEl.appendChild(shell);
 			renderScene();
+			loadRawModules();
 		}
 
 		return {

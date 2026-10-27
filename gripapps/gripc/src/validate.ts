@@ -68,6 +68,30 @@ export function validateGrip(ast: GripApp, fileName: string): Diagnostic[] {
 		}
 	}
 
+	for (const raw of ast.rawModules) {
+		if (!raw.path.startsWith("./raw/")) {
+			diags.push(
+				diagnostic(
+					fileName,
+					1,
+					1,
+					`raw_module path must start with "./raw/"`,
+					`Got "${raw.path}"`,
+				),
+			);
+		}
+		if (!raw.exportName.trim()) {
+			diags.push(
+				diagnostic(fileName, 1, 1, "raw_module requires export name"),
+			);
+		}
+		if (!raw.slot.trim()) {
+			diags.push(
+				diagnostic(fileName, 1, 1, "raw_module requires into slot name"),
+			);
+		}
+	}
+
 	for (const [key, value] of Object.entries(ast.state)) {
 		if (!isValidStateValue(value)) {
 			diags.push(

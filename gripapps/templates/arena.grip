@@ -1,0 +1,17 @@
+meta {
+  title "Arena"
+  blurb "Minimal canvas play scene — extend with sprites and score."
+  theme lilgrip_default
+}
+
+state {
+  score 0
+}
+
+scene game {
+  canvas {
+    clear "#89dceb"
+    sprite player
+    score_hud
+  }
+}
