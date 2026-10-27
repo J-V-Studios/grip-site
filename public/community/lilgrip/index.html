@@ -1,0 +1,849 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="theme-color" content="#0f172a" />
+		<meta
+			name="description"
+			content="A super cool shark that pops toys with its brain."
+		/>
+		<title>Lazer Mind Shark</title>
+		<style>
+			:root {
+				color-scheme: dark;
+				--base: #0f172a;
+				--text: #e2e8f0;
+				--sub: #a6adc8;
+				--sky: #89dceb;
+				--blue: #89b4fa;
+				--sand: #115e59;
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			html,
+			body {
+				margin: 0;
+				min-height: 100%;
+				background: var(--base);
+				color: var(--text);
+			}
+
+			body {
+				height: 100dvh;
+				display: flex;
+				flex-direction: column;
+				gap: 0.65rem;
+				overflow: auto;
+				padding: max(0.85rem, env(safe-area-inset-top))
+					max(1rem, env(safe-area-inset-right))
+					max(1.1rem, env(safe-area-inset-bottom))
+					max(1rem, env(safe-area-inset-left));
+				font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+			}
+
+			header {
+				text-align: center;
+			}
+
+			.kicker {
+				margin: 0;
+			}
+
+			.kicker a {
+				color: var(--sky);
+				text-decoration-thickness: 1px;
+				text-underline-offset: 0.2em;
+			}
+
+			h1 {
+				margin: 0.3rem 0 0;
+				font-size: clamp(1.7rem, 5vw, 2.5rem);
+				font-weight: 700;
+				letter-spacing: -0.03em;
+			}
+
+			.blurb {
+				margin: 0.3rem 0 0;
+				color: var(--sub);
+			}
+
+			.arena {
+				position: relative;
+				flex: 1 1 auto;
+				min-height: 12rem;
+				overflow: hidden;
+				border-radius: 1.25rem;
+				background:
+					radial-gradient(circle at 18% 78%, rgba(137, 180, 250, 0.2), transparent 42%),
+					radial-gradient(circle at 82% 18%, rgba(137, 220, 235, 0.16), transparent 36%),
+					linear-gradient(#1e3a5f, #0b1224 72%);
+				box-shadow: inset 0 0 0 1px rgba(137, 220, 235, 0.18);
+			}
+
+			.bubbles {
+				position: absolute;
+				inset: 0;
+				pointer-events: none;
+				background-image: radial-gradient(circle, rgba(255, 255, 255, 0.45) 1px, transparent 1.6px);
+				background-size: 52px 68px;
+				opacity: 0.28;
+			}
+
+			.arena::after {
+				content: "";
+				position: absolute;
+				right: 0;
+				bottom: 0;
+				left: 0;
+				z-index: 1;
+				height: 16%;
+				pointer-events: none;
+				background: linear-gradient(#0f766e, var(--sand));
+				border-top: 3px solid rgba(204, 251, 241, 0.28);
+			}
+
+			.shark {
+				position: absolute;
+				bottom: 7%;
+				left: 1.5%;
+				z-index: 2;
+				width: min(46%, 250px);
+				filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.35));
+			}
+
+			.shark svg {
+				display: block;
+				width: 100%;
+				height: auto;
+			}
+
+			.beam {
+				position: absolute;
+				top: 0;
+				left: 0;
+				z-index: 3;
+				height: 7px;
+				pointer-events: none;
+				background: linear-gradient(90deg, #f0fdff, #67e8f9 35%, transparent);
+				border-radius: 999px;
+				box-shadow: 0 0 14px #67e8f9;
+				transform-origin: 0 50%;
+			}
+
+			#toys,
+			#sparks {
+				position: absolute;
+				inset: 0;
+			}
+
+			#toys {
+				z-index: 4;
+			}
+
+			#sparks {
+				z-index: 5;
+				overflow: hidden;
+				pointer-events: none;
+			}
+
+			.toy {
+				position: absolute;
+				display: grid;
+				width: 3.5rem;
+				height: 3.5rem;
+				place-items: center;
+				padding: 0;
+				font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+				font-size: 1.55rem;
+				color: inherit;
+				touch-action: manipulation;
+				cursor: pointer;
+				user-select: none;
+				background: rgba(15, 23, 42, 0.55);
+				border: 2px solid rgba(137, 220, 235, 0.35);
+				border-radius: 999px;
+				transform: translate(-50%, -50%);
+			}
+
+			.toy .aim {
+				position: absolute;
+				bottom: -0.1rem;
+				left: 50%;
+				font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+				font-size: 0.62rem;
+				font-weight: 700;
+				letter-spacing: 0.08em;
+				color: #ecfeff;
+				text-transform: uppercase;
+				text-shadow: 0 1px 2px #0f172a;
+				opacity: 0;
+				translate: -50% 100%;
+			}
+
+			.toy.locked {
+				border-color: var(--sky);
+				box-shadow:
+					0 0 0 3px rgba(137, 220, 235, 0.35),
+					0 0 16px rgba(137, 220, 235, 0.45);
+			}
+
+			.toy.locked .aim {
+				opacity: 1;
+			}
+
+			.toy:focus-visible {
+				outline: 2px solid var(--sky);
+				outline-offset: 3px;
+			}
+
+			.spark {
+				position: absolute;
+				font-size: 1.1rem;
+				pointer-events: none;
+				transform: translate(-50%, -50%);
+			}
+
+			.status {
+				min-height: 1.4rem;
+				margin: 0;
+				color: var(--sub);
+				text-align: center;
+			}
+
+			.hint {
+				margin: -0.25rem 0 0;
+				font-size: 0.85rem;
+				color: var(--sub);
+				text-align: center;
+				opacity: 0.85;
+			}
+
+			.controls {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.75rem 1rem;
+				align-items: center;
+				justify-content: space-between;
+			}
+
+			.stats {
+				display: flex;
+				gap: 1rem;
+				margin: 0;
+			}
+
+			.stats span {
+				color: var(--sky);
+				font-variant-numeric: tabular-nums;
+			}
+
+			.blast {
+				min-width: 9.5rem;
+				min-height: 3rem;
+				padding: 0.7rem 1.4rem;
+				font: inherit;
+				font-weight: 700;
+				color: #ecfeff;
+				touch-action: manipulation;
+				cursor: pointer;
+				background: #155e75;
+				border: 2px solid var(--sky);
+				border-radius: 999px;
+			}
+
+			.blast:hover {
+				background: #0e7490;
+			}
+
+			.blast:focus-visible,
+			.kicker a:focus-visible {
+				outline: 2px solid var(--sky);
+				outline-offset: 3px;
+			}
+
+			@media (max-width: 520px) {
+				.controls {
+					flex-direction: column;
+					align-items: stretch;
+				}
+
+				.stats {
+					justify-content: center;
+				}
+
+				.blast {
+					width: 100%;
+				}
+
+				.hint {
+					display: none;
+				}
+
+				.shark {
+					width: min(40%, 150px);
+				}
+			}
+
+			@media (prefers-reduced-motion: no-preference) {
+				.bubbles {
+					animation: rise 16s linear infinite;
+				}
+
+				.shark {
+					animation: bob 3s ease-in-out infinite;
+				}
+
+				.gem {
+					transform-box: fill-box;
+					transform-origin: center;
+					animation: pulse 1.5s ease-in-out infinite;
+				}
+
+				.shark.blasting .gem {
+					animation: none;
+					fill: #f0fdff;
+				}
+
+				.toy.pop {
+					animation: pop 0.32s ease forwards;
+				}
+
+				.spark {
+					animation: spark 0.46s ease-out forwards;
+				}
+
+				.blast:active,
+				.toy:active {
+					scale: 0.96;
+				}
+			}
+
+			@media (prefers-reduced-motion: reduce) {
+				.shark.blasting {
+					filter: drop-shadow(0 0 10px rgba(137, 220, 235, 0.8));
+				}
+			}
+
+			@keyframes rise {
+				from {
+					background-position: 0 80px;
+				}
+				to {
+					background-position: 0 -80px;
+				}
+			}
+
+			@keyframes bob {
+				0%,
+				100% {
+					transform: translateY(0) rotate(-2deg);
+				}
+				50% {
+					transform: translateY(-8px) rotate(2deg);
+				}
+			}
+
+			@keyframes pulse {
+				50% {
+					transform: scale(1.18);
+				}
+			}
+
+			@keyframes pop {
+				to {
+					opacity: 0;
+					transform: translate(-50%, -50%) scale(1.65);
+				}
+			}
+
+			@keyframes spark {
+				to {
+					opacity: 0;
+					transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy)));
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<p class="kicker"><a href="/community/">community</a></p>
+			<h1>Lazer Mind Shark</h1>
+			<p class="blurb">a super cool shark that pops toys with its brain</p>
+		</header>
+		<div class="arena" id="arena">
+			<div class="bubbles" aria-hidden="true"></div>
+			<div class="shark" id="shark">
+				<svg viewBox="0 0 240 130" role="img" aria-label="Laser shark with a glowing mind gem">
+					<polygon points="34,68 6,40 16,68 6,96" fill="#0f766e" />
+					<polygon points="30,68 12,48 20,68 12,88" fill="#5eead4" />
+					<ellipse cx="112" cy="72" rx="78" ry="36" fill="#14b8a6" />
+					<ellipse cx="118" cy="84" rx="54" ry="18" fill="#ccfbf1" />
+					<polygon points="102,40 132,42 112,12" fill="#0f766e" />
+					<polygon points="92,86 70,118 122,98" fill="#0f766e" />
+					<ellipse cx="186" cy="68" rx="40" ry="22" fill="#2dd4bf" />
+					<circle class="gem" cx="158" cy="46" r="8" fill="#89dceb" />
+					<circle cx="178" cy="60" r="9" fill="#0f172a" />
+					<circle cx="181" cy="57" r="3" fill="#f8fafc" />
+					<path
+						d="M192 76 Q208 86 222 74"
+						fill="none"
+						stroke="#134e4a"
+						stroke-width="2.5"
+						stroke-linecap="round"
+					/>
+					<path
+						d="M128 62 q-7 8 0 16"
+						fill="none"
+						stroke="#115e59"
+						stroke-width="2.2"
+						stroke-linecap="round"
+					/>
+					<path
+						d="M140 60 q-7 9 0 18"
+						fill="none"
+						stroke="#115e59"
+						stroke-width="2.2"
+						stroke-linecap="round"
+					/>
+				</svg>
+			</div>
+			<div class="beam" id="beam" hidden></div>
+			<div id="sparks" aria-hidden="true"></div>
+			<div id="toys"></div>
+		</div>
+		<p class="status" id="status" aria-live="polite">the shark is warming up its brain.</p>
+		<p class="hint">space blasts · arrows pick the next toy</p>
+		<div class="controls">
+			<p class="stats">
+				brain pops <span id="score">0</span>
+				best <span id="best">0</span>
+			</p>
+			<button type="button" class="blast" id="blast">Mind blast</button>
+		</div>
+		<noscript>
+			<p class="status">javascript is off, so the shark is just posing. still cool.</p>
+		</noscript>
+		<script>
+			(() => {
+				const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+				const arena = document.getElementById("arena");
+				const toysEl = document.getElementById("toys");
+				const beam = document.getElementById("beam");
+				const sparks = document.getElementById("sparks");
+				const shark = document.getElementById("shark");
+				const scoreEl = document.getElementById("score");
+				const bestEl = document.getElementById("best");
+				const statusEl = document.getElementById("status");
+				const blastBtn = document.getElementById("blast");
+				const BEST_KEY = "lilgrip-lazer-mind-shark-best";
+
+				const CATALOG = [
+					{
+						emoji: "🦆",
+						name: "rubber duck",
+						lines: [
+							"the duck quacked somewhere else.",
+							"rubber never stood a chance.",
+						],
+					},
+					{
+						emoji: "🏐",
+						name: "beach ball",
+						lines: [
+							"the beach ball achieved orbit. briefly.",
+							"it was mostly air. now it's sparkles.",
+						],
+					},
+					{
+						emoji: "🥫",
+						name: "soda can",
+						lines: [
+							"the can fizzed into the astral plane.",
+							"mind versus aluminum. mind won.",
+						],
+					},
+					{
+						emoji: "📦",
+						name: "cardboard crate",
+						lines: [
+							"the crate was empty. now it's glitter.",
+							"cardboard respects the brain laser.",
+						],
+					},
+					{
+						emoji: "🎈",
+						name: "party balloon",
+						lines: [
+							"the balloon left for a better party.",
+							"psychic pop. very festive.",
+						],
+					},
+					{
+						emoji: "🍩",
+						name: "donut",
+						lines: ["the donut is a glazed memory.", "calories: politely deleted."],
+					},
+					{
+						emoji: "🧸",
+						name: "plush bear",
+						lines: [
+							"the plush is fine. it just stepped out.",
+							"stuffing exited with dignity.",
+						],
+					},
+					{
+						emoji: "🍉",
+						name: "watermelon",
+						lines: [
+							"the melon became good vibes.",
+							"seeds included. very thorough.",
+						],
+					},
+				];
+
+				let toys = [];
+				let score = 0;
+				let best = readBest();
+				let combo = 0;
+				let comboAt = 0;
+				let idSeq = 1;
+				let last = 0;
+				let raf = 0;
+				let beamToken = 0;
+
+				function readBest() {
+					try {
+						const n = Number(localStorage.getItem(BEST_KEY));
+						return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+					} catch {
+						return 0;
+					}
+				}
+
+				function toyCount() {
+					return window.innerWidth < 520 ? 4 : 5;
+				}
+
+				function minX() {
+					return window.innerWidth < 520 ? 44 : 50;
+				}
+
+				function rand(min, max) {
+					return min + Math.random() * (max - min);
+				}
+
+				function living() {
+					return toys.filter((toy) => !toy.dead);
+				}
+
+				function farEnough(x, y) {
+					return toys.every((toy) => {
+						const dx = toy.x - x;
+						const dy = toy.y - y;
+						return dx * dx + dy * dy > 12 * 12;
+					});
+				}
+
+				function randomSpot() {
+					const left = minX();
+					for (let i = 0; i < 8; i += 1) {
+						const x = rand(left, 90);
+						const y = rand(18, 72);
+						if (farEnough(x, y)) return { x, y };
+					}
+					return { x: rand(left, 90), y: rand(18, 72) };
+				}
+
+				function labelFor(toy) {
+					const aimed = toy.aimed ? ", currently aimed" : "";
+					return `Mind-pop the ${toy.name}${aimed}`;
+				}
+
+				function refreshLabels() {
+					for (const toy of toys) {
+						toy.el.setAttribute("aria-label", labelFor(toy));
+						toy.el.classList.toggle("locked", toy.aimed && !toy.dead);
+					}
+				}
+
+				function pickAim(preferId) {
+					const pool = living();
+					if (!pool.length) return;
+					const next =
+						pool.find((toy) => toy.id === preferId) ||
+						pool[Math.floor(Math.random() * pool.length)];
+					for (const toy of toys) toy.aimed = toy === next;
+					refreshLabels();
+				}
+
+				function aimedToy() {
+					return living().find((toy) => toy.aimed) || living()[0];
+				}
+
+				function placeToy(toy) {
+					toy.el.style.left = `${toy.x}%`;
+					toy.el.style.top = `${toy.y}%`;
+				}
+
+				function makeToy() {
+					const used = new Set(living().map((toy) => toy.name));
+					const pool = CATALOG.filter((kind) => !used.has(kind.name));
+					const choices = pool.length ? pool : CATALOG;
+					const kind = choices[Math.floor(Math.random() * choices.length)];
+					const spot = randomSpot();
+					const el = document.createElement("button");
+					el.type = "button";
+					el.className = "toy";
+					const face = document.createElement("span");
+					face.className = "face";
+					face.textContent = kind.emoji;
+					face.setAttribute("aria-hidden", "true");
+					const tag = document.createElement("span");
+					tag.className = "aim";
+					tag.textContent = "aim";
+					tag.setAttribute("aria-hidden", "true");
+					el.append(face, tag);
+					const toy = {
+						id: idSeq,
+						name: kind.name,
+						lines: kind.lines,
+						el,
+						x: spot.x,
+						y: spot.y,
+						vx: rand(1.6, 3.4) * (Math.random() < 0.5 ? -1 : 1),
+						vy: rand(1.2, 2.6) * (Math.random() < 0.5 ? -1 : 1),
+						pinned: false,
+						aimed: false,
+						dead: false,
+					};
+					idSeq += 1;
+					el.addEventListener("pointerenter", () => {
+						toy.pinned = true;
+					});
+					el.addEventListener("pointerleave", () => {
+						toy.pinned = false;
+					});
+					el.addEventListener("pointerdown", (event) => {
+						if (event.button !== 0) return;
+						toy.pinned = true;
+						pop(toy);
+					});
+					el.addEventListener("click", () => pop(toy));
+					toysEl.append(el);
+					toys.push(toy);
+					placeToy(toy);
+					return toy;
+				}
+
+				function fill() {
+					while (living().length < toyCount()) makeToy();
+					if (!living().some((toy) => toy.aimed)) pickAim();
+					else refreshLabels();
+				}
+
+				function pointOf(el) {
+					const ar = arena.getBoundingClientRect();
+					const rect = el.getBoundingClientRect();
+					return {
+						x: rect.left + rect.width / 2 - ar.left,
+						y: rect.top + rect.height / 2 - ar.top,
+					};
+				}
+
+				function showBeam(target) {
+					const token = beamToken + 1;
+					beamToken = token;
+					shark.classList.add("blasting");
+					window.setTimeout(() => {
+						if (token !== beamToken) return;
+						beam.hidden = true;
+						shark.classList.remove("blasting");
+					}, reduce.matches ? 180 : 380);
+					if (reduce.matches) {
+						beam.hidden = true;
+						return;
+					}
+					const from = pointOf(shark.querySelector(".gem"));
+					const to = pointOf(target);
+					const dx = to.x - from.x;
+					const dy = to.y - from.y;
+					beam.hidden = false;
+					beam.style.width = `${Math.hypot(dx, dy)}px`;
+					beam.style.transform = `translate(${from.x}px, ${from.y - 3}px) rotate(${(Math.atan2(dy, dx) * 180) / Math.PI}deg)`;
+				}
+
+				function burst(target) {
+					if (reduce.matches || sparks.childElementCount > 36) return;
+					const at = pointOf(target);
+					const bits = ["✨", "🫧", "⭐", "💥", "✦"];
+					for (let i = 0; i < 6; i += 1) {
+						const spark = document.createElement("span");
+						spark.className = "spark";
+						spark.textContent = bits[i % bits.length];
+						const angle = (Math.PI * 2 * i) / 6;
+						const dist = 34 + Math.random() * 26;
+						spark.style.left = `${at.x}px`;
+						spark.style.top = `${at.y}px`;
+						spark.style.setProperty("--dx", `${Math.cos(angle) * dist}px`);
+						spark.style.setProperty("--dy", `${Math.sin(angle) * dist}px`);
+						sparks.append(spark);
+						window.setTimeout(() => spark.remove(), 480);
+					}
+				}
+
+				function announce(toy) {
+					const now = performance.now();
+					combo = now - comboAt < 1400 ? combo + 1 : 1;
+					comboAt = now;
+					const base = toy.lines[Math.floor(Math.random() * toy.lines.length)];
+					const previous = best;
+					const showBest = score > previous && score > 1;
+					if (score > previous) {
+						best = score;
+						try {
+							localStorage.setItem(BEST_KEY, String(best));
+						} catch {
+							/* private mode */
+						}
+					}
+					scoreEl.textContent = String(score);
+					bestEl.textContent = String(best);
+					const streak = combo >= 3 ? `${combo} straight. ` : "";
+					const crown = showBest ? " new best." : "";
+					statusEl.textContent = `${streak}${base}${crown}`;
+				}
+
+				function pop(toy) {
+					if (!toy || toy.dead) return;
+					const wasFocused = document.activeElement === toy.el;
+					toy.dead = true;
+					toy.aimed = false;
+					toy.el.disabled = true;
+					score += 1;
+					showBeam(toy.el);
+					burst(toy.el);
+					announce(toy);
+					const born = makeToy();
+					pickAim(born.id);
+					const cleanup = () => {
+						toy.el.remove();
+						toys = toys.filter((item) => item !== toy);
+					};
+					if (reduce.matches) cleanup();
+					else {
+						toy.el.classList.add("pop");
+						window.setTimeout(cleanup, 320);
+					}
+					if (wasFocused) born.el.focus();
+				}
+
+				function blast() {
+					const toy = aimedToy();
+					if (!toy) {
+						statusEl.textContent = "the ocean is empty. hang on.";
+						fill();
+						return;
+					}
+					pop(toy);
+				}
+
+				function cycle(direction) {
+					const pool = living();
+					if (!pool.length) return;
+					const index = Math.max(
+						0,
+						pool.findIndex((toy) => toy.aimed),
+					);
+					const next = pool[(index + direction + pool.length) % pool.length];
+					pickAim(next.id);
+					next.el.focus();
+				}
+
+				function tick(now) {
+					if (reduce.matches) return;
+					if (!last) last = now;
+					const dt = Math.min(0.05, (now - last) / 1000);
+					last = now;
+					const left = minX();
+					for (const toy of toys) {
+						if (toy.dead || toy.pinned) continue;
+						toy.x += toy.vx * dt;
+						toy.y += toy.vy * dt;
+						if (toy.x < left || toy.x > 92) {
+							toy.vx *= -1;
+							toy.x = Math.min(92, Math.max(left, toy.x));
+						}
+						if (toy.y < 16 || toy.y > 74) {
+							toy.vy *= -1;
+							toy.y = Math.min(74, Math.max(16, toy.y));
+						}
+						placeToy(toy);
+					}
+					raf = requestAnimationFrame(tick);
+				}
+
+				function start() {
+					cancelAnimationFrame(raf);
+					last = 0;
+					if (!reduce.matches && !document.hidden) {
+						raf = requestAnimationFrame(tick);
+					}
+				}
+
+				blastBtn.addEventListener("click", blast);
+
+				window.addEventListener("keydown", (event) => {
+					const target = event.target;
+					const typing =
+						target instanceof HTMLElement &&
+						Boolean(target.closest("input, textarea"));
+					if (typing) return;
+					if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+						event.preventDefault();
+						cycle(1);
+						return;
+					}
+					if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+						event.preventDefault();
+						cycle(-1);
+						return;
+					}
+					const onControl =
+						target instanceof HTMLElement && Boolean(target.closest("a, button"));
+					if (event.key === " " && !onControl) {
+						event.preventDefault();
+						blast();
+					}
+				});
+
+				reduce.addEventListener("change", () => {
+					if (reduce.matches) {
+						cancelAnimationFrame(raf);
+						beam.hidden = true;
+						shark.classList.remove("blasting");
+						statusEl.textContent =
+							"motion's off. tap a toy or mind blast — they still pop.";
+						return;
+					}
+					start();
+				});
+
+				document.addEventListener("visibilitychange", start);
+				window.addEventListener("resize", () => {
+					if (living().length < toyCount()) fill();
+				});
+
+				bestEl.textContent = String(best);
+				fill();
+				statusEl.textContent = reduce.matches
+					? "motion's off. tap a toy or mind blast — they still pop."
+					: "the shark is locked on. tap mind blast, or poke a toy.";
+				start();
+			})();
+		</script>
+	</body>
+</html>
