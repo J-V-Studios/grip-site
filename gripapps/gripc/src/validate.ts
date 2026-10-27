@@ -27,6 +27,12 @@ export function validateGrip(ast: GripApp, fileName: string): Diagnostic[] {
 		);
 	}
 
+	if (ast.scenes.length < 1) {
+		diags.push(
+			diagnostic(fileName, 1, 1, "App must include at least one scene"),
+		);
+	}
+
 	const sceneIds = new Set<string>();
 	for (const scene of ast.scenes) {
 		if (sceneIds.has(scene.id)) {
@@ -80,6 +86,17 @@ export function validateGrip(ast: GripApp, fileName: string): Diagnostic[] {
 				),
 			);
 		}
+		if (raw.path.includes("..")) {
+			diags.push(
+				diagnostic(
+					fileName,
+					1,
+					1,
+					`raw_module path must not contain ".."`,
+					`Got "${raw.path}"`,
+				),
+			);
+		}
 		if (!raw.exportName.trim()) {
 			diags.push(
 				diagnostic(fileName, 1, 1, "raw_module requires export name"),
@@ -114,8 +131,37 @@ function validateUiReferences(
 	knownActions: Set<string>,
 	diags: Diagnostic[],
 ): void {
-	if (node.kind === "button" && node.action) {
-		if (!knownActions.has(node.action)) {
+	if (
+		node.kind === "toggle" ||
+		node.kind === "slider" ||
+		node.kind === "timer" ||
+		node.kind === "toast"
+	) {
+		diags.push(
+			diagnostic(
+				fileName,
+				1,
+				1,
+				node.kind === "toast"
+					? 'Scene toast is not implemented; use an action step toast "..."'
+					: `"${node.kind}" is not implemented in the runtime`,
+				"Remove this widget until the runtime supports it",
+			),
+		);
+	}
+
+	if (node.kind === "button") {
+		if (!node.action.trim()) {
+			diags.push(
+				diagnostic(
+					fileName,
+					1,
+					1,
+					`Button "${node.id}" is missing an action target`,
+					'Use: button <id> label "..." -> action <actionId>',
+				),
+			);
+		} else if (!knownActions.has(node.action)) {
 			diags.push(
 				diagnostic(
 					fileName,

@@ -83,6 +83,11 @@
 			".grip-shell-header{font-size:1.25rem;font-weight:600;color:var(--color-sky)}" +
 			".grip-blurb{color:var(--color-subtext);margin:0}" +
 			".grip-stack{display:flex;flex-direction:column;gap:0.75rem}" +
+			".grip-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(8rem,1fr));gap:0.75rem}" +
+			".grip-hero{display:flex;flex-direction:column;gap:0.75rem;padding:1.25rem;border-radius:0.75rem;background:var(--color-surface)}" +
+			".grip-card{display:flex;flex-direction:column;gap:0.5rem;padding:1rem;border-radius:0.75rem;background:var(--color-surface-soft)}" +
+			".grip-modal{display:flex;flex-direction:column;gap:0.75rem;padding:1rem;border-radius:0.75rem;background:var(--color-surface);border:1px solid var(--color-mauve)}" +
+			".grip-tabs{display:flex;flex-wrap:wrap;gap:0.75rem}" +
 			".grip-text{margin:0;line-height:1.5}" +
 			".grip-btn{cursor:pointer;border:none;border-radius:0.5rem;padding:0.6rem 1rem;font-size:1rem;background:var(--color-sky);color:var(--color-base);font-weight:600}" +
 			".grip-btn:focus-visible{outline:2px solid var(--color-mauve);outline-offset:2px}" +
@@ -162,8 +167,10 @@
 
 		var toastTimer = null;
 		var sceneHost = null;
+		var shellEl = null;
 		var toastEl = null;
 		var slotRegistry = {};
+		var mountedRaw = {};
 		var canvasCleanups = [];
 
 		function clearToastTimer() {
@@ -221,6 +228,7 @@
 						if (!target) return;
 						target.innerHTML = "";
 						target.appendChild(node);
+						mountedRaw[slotName] = node;
 					},
 				},
 				state: {
@@ -247,7 +255,19 @@
 		}
 
 		function isAllowedRawPath(path) {
-			return typeof path === "string" && path.indexOf("./raw/") === 0;
+			return (
+				typeof path === "string" &&
+				path.indexOf("./raw/") === 0 &&
+				path.indexOf("..") === -1
+			);
+		}
+
+		function resolveRawModuleUrl(path) {
+			var base =
+				typeof document !== "undefined" && document.baseURI
+					? document.baseURI
+					: "https://lilgrip.com/";
+			return new URL(path, base).href;
 		}
 
 		function loadRawModules() {
@@ -256,14 +276,33 @@
 			var host = buildHostApi();
 			for (var m = 0; m < mods.length; m++) {
 				(function (mod) {
-					if (!isAllowedRawPath(mod.path)) return;
+					if (!isAllowedRawPath(mod.path)) {
+						showToast("raw_module path rejected");
+						return;
+					}
 					var exportName = mod.exportName;
-					import(mod.path)
+					var url;
+					try {
+						url = resolveRawModuleUrl(mod.path);
+					} catch (err) {
+						showToast(
+							"raw_module failed: " +
+								(err && err.message ? err.message : String(err)),
+						);
+						return;
+					}
+					import(url)
 						.then(function (ns) {
 							var fn = ns[exportName];
-							if (typeof fn === "function") {
-								fn(host);
+							if (typeof fn !== "function") {
+								showToast(
+									'raw_module export "' +
+										exportName +
+										'" is not a function',
+								);
+								return;
 							}
+							fn(host);
 						})
 						.catch(function (err) {
 							showToast(
@@ -310,17 +349,57 @@
 			if (name && el) slotRegistry[name] = el;
 		}
 
-		function ensureRawModuleSlots(shell) {
+		function removeShellSlotDupes(slotName, keep) {
+			if (!shellEl) return;
+			var nodes = shellEl.querySelectorAll(
+				'[data-grip-slot="' + slotName + '"]',
+			);
+			for (var i = 0; i < nodes.length; i++) {
+				var el = nodes[i];
+				if (el === keep) continue;
+				if (el.getAttribute("data-grip-shell-slot") === "1") {
+					el.remove();
+				}
+			}
+		}
+
+		function ensureRawModuleSlots() {
+			if (!shellEl) return;
 			var mods = ir.rawModules;
 			if (!Array.isArray(mods)) return;
+			var seen = {};
 			for (var i = 0; i < mods.length; i++) {
 				var slotName = mods[i].slot;
-				if (!slotName || getRegisteredSlot(slotName)) continue;
+				if (!slotName || seen[slotName]) continue;
+				seen[slotName] = true;
+				var existing = getRegisteredSlot(slotName);
+				if (existing) {
+					removeShellSlotDupes(slotName, existing);
+					continue;
+				}
 				var slot = document.createElement("div");
 				slot.className = "grip-raw-slot";
 				slot.setAttribute("data-grip-slot", slotName);
-				shell.appendChild(slot);
+				slot.setAttribute("data-grip-shell-slot", "1");
+				shellEl.appendChild(slot);
 				registerSlot(slotName, slot);
+			}
+		}
+
+		function detachMountedRaw() {
+			for (var name in mountedRaw) {
+				var node = mountedRaw[name];
+				if (node && node.parentNode) node.parentNode.removeChild(node);
+			}
+		}
+
+		function reattachMountedRaw() {
+			for (var name in mountedRaw) {
+				var node = mountedRaw[name];
+				if (!node) continue;
+				var slot = getRegisteredSlot(name);
+				if (!slot || node.parentNode === slot) continue;
+				slot.appendChild(node);
 			}
 		}
 
@@ -392,15 +471,26 @@
 
 		function renderNode(node) {
 			if (!node || !node.type) return null;
-			if (node.type === "stack") {
-				var stack = document.createElement("div");
-				stack.className = "grip-stack";
+			var layoutClass = {
+				stack: "grip-stack",
+				grid: "grip-grid",
+				hero: "grip-hero",
+				card: "grip-card",
+				modal: "grip-modal",
+				tabs: "grip-tabs",
+			};
+			if (layoutClass[node.type]) {
+				var layout = document.createElement(
+					node.type === "modal" ? "section" : "div",
+				);
+				layout.className = layoutClass[node.type];
+				if (node.type === "modal") layout.setAttribute("role", "dialog");
 				var kids = node.children || [];
 				for (var c = 0; c < kids.length; c++) {
 					var child = renderNode(kids[c]);
-					if (child) stack.appendChild(child);
+					if (child) layout.appendChild(child);
 				}
-				return stack;
+				return layout;
 			}
 			if (node.type === "text") {
 				var p = document.createElement("p");
@@ -447,6 +537,14 @@
 			if (node.type === "particles" && prefersReducedMotion()) {
 				return null;
 			}
+			if (
+				node.type === "toggle" ||
+				node.type === "slider" ||
+				node.type === "timer" ||
+				node.type === "toast"
+			) {
+				return null;
+			}
 			var stub = document.createElement("div");
 			stub.className = "grip-stub";
 			stub.hidden = true;
@@ -458,23 +556,28 @@
 			var scene = sceneMap[snapshot.scene];
 			if (!sceneHost) return;
 			teardownCanvasLoops();
+			detachMountedRaw();
 			sceneHost.innerHTML = "";
 			reconcileSlotRegistry();
 			sceneHost.className = "grip-scene";
-			var rootNode = renderNode(scene.root);
+			var rootNode = renderNode(scene && scene.root);
 			if (rootNode) sceneHost.appendChild(rootNode);
+			ensureRawModuleSlots();
+			reattachMountedRaw();
 		}
 
 		function mount() {
 			rootEl.innerHTML = "";
 			rootEl.className = "grip-app";
 			slotRegistry = {};
+			mountedRaw = {};
 			injectStyles(rootEl);
 			var themeName =
 				ir.meta && ir.meta.theme ? ir.meta.theme : "lilgrip_default";
 			applyTheme(rootEl, themeName);
 
 			var shell = document.createElement("div");
+			shellEl = shell;
 			shell.className = "grip-shell";
 
 			var showHeader = true;
@@ -500,7 +603,6 @@
 			sceneHost = document.createElement("main");
 			sceneHost.setAttribute("aria-live", "polite");
 			shell.appendChild(sceneHost);
-			ensureRawModuleSlots(shell);
 			rootEl.appendChild(shell);
 			renderScene();
 			loadRawModules();

@@ -31,5 +31,6 @@ Reference Vite + React template: [`community-scaffold/`](../../community-scaffol
 ## Rules (short)
 
 - **One folder per handle:** `public/community/<handle>/**` only in community PRs.
-- **Required files:** `index.html`, `manifest.json`.
+- **Required files (GripApps):** `app.grip`, `app.grip.js`, `index.html`, `manifest.json`, and `vendor/gripapps/runtime.js` (plus `vendor/gripapps/VERSION`).
+- **Moderation and skill:** [MODERATION.md](./MODERATION.md) and [`.cursor/skills/gripapps/SKILL.md`](../../.cursor/skills/gripapps/SKILL.md).
 - **No core site edits:** no `src/`, no other handles, no `.github/` or secrets.

@@ -1,6 +1,6 @@
 meta {
   title "Tap Counter"
-  blurb "A minimal clicker — bump score and show a toast."
+  blurb "One tap stores score 1 and shows a toast. set replaces the value; it does not add."
   theme lilgrip_default
 }
 
@@ -10,13 +10,13 @@ state {
 
 scene home {
   stack {
-    text "taps: (see toast after each tap)"
+    text "score starts at 0 — tap stores 1 (not a running total)"
     button tap label "tap me" -> action tap
   }
 }
 
 action tap {
   set score 1
-  toast "nice tap!"
+  toast "nice tap! score is 1"
   goto home
 }

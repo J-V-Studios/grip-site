@@ -54,6 +54,19 @@ jobs:
             echo "No app.grip at PR tip for ${handle}; skipping gripc check"
           fi
 
+      - name: gripc build parity (app.grip.js)
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          branch="${{ github.head_ref }}"
+          suffix="${branch#community/}"
+          if [[ ! "$suffix" =~ ^([a-z0-9]([a-z0-9-]{1,22}[a-z0-9])?)-[0-9a-f]{8}$ ]]; then
+            echo "Skipping build parity (branch name does not match community handle pattern)"
+            exit 0
+          fi
+          handle="${BASH_REMATCH[1]}"
+          bash scripts/gripapps-build-parity.sh "public/community/${handle}"
+
       - name: Enable auto-merge (squash)
         if: github.event_name == 'pull_request'
         env:

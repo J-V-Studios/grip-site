@@ -44,4 +44,5 @@ Guns and toy chaos are OK when they are not paired with instructions or glorific
 ## Related
 
 - [AGENT_GUIDE.md](./AGENT_GUIDE.md) — planner/builder workflow
-- [`.cursor/skills/community-builder/SKILL.md`](../../.cursor/skills/community-builder/SKILL.md) — skill summary
+- [`.cursor/skills/gripapps/SKILL.md`](../../.cursor/skills/gripapps/SKILL.md) — GripApps skill (new builds)
+- [`.cursor/skills/community-builder/SKILL.md`](../../.cursor/skills/community-builder/SKILL.md) — legacy skill summary

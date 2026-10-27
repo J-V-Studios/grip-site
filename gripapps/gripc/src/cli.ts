@@ -102,6 +102,7 @@ async function cmdBuild(
 	const html = renderBootHtml({
 		handle,
 		version: DEFAULT_RUNTIME_VERSION,
+		title: result.manifest.title,
 	});
 	await writeFile(join(outDir, "index.html"), html, "utf8");
 

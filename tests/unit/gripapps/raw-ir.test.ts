@@ -31,7 +31,6 @@ scene game {
     sprite player
     score_hud
     particles
-    timer tick
   }
 }
 `,
@@ -45,7 +44,5 @@ scene game {
 		expect(result.js).toContain('"id":"player"');
 		expect(result.js).toContain('"type":"score_hud"');
 		expect(result.js).toContain('"type":"particles"');
-		expect(result.js).toContain('"type":"timer"');
-		expect(result.js).toContain('"id":"tick"');
 	});
 });

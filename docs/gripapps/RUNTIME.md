@@ -36,7 +36,10 @@ Unknown themes fail `gripc check`.
 
 - Scene stack supports `goto` / `back` navigation
 - `prefers-reduced-motion: reduce` tones down heavy motion (e.g. particles)
-- `raw_module` scripts load from paths under `./raw/` only
+- `raw_module` scripts load from paths under `./raw/` only. Paths containing `..` are rejected. The URL is `new URL(path, document.baseURI)` (page-relative). A missing or non-function export shows a toast.
+- `grid`, `hero`, `card`, `modal`, and `tabs` render as visible containers with their children. `toggle`, `slider`, `timer`, and scene-level `toast` are rejected by `gripc check` and are not interactive.
+- After a scene change, previously mounted raw-module DOM is reattached to the slot. A shell slot is created only when the scene has no `raw_slot` with that name.
+- Boot `index.html` uses `meta.title` for `<title>`, puts the handle on `data-grip-handle`, and shows an error if the CDN runtime, vendored runtime, or `app.grip.js` fails to load.
 - Uncaught errors show an in-app boundary with retry
 
 ## Source of truth

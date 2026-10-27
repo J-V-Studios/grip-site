@@ -9,6 +9,15 @@ export type CommunityGalleryItem = {
 
 const VIEW = "community_gallery";
 
+const RESERVED_GALLERY_HANDLES = new Set(["gripapps-demo"]);
+
+/** Public gallery skips fixtures, reserved demos, and underscore handles. */
+export function isPublicGalleryHandle(handle: string): boolean {
+	const name = handle.trim().toLowerCase();
+	if (!name || name.startsWith("_")) return false;
+	return !RESERVED_GALLERY_HANDLES.has(name);
+}
+
 type GalleryRow = {
 	handle: string;
 	title: string | null;
@@ -35,7 +44,9 @@ export async function fetchLiveCommunityPages(): Promise<
 			.order("updated_at", { ascending: false });
 
 		if (error) throw error;
-		return (data ?? []).map((row) => mapGalleryRow(row as GalleryRow));
+		return (data ?? [])
+			.map((row) => mapGalleryRow(row as GalleryRow))
+			.filter((item) => isPublicGalleryHandle(item.handle));
 	} catch (error) {
 		if (error instanceof Error) throw error;
 		throw new Error("community gallery could not load");
@@ -49,9 +60,11 @@ export function mergeGalleryLists(
 ): CommunityGalleryItem[] {
 	const byHandle = new Map<string, CommunityGalleryItem>();
 	for (const item of fallback) {
+		if (!isPublicGalleryHandle(item.handle)) continue;
 		byHandle.set(item.handle, item);
 	}
 	for (const item of primary) {
+		if (!isPublicGalleryHandle(item.handle)) continue;
 		byHandle.set(item.handle, item);
 	}
 	return [...byHandle.values()].sort((a, b) =>
