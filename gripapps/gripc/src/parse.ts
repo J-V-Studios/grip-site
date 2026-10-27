@@ -231,6 +231,15 @@ function sourceChar(ctx: ParseContext): string {
 	return ctx.source[ctx.pos] ?? "";
 }
 
+function readArrow(ctx: ParseContext): boolean {
+	ctx.skipWhitespaceAndComments();
+	if (ctx.source[ctx.pos] === "-" && ctx.source[ctx.pos + 1] === ">") {
+		ctx.pos += 2;
+		return true;
+	}
+	return false;
+}
+
 function readScalar(ctx: ParseContext): GripScalar {
 	ctx.skipWhitespaceAndComments();
 	if (sourceChar(ctx) === '"') {
@@ -371,8 +380,7 @@ function parseUiNode(ctx: ParseContext): UiNode {
 			label = String(readScalar(ctx));
 		}
 		ctx.skipWhitespaceAndComments();
-		if (ctx.peekWord() === "->") {
-			ctx.readWord();
+		if (readArrow(ctx)) {
 			const actionKw = ctx.readWord();
 			const actionId = ctx.readWord();
 			if (actionKw !== "action") {
