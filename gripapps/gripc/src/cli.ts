@@ -5,6 +5,7 @@ import { renderBootHtml } from "./boot-html";
 import { compileGripSource } from "./compile";
 import type { Diagnostic } from "./diagnostics";
 import { mergeBuildManifest, type GripBuildManifest } from "./manifest";
+import { vendorRuntime } from "./vendor";
 
 const DEFAULT_RUNTIME_VERSION = "1";
 
@@ -19,31 +20,45 @@ function printDiagnostics(diags: Diagnostic[]): void {
 function usage(): void {
 	console.error(`Usage:
   gripc check <file>
-  gripc build <file> --out <dir> --handle <handle>`);
+  gripc build <file> --out <dir> --handle <handle>
+  gripc vendor-runtime --out <dir>`);
 }
 
 function parseArgs(argv: string[]): {
-	command: "check" | "build" | null;
+	command: "check" | "build" | "vendor-runtime" | null;
 	file: string | null;
 	outDir: string | null;
 	handle: string | null;
 } {
-	const [, , command, file, ...rest] = argv;
+	const [, , command, ...rest] = argv;
+	let file: string | null = null;
 	let outDir: string | null = null;
 	let handle: string | null = null;
 
-	for (let i = 0; i < rest.length; i++) {
-		const arg = rest[i];
-		if (arg === "--out" && rest[i + 1]) {
-			outDir = rest[++i];
-		} else if (arg === "--handle" && rest[i + 1]) {
-			handle = rest[++i];
+	if (command === "vendor-runtime") {
+		for (let i = 0; i < rest.length; i++) {
+			const arg = rest[i];
+			if (arg === "--out" && rest[i + 1]) {
+				outDir = rest[++i];
+			}
+		}
+		return { command: "vendor-runtime", file: null, outDir, handle };
+	}
+
+	file = rest[0] ?? null;
+	const opts = rest.slice(1);
+	for (let i = 0; i < opts.length; i++) {
+		const arg = opts[i];
+		if (arg === "--out" && opts[i + 1]) {
+			outDir = opts[++i];
+		} else if (arg === "--handle" && opts[i + 1]) {
+			handle = opts[++i];
 		}
 	}
 
 	const cmd =
 		command === "check" || command === "build" ? command : null;
-	return { command: cmd, file: file ?? null, outDir, handle };
+	return { command: cmd, file, outDir, handle };
 }
 
 async function cmdCheck(file: string): Promise<number> {
@@ -101,16 +116,40 @@ async function cmdBuild(
 	});
 	await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
 
+	await vendorRuntime(process.cwd(), outDir);
+
 	console.log(`Wrote ${jsPath}`);
 	console.log(`Wrote ${join(outDir, "index.html")}`);
 	console.log(`Wrote ${manifestPath}`);
+	console.log(`Wrote ${join(outDir, "vendor/gripapps/runtime.js")}`);
+	return 0;
+}
+
+async function cmdVendorRuntime(outDir: string): Promise<number> {
+	await mkdir(outDir, { recursive: true });
+	await vendorRuntime(process.cwd(), outDir);
+	console.log(`Vendored runtime to ${join(outDir, "vendor/gripapps")}`);
 	return 0;
 }
 
 async function main(): Promise<number> {
 	const { command, file, outDir, handle } = parseArgs(process.argv);
 
-	if (!command || !file) {
+	if (!command) {
+		usage();
+		return 1;
+	}
+
+	if (command === "vendor-runtime") {
+		if (!outDir) {
+			console.error("vendor-runtime requires --out <dir>");
+			usage();
+			return 1;
+		}
+		return cmdVendorRuntime(outDir);
+	}
+
+	if (!file) {
 		usage();
 		return 1;
 	}

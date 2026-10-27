@@ -1,0 +1,22 @@
+meta {
+  title "Tap Counter"
+  blurb "A minimal clicker — bump score and show a toast."
+  theme lilgrip_default
+}
+
+state {
+  score 0
+}
+
+scene home {
+  stack {
+    text "taps: (see toast after each tap)"
+    button tap label "tap me" -> action tap
+  }
+}
+
+action tap {
+  set score 1
+  toast "nice tap!"
+  goto home
+}

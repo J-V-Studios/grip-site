@@ -1,0 +1,21 @@
+meta {
+  title "Meme Stage"
+  blurb "Emoji stage with a shuffle button."
+  theme lilgrip_default
+}
+
+state {
+  mood "vibes"
+}
+
+scene stage {
+  stack {
+    emoji_stage "🗿"
+    button shuffle label "shuffle mood" -> action shuffle
+  }
+}
+
+action shuffle {
+  toast "mood shuffled"
+  goto stage
+}

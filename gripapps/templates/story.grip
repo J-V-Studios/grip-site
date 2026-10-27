@@ -1,0 +1,38 @@
+meta {
+  title "Two-Scene Story"
+  blurb "Simple forward/back scene flow for branching pages."
+  theme lilgrip_default
+}
+
+state {
+  chapter 1
+}
+
+scene intro {
+  stack {
+    text "chapter one: you arrive at the grip"
+    button next label "continue" -> action to_mid
+  }
+}
+
+scene middle {
+  stack {
+    text "chapter two: something happened"
+    button back_btn label "go back" -> action rewind
+    button end label "fin" -> action finish
+  }
+}
+
+action to_mid {
+  set chapter 2
+  goto middle
+}
+
+action rewind {
+  back
+}
+
+action finish {
+  toast "the end (for now)"
+  goto middle
+}

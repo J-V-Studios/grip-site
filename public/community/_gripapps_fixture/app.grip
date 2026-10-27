@@ -1,0 +1,22 @@
+meta {
+  title "Hello Grip"
+  blurb "A tiny welcome page — copy this template to start a GripApp."
+  theme lilgrip_default
+}
+
+state {
+  ready false
+}
+
+scene home {
+  stack {
+    text "hi from gripapps"
+    button start label "wave" -> action wave
+  }
+}
+
+action wave {
+  set ready true
+  toast "👋 you waved!"
+  goto home
+}
