@@ -1,7 +1,7 @@
 # GripApps — Design Spec
 
 **Date:** 2026-10-27  
-**Status:** Approved — implementation plan in `docs/superpowers/plans/2026-10-27-gripapps.md`  
+**Status:** Implemented (2026-10-27) — plan executed in `docs/superpowers/plans/2026-10-27-gripapps.md` (tasks 1–9). Live enqueue still depends on `CURSOR_API_KEY` + orchestrator redeploy after prompt changes.  
 **Site:** lilgrip.com (`J-V-Studios/grip-site`)  
 **Goal:** Extremely robust community mini-pages via an AI-first custom language (GripLang), cross-compiler (`gripc`), shared+vendored runtime, and a specialized agent skill that **replaces** freeform community Vite/React builds.
 

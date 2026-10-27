@@ -15,6 +15,7 @@ End-to-end checklist for the visitor community feature: Supabase Edge Function o
 - Gateway `verify_jwt` is **off** (site uses publishable `sb_publishable_…` keys, which are not JWTs).
 - The function authorizes callers by matching the `apikey` header to `SUPABASE_ANON_KEY` / `SUPABASE_PUBLISHABLE_KEYS` (auto-injected by the platform).
 - Redeploy from repo: MCP `deploy_edge_function` or `supabase functions deploy community-orchestrator --project-ref lendvtrjkehanndudjfd` (see `supabase/config.toml`).
+- **GripApps (required after Task 7+):** planner/builder Cloud Agent prompts live in `supabase/functions/community-orchestrator/cursor.ts`. They point agents at `.cursor/skills/gripapps/SKILL.md`, `docs/gripapps/AGENT_GUIDE.md`, and `docs/gripapps/COOKBOOK.md`, and require `app.grip` + `bun run gripc -- check` / `build` under `public/community/<handle>/`. Redeploy the edge function whenever that file changes so production enqueue runs use GripApps, not the legacy Vite scaffold.
 
 ## 2. Edge Function secrets
 
@@ -69,6 +70,7 @@ Local dev: `.env` with the same `PUBLIC_*` values; `bun run dev` → `/community
 - [ ] **Enqueue** harmless prompt: `make a bouncing blue square` → agents launch
 - [ ] Confirm build status progresses (`queued` → `planning` → `building` → `live` or terminal state)
 - [ ] Confirm planner/builder agents run; PR branch `community/<handle>-*` only touches `public/community/<handle>/`
+- [ ] GripApps builder output: `app.grip`, `app.grip.js`, `index.html`, `manifest.json`, `vendor/gripapps/runtime.js` (path guard + CI `gripc check` when `app.grip` present)
 - [ ] Confirm PR auto-merges (path guard workflow) and page is live at `/community/<handle>/`
 
 ### curl examples (after deploy)
@@ -105,3 +107,5 @@ Rule logic lives in `src/lib/community-moderation.ts` (unit tested). The edge fu
 - [README.md](./README.md) — doc index
 - [AGENT_GUIDE.md](./AGENT_GUIDE.md) — planner/builder workflow
 - [../superpowers/specs/2026-10-26-community-builds-design.md](../superpowers/specs/2026-10-26-community-builds-design.md) — product spec
+- [../superpowers/specs/2026-10-27-gripapps-design.md](../superpowers/specs/2026-10-27-gripapps-design.md) — GripApps design (implemented)
+- [../gripapps/README.md](../gripapps/README.md) — GripLang / `gripc` / runtime docs

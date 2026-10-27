@@ -15,6 +15,9 @@ Check items off as they ship. Prefer small PRs / commits. Align with `AGENTS.md`
 - [x] Vitest unit tests for lib helpers
 - [x] Agent docs refresh: `AGENTS.md`, Astro `.cursorrules`, updated OVERVIEW/README
 - [x] Community builds: hub UI, orchestrator edge function, path guard CI, moderation unit tests, [DEPLOY.md](./docs/community/DEPLOY.md)
+- [x] GripApps: GripLang + `gripc` check/build/vendor, shared `public/gripapps/runtime.js`, docs + `.cursor/skills/gripapps/`
+- [x] GripApps: orchestrator planner/builder prompts + community doc redirects from legacy `community-builder`
+- [x] GripApps: CI path guard + `gripc check` on `app.grip` PRs; `gripapps-demo` e2e smoke
 
 ---
 
@@ -60,6 +63,13 @@ Check items off as they ship. Prefer small PRs / commits. Align with `AGENTS.md`
 - [x] Fix Cursor API Basic-auth header bug (was sending `Authorization: Authorization: Basic …`)
 - [ ] Optional: set `EDIT_CODE_PEPPER` in Edge Function secrets
 - [ ] Live smoke: enqueue harmless prompt → agent PR + `/community/<handle>/`
+- [x] Redeploy `community-orchestrator` after GripApps prompt changes (see [DEPLOY.md](./docs/community/DEPLOY.md) §1; live v5)
+
+## GripApps (ops)
+
+- [x] Official demo handle `public/community/gripapps-demo/` (from `gripapps/templates/hello.grip`)
+- [x] Production orchestrator redeployed with GripApps `cursor.ts` prompts (Supabase edge v5)
+- [ ] First live GripApps enqueue: verify agent PR artifacts + auto-merge + `/community/<handle>/`
 
 ## Content / product
 
