@@ -4,6 +4,40 @@ export type CreateAgentResult =
 	| { ok: true; agentId: string; runId?: string }
 	| { ok: false; error: string };
 
+/** Map Cursor Cloud Agents API failures to visitor-safe copy. */
+export function humanizeCursorAgentError(
+	status: number,
+	bodyText: string,
+): string {
+	const snippet = bodyText.slice(0, 500);
+	let code = "";
+	let message = "";
+	try {
+		const parsed = JSON.parse(bodyText) as {
+			error?: { code?: string; message?: string };
+			code?: string;
+			message?: string;
+		};
+		code = parsed.error?.code ?? parsed.code ?? "";
+		message = parsed.error?.message ?? parsed.message ?? "";
+	} catch {
+		// keep raw snippet path below
+	}
+
+	if (
+		code === "usage_limit_exceeded" ||
+		/prepaid balance is used up|usage_limit_exceeded|add funds/i.test(
+			`${code} ${message} ${snippet}`,
+		)
+	) {
+		return "Cursor Cloud Agents billing is empty — add funds or enable auto top-up on the Cursor account that owns CURSOR_API_KEY, then try again tomorrow (one enqueue per handle per UTC day).";
+	}
+	if (status === 401 || /Invalid User API Key/i.test(snippet)) {
+		return "Cursor API key rejected — check CURSOR_API_KEY in Supabase secrets.";
+	}
+	return `Cursor API ${status}: ${snippet}`;
+}
+
 /** Value for the Authorization header (Basic auth: API key as username, empty password). */
 function basicAuthValue(apiKey: string): string {
 	const trimmed = apiKey.trim();
@@ -43,7 +77,7 @@ export async function createCloudAgent(options: {
 	if (!res.ok) {
 		return {
 			ok: false,
-			error: `Cursor API ${res.status}: ${text.slice(0, 500)}`,
+			error: humanizeCursorAgentError(res.status, text),
 		};
 	}
 
