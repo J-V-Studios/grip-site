@@ -5,7 +5,10 @@ import { renderBootHtml } from "./boot-html";
 import { compileGripSource } from "./compile";
 import type { Diagnostic } from "./diagnostics";
 import { mergeBuildManifest, type GripBuildManifest } from "./manifest";
+import { enrichGripFile, printEnrichNextSteps } from "./enrich";
+import { parseGrip } from "./parse";
 import { vendorRuntime } from "./vendor";
+import { isVisuallyThin, visualThinHint } from "./visual";
 
 const DEFAULT_RUNTIME_VERSION = "1";
 
@@ -19,21 +22,24 @@ function printDiagnostics(diags: Diagnostic[]): void {
 
 function usage(): void {
 	console.error(`Usage:
-  gripc check <file>
+  gripc check [--visual] <file>
+  gripc enrich <file>
   gripc build <file> --out <dir> --handle <handle>
   gripc vendor-runtime --out <dir>`);
 }
 
 function parseArgs(argv: string[]): {
-	command: "check" | "build" | "vendor-runtime" | null;
+	command: "check" | "build" | "vendor-runtime" | "enrich" | null;
 	file: string | null;
 	outDir: string | null;
 	handle: string | null;
+	visual: boolean;
 } {
 	const [, , command, ...rest] = argv;
 	let file: string | null = null;
 	let outDir: string | null = null;
 	let handle: string | null = null;
+	let visual = false;
 
 	if (command === "vendor-runtime") {
 		for (let i = 0; i < rest.length; i++) {
@@ -42,7 +48,21 @@ function parseArgs(argv: string[]): {
 				outDir = rest[++i];
 			}
 		}
-		return { command: "vendor-runtime", file: null, outDir, handle };
+		return { command: "vendor-runtime", file: null, outDir, handle, visual };
+	}
+
+	if (command === "check" || command === "enrich") {
+		const positional: string[] = [];
+		for (const arg of rest) {
+			if (arg === "--visual") {
+				visual = true;
+			} else {
+				positional.push(arg);
+			}
+		}
+		file = positional[0] ?? null;
+		const cmd = command === "check" || command === "enrich" ? command : null;
+		return { command: cmd, file, outDir, handle, visual };
 	}
 
 	file = rest[0] ?? null;
@@ -56,18 +76,35 @@ function parseArgs(argv: string[]): {
 		}
 	}
 
-	const cmd =
-		command === "check" || command === "build" ? command : null;
-	return { command: cmd, file, outDir, handle };
+	const cmd = command === "build" ? command : null;
+	return { command: cmd, file, outDir, handle, visual };
 }
 
-async function cmdCheck(file: string): Promise<number> {
+async function cmdCheck(file: string, visual: boolean): Promise<number> {
 	const source = await readFile(file, "utf8");
 	const result = compileGripSource(source, file);
 	if (!result.ok) {
 		printDiagnostics(result.diagnostics);
 		return 1;
 	}
+	if (visual) {
+		const parsed = parseGrip(source, file);
+		if (parsed.ok && isVisuallyThin(parsed.ast)) {
+			console.error(visualThinHint(`gripc enrich ${file}`));
+			return 1;
+		}
+	}
+	return 0;
+}
+
+async function cmdEnrich(file: string): Promise<number> {
+	const result = await enrichGripFile(file);
+	if (!result.ok) {
+		printDiagnostics(result.diagnostics);
+		return 1;
+	}
+	console.log(`Wrote ${result.notesPath}`);
+	printEnrichNextSteps();
 	return 0;
 }
 
@@ -147,7 +184,7 @@ async function cmdVendorRuntime(outDir: string): Promise<number> {
 }
 
 async function main(): Promise<number> {
-	const { command, file, outDir, handle } = parseArgs(process.argv);
+	const { command, file, outDir, handle, visual } = parseArgs(process.argv);
 
 	if (!command) {
 		usage();
@@ -169,7 +206,11 @@ async function main(): Promise<number> {
 	}
 
 	if (command === "check") {
-		return cmdCheck(file);
+		return cmdCheck(file, visual);
+	}
+
+	if (command === "enrich") {
+		return cmdEnrich(file);
 	}
 
 	if (!outDir || !handle) {
