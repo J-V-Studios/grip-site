@@ -82,6 +82,19 @@ async function readExistingManifest(
 	}
 }
 
+async function readRuntimeVersion(repoRoot: string): Promise<string> {
+	try {
+		const raw = await readFile(
+			join(repoRoot, "public/gripapps/VERSION"),
+			"utf8",
+		);
+		const trimmed = raw.trim();
+		return trimmed || DEFAULT_RUNTIME_VERSION;
+	} catch {
+		return DEFAULT_RUNTIME_VERSION;
+	}
+}
+
 async function cmdBuild(
 	file: string,
 	outDir: string,
@@ -101,7 +114,7 @@ async function cmdBuild(
 
 	const html = renderBootHtml({
 		handle,
-		version: DEFAULT_RUNTIME_VERSION,
+		version: await readRuntimeVersion(process.cwd()),
 		title: result.manifest.title,
 	});
 	await writeFile(join(outDir, "index.html"), html, "utf8");

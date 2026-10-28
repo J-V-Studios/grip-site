@@ -19,6 +19,74 @@
 			"--color-teal": "#94e2d5",
 			"--color-peach": "#fab387",
 			"--color-mauve": "#cba6f7",
+			"--grip-bg-gradient":
+				"linear-gradient(165deg,#1e1e2e 0%,#181825 55%,#11111b 100%)",
+			"--grip-hero-gradient":
+				"linear-gradient(135deg,#313244 0%,#262637 100%)",
+		},
+		neon_lagoon: {
+			"--color-base": "#061018",
+			"--color-surface": "#0b1f2a",
+			"--color-surface-soft": "#123040",
+			"--color-text": "#d4f8ff",
+			"--color-subtext": "#7ec8e3",
+			"--color-sky": "#00f5d4",
+			"--color-blue": "#00bbf9",
+			"--color-teal": "#9b5de5",
+			"--color-peach": "#fee440",
+			"--color-mauve": "#f15bb5",
+			"--grip-bg-gradient":
+				"linear-gradient(165deg,#061018 0%,#0a2a35 45%,#051520 100%)",
+			"--grip-hero-gradient":
+				"linear-gradient(135deg,#0b2a3d 0%,#123040 50%,#1a1040 100%)",
+		},
+		barn_night: {
+			"--color-base": "#1a120c",
+			"--color-surface": "#2a1c12",
+			"--color-surface-soft": "#3d2818",
+			"--color-text": "#f5e6d3",
+			"--color-subtext": "#c4a882",
+			"--color-sky": "#ffb347",
+			"--color-blue": "#e8a87c",
+			"--color-teal": "#c38d4e",
+			"--color-peach": "#ff6b35",
+			"--color-mauve": "#d4a574",
+			"--grip-bg-gradient":
+				"linear-gradient(165deg,#1a120c 0%,#241810 50%,#120a06 100%)",
+			"--grip-hero-gradient":
+				"linear-gradient(135deg,#3d2818 0%,#2a1c12 100%)",
+		},
+		candy_arcade: {
+			"--color-base": "#1a0a24",
+			"--color-surface": "#2d1240",
+			"--color-surface-soft": "#451a62",
+			"--color-text": "#fff0f8",
+			"--color-subtext": "#e8b4f8",
+			"--color-sky": "#ff6bcb",
+			"--color-blue": "#7b61ff",
+			"--color-teal": "#00f5d4",
+			"--color-peach": "#ffe066",
+			"--color-mauve": "#ff9ff3",
+			"--grip-bg-gradient":
+				"linear-gradient(165deg,#1a0a24 0%,#2a1050 45%,#120818 100%)",
+			"--grip-hero-gradient":
+				"linear-gradient(135deg,#451a62 0%,#2d1240 55%,#1a3060 100%)",
+		},
+		deep_space: {
+			"--color-base": "#050510",
+			"--color-surface": "#0c0c24",
+			"--color-surface-soft": "#151538",
+			"--color-text": "#e8e8ff",
+			"--color-subtext": "#9898c8",
+			"--color-sky": "#7b68ee",
+			"--color-blue": "#4169e1",
+			"--color-teal": "#9370db",
+			"--color-peach": "#ff7f50",
+			"--color-mauve": "#da70d6",
+			"--grip-bg-gradient":
+				"linear-gradient(165deg,#050510 0%,#0a0a28 50%,#020208 100%)",
+			"--grip-hero-gradient":
+				"linear-gradient(135deg,#151538 0%,#0c0c24 100%)",
 		},
 	};
 
@@ -85,6 +153,10 @@
 			".grip-stack{display:flex;flex-direction:column;gap:0.75rem}" +
 			".grip-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(8rem,1fr));gap:0.75rem}" +
 			".grip-hero{display:flex;flex-direction:column;gap:0.75rem;padding:1.25rem;border-radius:0.75rem;background:var(--color-surface)}" +
+			".grip-hero-bleed{margin-left:-1rem;margin-right:-1rem;width:calc(100% + 2rem);max-width:none;border-radius:0;padding:2rem 1.25rem;background:var(--grip-hero-gradient,var(--color-surface));box-shadow:inset 0 -1px 0 rgba(255,255,255,0.06)}" +
+			".grip-hero-emoji{font-size:3rem;line-height:1}" +
+			".grip-hero-title{margin:0;font-size:1.75rem;font-weight:700;color:var(--color-text)}" +
+			".grip-hero-blurb{margin:0;color:var(--color-subtext);line-height:1.5}" +
 			".grip-card{display:flex;flex-direction:column;gap:0.5rem;padding:1rem;border-radius:0.75rem;background:var(--color-surface-soft)}" +
 			".grip-modal{display:flex;flex-direction:column;gap:0.75rem;padding:1rem;border-radius:0.75rem;background:var(--color-surface);border:1px solid var(--color-mauve)}" +
 			".grip-tabs{display:flex;flex-wrap:wrap;gap:0.75rem}" +
@@ -104,7 +176,7 @@
 			".grip-image{max-width:100%;border-radius:0.5rem}" +
 			".grip-raw-slot{min-height:0.5rem}" +
 			(!prefersReducedMotion()
-				? ".grip-scene{animation:grip-fade-in 0.2s ease}.grip-toast{transition:opacity 0.2s ease}.grip-particles::after{content:'';position:absolute;width:6px;height:6px;border-radius:50%;background:var(--color-peach);animation:grip-sparkle 1.4s ease-in-out infinite}@keyframes grip-fade-in{from{opacity:0}to{opacity:1}}@keyframes grip-sparkle{0%,100%{opacity:0.2;transform:translate(20%,60%)}50%{opacity:1;transform:translate(70%,20%)}}"
+				? ".grip-scene{animation:grip-fade-in 0.2s ease}.grip-toast{transition:opacity 0.2s ease}.grip-particles::after{content:'';position:absolute;width:6px;height:6px;border-radius:50%;background:var(--color-peach);animation:grip-sparkle 1.4s ease-in-out infinite}.grip-motion-bounce{animation:grip-fade-in 0.2s ease,grip-bounce 2.4s ease-in-out infinite}.grip-motion-float{animation:grip-fade-in 0.2s ease,grip-float 3.2s ease-in-out infinite}.grip-motion-pulse{animation:grip-fade-in 0.2s ease,grip-pulse 2s ease-in-out infinite}@keyframes grip-fade-in{from{opacity:0}to{opacity:1}}@keyframes grip-sparkle{0%,100%{opacity:0.2;transform:translate(20%,60%)}50%{opacity:1;transform:translate(70%,20%)}}@keyframes grip-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}@keyframes grip-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}@keyframes grip-pulse{0%,100%{opacity:1}50%{opacity:0.92}}"
 				: "");
 		root.appendChild(style);
 	}
@@ -116,7 +188,8 @@
 				root.style.setProperty(key, tokens[key]);
 			}
 		}
-		root.style.background = "var(--color-base)";
+		root.style.background =
+			"var(--grip-bg-gradient, var(--color-base))";
 		root.style.color = "var(--color-text)";
 	}
 
@@ -172,6 +245,18 @@
 		var slotRegistry = {};
 		var mountedRaw = {};
 		var canvasCleanups = [];
+
+		function sceneThemeName(scene) {
+			var base =
+				ir.meta && ir.meta.theme ? ir.meta.theme : "lilgrip_default";
+			if (scene && scene.vibe) return scene.vibe;
+			return base;
+		}
+
+		function sceneMotion(scene) {
+			if (scene && scene.motion) return scene.motion;
+			return "none";
+		}
 
 		function clearToastTimer() {
 			if (toastTimer) {
@@ -444,17 +529,30 @@
 			wrap.setAttribute("data-grip-canvas-wrap", "1");
 
 			var clearColor = "#262637";
-			var spriteIds = [];
+			var sprites = [];
 			var showHud = false;
 			var showParticles = false;
 			var kids = node.children || [];
 			for (var k = 0; k < kids.length; k++) {
 				var ch = kids[k];
 				if (ch.type === "clear" && ch.color) clearColor = String(ch.color);
-				if (ch.type === "sprite" && ch.id) spriteIds.push(ch.id);
+				if (ch.type === "sprite" && ch.id) {
+					sprites.push({
+						id: ch.id,
+						emoji:
+							ch.emoji != null && ch.emoji !== ""
+								? String(ch.emoji)
+								: null,
+					});
+				}
 				if (ch.type === "score_hud") showHud = true;
 				if (ch.type === "particles") showParticles = true;
 			}
+
+			var scene = sceneMap[snapshot.scene];
+			var motion = sceneMotion(scene);
+			var spriteDrift =
+				motion !== "none" && !prefersReducedMotion();
 
 			var canvas = document.createElement("canvas");
 			canvas.className = "grip-canvas";
@@ -482,18 +580,36 @@
 
 			var ctx = canvas.getContext("2d");
 			var running = true;
+			var tickStart = Date.now();
 			function frame() {
 				if (!running || !ctx) return;
 				ctx.fillStyle = clearColor;
 				ctx.fillRect(0, 0, canvas.width, canvas.height);
-				for (var s = 0; s < spriteIds.length; s++) {
-					var sid = spriteIds[s];
+				var t = (Date.now() - tickStart) / 1000;
+				for (var s = 0; s < sprites.length; s++) {
+					var sp = sprites[s];
+					var sid = sp.id;
 					var sx = Number(snapshot.state[sid + "_x"]);
 					var sy = Number(snapshot.state[sid + "_y"]);
 					if (!sx && sx !== 0) sx = 24 + s * 36;
 					if (!sy && sy !== 0) sy = 80;
-					ctx.fillStyle = "#89b4fa";
-					ctx.fillRect(sx, sy, 28, 28);
+					var driftX = 0;
+					var driftY = 0;
+					if (spriteDrift) {
+						driftX = Math.sin(t * 0.9 + s * 0.65) * 5;
+						driftY = Math.cos(t * 0.75 + s * 0.4) * 4;
+					}
+					sx += driftX;
+					sy += driftY;
+					if (sp.emoji) {
+						ctx.font = "28px system-ui,sans-serif";
+						ctx.textAlign = "center";
+						ctx.textBaseline = "middle";
+						ctx.fillText(sp.emoji, sx + 14, sy + 14);
+					} else {
+						ctx.fillStyle = "#89b4fa";
+						ctx.fillRect(sx, sy, 28, 28);
+					}
 				}
 				if (running) global.requestAnimationFrame(frame);
 			}
@@ -509,11 +625,38 @@
 			var layoutClass = {
 				stack: "grip-stack",
 				grid: "grip-grid",
-				hero: "grip-hero",
 				card: "grip-card",
 				modal: "grip-modal",
 				tabs: "grip-tabs",
 			};
+			if (node.type === "hero") {
+				var heroEl = document.createElement("div");
+				heroEl.className = "grip-hero grip-hero-bleed";
+				if (node.emoji != null && node.emoji !== "") {
+					var heroEmoji = document.createElement("div");
+					heroEmoji.className = "grip-hero-emoji";
+					heroEmoji.textContent = String(node.emoji);
+					heroEl.appendChild(heroEmoji);
+				}
+				if (node.title != null && node.title !== "") {
+					var heroTitle = document.createElement("h1");
+					heroTitle.className = "grip-hero-title";
+					heroTitle.textContent = String(node.title);
+					heroEl.appendChild(heroTitle);
+				}
+				if (node.blurb != null && node.blurb !== "") {
+					var heroBlurb = document.createElement("p");
+					heroBlurb.className = "grip-hero-blurb";
+					heroBlurb.textContent = String(node.blurb);
+					heroEl.appendChild(heroBlurb);
+				}
+				var heroKids = node.children || [];
+				for (var hc = 0; hc < heroKids.length; hc++) {
+					var heroChild = renderNode(heroKids[hc]);
+					if (heroChild) heroEl.appendChild(heroChild);
+				}
+				return heroEl;
+			}
 			if (layoutClass[node.type]) {
 				var layout = document.createElement(
 					node.type === "modal" ? "section" : "div",
@@ -594,7 +737,12 @@
 			detachMountedRaw();
 			sceneHost.innerHTML = "";
 			reconcileSlotRegistry();
+			applyTheme(rootEl, sceneThemeName(scene));
 			sceneHost.className = "grip-scene";
+			var motion = sceneMotion(scene);
+			if (motion !== "none" && !prefersReducedMotion()) {
+				sceneHost.classList.add("grip-motion-" + motion);
+			}
 			var rootNode = renderNode(scene && scene.root);
 			if (rootNode) sceneHost.appendChild(rootNode);
 			ensureRawModuleSlots();
