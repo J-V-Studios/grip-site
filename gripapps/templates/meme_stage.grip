@@ -9,6 +9,7 @@ state {
 }
 
 scene stage {
+  vibe candy_arcade motion float
   stack {
     emoji_stage "🗿"
     button shuffle label "shuffle mood" -> action shuffle
