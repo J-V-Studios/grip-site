@@ -13,7 +13,13 @@ export type StateBlock = Record<string, GripScalar>;
 export type UiNode =
 	| { kind: "stack"; children: UiNode[] }
 	| { kind: "grid"; children: UiNode[] }
-	| { kind: "hero"; children: UiNode[] }
+	| {
+			kind: "hero";
+			title?: string;
+			blurb?: string;
+			emoji?: string;
+			children: UiNode[];
+	  }
 	| { kind: "card"; children: UiNode[] }
 	| { kind: "modal"; children: UiNode[] }
 	| { kind: "canvas"; children: UiNode[] }
@@ -23,7 +29,7 @@ export type UiNode =
 	| { kind: "toggle"; id: string; label?: string }
 	| { kind: "slider"; id: string }
 	| { kind: "toast"; message: string }
-	| { kind: "sprite"; id: string }
+	| { kind: "sprite"; id: string; emoji?: string }
 	| { kind: "timer"; id: string }
 	| { kind: "score_hud" }
 	| { kind: "particles" }
