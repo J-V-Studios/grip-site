@@ -34,6 +34,8 @@ export type UiNode =
 
 export type SceneBlock = {
 	id: string;
+	vibe?: string;
+	motion?: string;
 	root: UiNode;
 };
 

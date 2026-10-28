@@ -393,11 +393,32 @@ function parseSceneBlock(ctx: ParseContext): SceneBlock {
 	ctx.skipWhitespaceAndComments();
 	const block = readBlockBody(ctx);
 	const inner = nestedContext(ctx, block.body, block.start);
+
+	let vibe: string | undefined;
+	let motion: string | undefined;
+	while (!inner.eof()) {
+		inner.skipWhitespaceAndComments();
+		if (inner.eof()) break;
+		const kw = inner.peekWord();
+		if (kw === "}") break;
+		if (kw === "vibe") {
+			inner.readWord();
+			vibe = inner.readWord();
+			continue;
+		}
+		if (kw === "motion") {
+			inner.readWord();
+			motion = inner.readWord();
+			continue;
+		}
+		break;
+	}
+
 	const root = parseUiNodes(inner);
 	if (!root) {
-		return { id, root: { kind: "stack", children: [] } };
+		return { id, vibe, motion, root: { kind: "stack", children: [] } };
 	}
-	return { id, root };
+	return { id, vibe, motion, root };
 }
 
 function parseUiNodes(ctx: ParseContext): UiNode | null {
