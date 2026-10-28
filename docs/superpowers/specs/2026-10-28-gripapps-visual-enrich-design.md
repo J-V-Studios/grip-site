@@ -1,6 +1,6 @@
 # GripApps Visual Kit + Enrich Pipeline
 
-**Status:** Approved design (pending implementation plan)  
+**Status:** Implemented with caveats (2026-10-28) — plan executed in `docs/superpowers/plans/2026-10-28-gripapps-visual-enrich.md` on branch `cursor/gripapps-visual-rich-cddc`. Runtime themes/hero bleed/canvas emoji sprites/motion, visual templates, `gripc check --visual`, enrich contract docs, skill/orchestrator retarget, and e2e on `gripapps-demo` are in tree. Caveats: `--visual` is warn-only in v1 (hard fail planned v1.1); enrich is agent-driven (no LLM in CI build); existing live community pages not bulk-migrated; three.js `raw_module` policy still TBD when first 3D template lands.  
 **Date:** 2026-10-28  
 **Branch:** `cursor/gripapps-visual-rich-cddc`  
 **Parent:** [2026-10-27-gripapps-design.md](./2026-10-27-gripapps-design.md)
