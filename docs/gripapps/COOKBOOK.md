@@ -13,10 +13,11 @@ Copy and adapt templates from `gripapps/templates/`. Each file is valid `app.gri
 
 ## Workflow
 
-1. Copy **`visual_play.grip`** (or another template) to `public/community/<handle>/app.grip` (or author in place).
-2. `bun run gripc -- check public/community/<handle>/app.grip`
-3. `bun run gripc -- check --visual public/community/<handle>/app.grip`
-4. `bun run gripc -- build public/community/<handle>/app.grip --out public/community/<handle> --handle <handle>`
+1. Copy **`visual_play.grip`** (or another visual template) to `public/community/<handle>/app.grip` (or author in place). Require **`meta.theme`** and **hero and/or canvas**.
+2. `bun run gripc -- enrich public/community/<handle>/app.grip` — agent expands thin lines; updates `enrich-notes.md`.
+3. `bun run gripc -- check public/community/<handle>/app.grip`
+4. `bun run gripc -- check --visual public/community/<handle>/app.grip` — rejects text+button-only.
+5. `bun run gripc -- build public/community/<handle>/app.grip --out public/community/<handle> --handle <handle>`
 
 See [COMPILER.md](./COMPILER.md) and [AGENT_GUIDE.md](./AGENT_GUIDE.md).
 

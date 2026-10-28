@@ -2,6 +2,8 @@
 
 GripApps is the declarative language and toolchain for **Community Builds** on lilgrip.com. Visitors get mini-apps at `/community/<handle>/` compiled from a single `app.grip` source file.
 
+**Agent build path:** draft visual Grip (theme + hero/canvas) → `gripc enrich` → `gripc check` → `gripc check --visual` → `gripc build`. Text+button-only pages fail `--visual` and the skill checklist.
+
 ## Docs
 
 | Doc | Purpose |

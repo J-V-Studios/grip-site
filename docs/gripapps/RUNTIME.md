@@ -26,11 +26,16 @@ Compiled apps expose IR on `globalThis.__GRIP_APP__` before `start` runs.
 
 ## Themes
 
-Theme id comes from `meta.theme`. Presets are defined in runtime CSS variables; today:
+Theme id comes from `meta.theme`. Named presets (CSS variables: background gradient, surface, accent, text):
 
 - `lilgrip_default` — Catppuccin-inspired lilgrip palette
+- `neon_lagoon`, `barn_night`, `candy_arcade`, `deep_space`
 
-Unknown themes fail `gripc check`.
+Scenes may set `vibe <preset>` to override atmosphere for that scene. Unknown themes fail `gripc check`.
+
+## Scene motion
+
+Scenes may declare `motion bounce|float|pulse|none`. The runtime adds `grip-motion-*` classes on the scene host. When `prefers-reduced-motion: reduce`, motion animations are skipped (particles and other heavy effects are also toned down).
 
 ## Behavior notes
 

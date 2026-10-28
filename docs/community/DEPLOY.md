@@ -15,7 +15,7 @@ End-to-end checklist for the visitor community feature: Supabase Edge Function o
 - Gateway `verify_jwt` is **off** (site uses publishable `sb_publishable_…` keys, which are not JWTs).
 - The function authorizes callers by matching the `apikey` header to `SUPABASE_ANON_KEY` / `SUPABASE_PUBLISHABLE_KEYS` (auto-injected by the platform).
 - Redeploy from repo: MCP `deploy_edge_function` or `supabase functions deploy community-orchestrator --project-ref lendvtrjkehanndudjfd` (see `supabase/config.toml`).
-- **GripApps (required after Task 7+):** planner/builder Cloud Agent prompts live in `supabase/functions/community-orchestrator/cursor.ts`. They point agents at `.cursor/skills/gripapps/SKILL.md`, `docs/gripapps/AGENT_GUIDE.md`, and `docs/gripapps/COOKBOOK.md`, and require `app.grip` + `bun run gripc -- check` / `build` under `public/community/<handle>/`. Redeploy the edge function whenever that file changes so production enqueue runs use GripApps, not the legacy Vite scaffold.
+- **GripApps:** planner/builder Cloud Agent prompts live in `supabase/functions/community-orchestrator/cursor.ts`. They point agents at `.cursor/skills/gripapps/SKILL.md`, `docs/gripapps/AGENT_GUIDE.md`, and `docs/gripapps/COOKBOOK.md`, and require draft → `gripc enrich` → `check` → `check --visual` → `build` under `public/community/<handle>/`. **Redeploy `community-orchestrator` whenever `cursor.ts` changes** (`verify_jwt = false`) so production enqueue runs pick up prompt updates.
 
 ## 2. Edge Function secrets
 
