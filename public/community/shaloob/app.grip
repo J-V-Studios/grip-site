@@ -1,0 +1,298 @@
+meta {
+  title "Shaloob Cow Mainframe"
+  blurb "Toy assembly, barn CRUD, robot cows, and laser sharks."
+  theme lilgrip_default
+}
+
+state {
+  score 0
+  opcode "MOO"
+  record "empty"
+  cow_x 36
+  cow_y 110
+  shark_x 230
+  shark_y 48
+  file_x 12
+  file_y 150
+}
+
+scene lobby {
+  stack {
+    hero {
+      emoji_stage "🐄"
+      text "shaloob left the barn mainframe unlocked."
+      text "opcodes moo, the database holds hay, sharks shoot sparkles, and the cows are robots."
+      text "tap a wing. everything stays on this page."
+    }
+    grid {
+      card {
+        text "assembly lab"
+        text "joke opcodes for snacks"
+        button open_asm label "open the lab" -> action open_asm
+      }
+      card {
+        text "crud barn"
+        text "create, read, update, delete hay"
+        button open_crud label "open the barn" -> action open_crud
+      }
+      card {
+        text "laser lagoon"
+        text "a cow, a shark, toy sparkles"
+        button open_lagoon label "enter the lagoon" -> action open_lagoon
+      }
+      card {
+        text "robot hangar"
+        text "boot a polite cow subroutine"
+        button open_hangar label "visit the cows" -> action open_hangar
+      }
+      card {
+        text "cardboard booth"
+        text "hack a box that dispenses hay"
+        button open_booth label "try the booth" -> action open_booth
+      }
+    }
+  }
+}
+
+scene assembly {
+  stack {
+    emoji_stage "💾"
+    text "cow assembly. these lines only change the snack lights."
+    card {
+      text "MOO 1, HAY"
+      text "ZAP SPARK, SHARK"
+      text "CRUD SNACK, BARN"
+      text "JMP LOBBY"
+    }
+    grid {
+      button run_moo label "run MOO" -> action run_moo
+      button run_zap label "run ZAP" -> action run_zap
+      button run_crud_op label "run CRUD" -> action run_crud_op
+      button compile_barn label "compile the barn" -> action compile_barn
+    }
+    button asm_back label "back" -> action go_back
+  }
+}
+
+scene crud {
+  stack {
+    text "one hay file. create it, read it, update it, or delete it."
+    text "the stamp in the corner is your crud score. the blue block is the file."
+    canvas {
+      clear "#313244"
+      sprite file
+      score_hud
+      particles
+    }
+    grid {
+      button crud_create label "create" -> action crud_create
+      button crud_read label "read" -> action crud_read
+      button crud_update label "update" -> action crud_update
+      button crud_delete label "delete" -> action crud_delete
+    }
+    button cool_crud label "cool crud combo" -> action cool_crud
+    button crud_back label "back" -> action go_back
+  }
+}
+
+scene lagoon {
+  stack {
+    emoji_stage "🦈"
+    text "left block is the robot cow. the other block is the laser shark. sparkles are toy lasers."
+    canvas {
+      clear "#1e3a5f"
+      sprite cow
+      sprite shark
+      score_hud
+      particles
+    }
+    grid {
+      button dodge label "dodge left" -> action dodge_left
+      button zoom label "shark zoom" -> action shark_zoom
+      button pet label "pet the shark" -> action pet_shark
+    }
+    button lagoon_back label "back" -> action go_back
+  }
+}
+
+scene hangar {
+  stack {
+    emoji_stage "🤖"
+    text "three robot cows on standby. tap one to boot a tiny subroutine."
+    grid {
+      card {
+        text "bessie"
+        button boot_bessie label "boot bessie" -> action boot_bessie
+      }
+      card {
+        text "clank"
+        button boot_clank label "boot clank" -> action boot_clank
+      }
+      card {
+        text "pixel"
+        button boot_pixel label "boot pixel" -> action boot_pixel
+      }
+    }
+    button hangar_back label "back" -> action go_back
+  }
+}
+
+scene booth {
+  stack {
+    emoji_stage "📦"
+    text "cardboard hack booth. the target is a hay machine made of boxes."
+    text "the password sits on a sticky note that says moo."
+    card {
+      text "status: bored boxes, full of hay"
+    }
+    button flip_switch label "flip the cardboard switch" -> action flip_switch
+    button whisper_moo label "whisper moo" -> action whisper_moo
+    button disco_hay label "request disco hay" -> action disco_hay
+    button booth_back label "back" -> action go_back
+  }
+}
+
+action open_asm {
+  set opcode "MOO"
+  goto assembly
+}
+
+action open_crud {
+  goto crud
+}
+
+action open_lagoon {
+  goto lagoon
+}
+
+action open_hangar {
+  goto hangar
+}
+
+action open_booth {
+  goto booth
+}
+
+action go_back {
+  back
+}
+
+action run_moo {
+  set opcode "MOO"
+  set score 1
+  toast "MOO 1, HAY — the lights blink and a robot cow says thanks."
+}
+
+action run_zap {
+  set opcode "ZAP"
+  set score 2
+  toast "ZAP SPARK, SHARK — a sparkle hops into the lagoon and waves."
+}
+
+action run_crud_op {
+  set opcode "CRUD"
+  set score 3
+  toast "CRUD SNACK, BARN — the hay file wiggles, ready for the barn."
+}
+
+action compile_barn {
+  set opcode "JMP"
+  set score 8
+  toast "compile ok. zero warnings. one moo. the barn links with confetti."
+}
+
+action crud_create {
+  set record "haystack.moo"
+  set score 1
+  set file_x 146
+  set file_y 80
+  toast "CREATE: haystack.moo parked in the barn. signed with a hoof."
+}
+
+action crud_read {
+  set score 2
+  toast "READ: the file says moo twelve times. checksum is a sticker star."
+}
+
+action crud_update {
+  set record "laser-hay.moo"
+  set score 4
+  set file_x 210
+  set file_y 36
+  toast "UPDATE: extra sparkles patched in. still just hay."
+}
+
+action crud_delete {
+  set record "empty"
+  set score 0
+  set file_x 12
+  set file_y 150
+  toast "DELETE: the file became confetti. the cows slow-clap."
+}
+
+action cool_crud {
+  set record "disco-hay.moo"
+  set opcode "CRUD"
+  set score 99
+  set file_x 146
+  set file_y 70
+  toast "cool crud: created, read, updated, and deleted in one moo. sharks set lasers to disco."
+}
+
+action dodge_left {
+  set cow_x 16
+  set cow_y 130
+  set shark_x 250
+  set shark_y 28
+  set score 3
+  toast "the cow sidestepped. the toy laser drew a heart and missed."
+}
+
+action shark_zoom {
+  set cow_x 40
+  set cow_y 36
+  set shark_x 200
+  set shark_y 140
+  set score 7
+  toast "zoom! the laser shark looped and waved a fin."
+}
+
+action pet_shark {
+  set cow_x 120
+  set cow_y 86
+  set shark_x 168
+  set shark_y 86
+  set score 11
+  toast "you pet the laser shark. it purred in binary moo and dimmed its sparkles."
+}
+
+action boot_bessie {
+  set score 5
+  toast "bessie online. subroutine: make toast. literal toast, with butter."
+}
+
+action boot_clank {
+  set score 6
+  toast "clank online. subroutine: count hay. lost count at three. still proud."
+}
+
+action boot_pixel {
+  set score 9
+  toast "pixel online. subroutine: paint a laser shark on the wall. the wall is delighted."
+}
+
+action flip_switch {
+  set score 1
+  toast "the switch was a sticker. the boxes giggle and drop one hay cube."
+}
+
+action whisper_moo {
+  set opcode "MOO"
+  set score 10
+  toast "the sticky note password works. hay tumbles out. you are a legend in this barn."
+}
+
+action disco_hay {
+  set score 42
+  toast "disco hay engaged. sparkles, moo, and a shark-shaped night light. very chill."
+}
