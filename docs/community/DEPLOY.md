@@ -59,14 +59,15 @@ Local dev: `.env` with the same `PUBLIC_*` values; `bun run dev` → `/community
 - [x] `bun run check`, `bun run lint`, `bun run build`
 - [x] `bun run test:e2e` — `/community` hub heading smoke
 
-### Deployed orchestrator (no Cursor key yet)
+### Deployed orchestrator
 
 - [x] **Deploy** `community-orchestrator` (`verify_jwt = false`, apikey gate)
 - [x] Set `PUBLIC_COMMUNITY_ORCHESTRATOR_URL` in `.env.production` / CI vars
 - [x] **Claim** works (201 + edit code); duplicate handle → 409
 - [x] **Moderation:** prompt `kill people` → `rejected` + vibe-check message
 - [x] **Second enqueue** same handle same UTC day → 429
-- [ ] Set `CURSOR_API_KEY` (+ optional `EDIT_CODE_PEPPER`) in Edge Function secrets
+- [x] Set `CURSOR_API_KEY` (+ optional `EDIT_CODE_PEPPER`) in Edge Function secrets
+- [ ] **Cursor billing:** the account behind `CURSOR_API_KEY` must have Cloud Agents prepaid balance / auto top-up. Empty balance returns Cursor API `400 usage_limit_exceeded` and builds fail immediately after enqueue.
 - [ ] **Enqueue** harmless prompt: `make a bouncing blue square` → agents launch
 - [ ] Confirm build status progresses (`queued` → `planning` → `building` → `live` or terminal state)
 - [ ] Confirm planner/builder agents run; PR branch `community/<handle>-*` only touches `public/community/<handle>/`

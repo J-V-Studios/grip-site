@@ -12,6 +12,7 @@ import {
 	type CommunityGalleryItem,
 	fetchLiveCommunityPages,
 } from "@/lib/community";
+import { humanizeCommunityBuildError } from "@/lib/community-errors";
 import {
 	claimHandle,
 	enqueueBuild,
@@ -400,7 +401,9 @@ function CommunityHubInner() {
 								</p>
 							) : null}
 							{status.status === "failed" && status.error ? (
-								<p className="m-0 text-peach">{status.error}</p>
+								<p className="m-0 text-peach">
+									{humanizeCommunityBuildError(status.error)}
+								</p>
 							) : null}
 						</div>
 					) : null}
