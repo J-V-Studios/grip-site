@@ -1,0 +1,41 @@
+meta {
+  title "Lazer Shark Squid Run"
+  blurb "Toy green-light dash — sparkle lasers, bubble booms, and a chill squid."
+  theme neon_lagoon
+}
+
+state {
+  score 0
+  squid_x 36
+  squid_y 140
+  shark_x 240
+  shark_y 40
+}
+
+scene gate {
+  vibe neon_lagoon motion bounce
+  stack {
+    hero {
+      title "Lazer Shark Squid Run"
+      blurb "toy lasers only"
+      emoji "🦈"
+    }
+    canvas {
+      clear "#0b1020"
+      sprite squid emoji "🦑"
+      sprite shark emoji "🦈"
+      score_hud
+      particles
+    }
+    button dash label "dash!" -> action dash
+  }
+}
+
+action dash {
+  set squid_x 16
+  set squid_y 130
+  set shark_x 250
+  set shark_y 28
+  set score 3
+  toast "dash! the toy laser drew a heart and missed."
+}
