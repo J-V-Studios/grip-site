@@ -1,22 +1,41 @@
 meta {
-  title "Hello Grip"
-  blurb "A tiny welcome page — copy this template to start a GripApp."
-  theme lilgrip_default
+  title "GripApps Demo"
+  blurb "Visual play starter — hero, canvas emoji sprites, score, and a dash action."
+  theme neon_lagoon
 }
 
 state {
-  ready false
+  score 0
+  cow_x 36
+  cow_y 110
+  shark_x 230
+  shark_y 48
 }
 
-scene home {
+scene play {
+  vibe neon_lagoon motion bounce
   stack {
-    text "hi from gripapps"
-    button start label "wave" -> action wave
+    hero {
+      title "Laser Lagoon"
+      blurb "toy lasers only"
+      emoji "🦈"
+    }
+    canvas {
+      clear "#0b1020"
+      sprite cow emoji "🐄"
+      sprite shark emoji "🦈"
+      score_hud
+      particles
+    }
+    button dash label "dash!" -> action dash
   }
 }
 
-action wave {
-  set ready true
-  toast "👋 you waved!"
-  goto home
+action dash {
+  set cow_x 16
+  set cow_y 130
+  set shark_x 250
+  set shark_y 28
+  set score 3
+  toast "dash! the toy laser drew a heart and missed."
 }
