@@ -1,6 +1,6 @@
 import type { GripApp, GripScalar, UiNode } from "./ast";
 import { diagnostic, type Diagnostic } from "./diagnostics";
-import { THEME_PRESETS } from "./tokens";
+import { MOTION_PRESETS, THEME_PRESETS } from "./tokens";
 
 export function validateGrip(ast: GripApp, fileName: string): Diagnostic[] {
 	const diags: Diagnostic[] = [];
@@ -41,6 +41,29 @@ export function validateGrip(ast: GripApp, fileName: string): Diagnostic[] {
 			);
 		}
 		sceneIds.add(scene.id);
+
+		if (scene.vibe !== undefined && !THEME_PRESETS.has(scene.vibe)) {
+			diags.push(
+				diagnostic(
+					fileName,
+					1,
+					1,
+					`Unknown vibe "${scene.vibe}"`,
+					`Known presets: ${[...THEME_PRESETS].join(", ")}`,
+				),
+			);
+		}
+		if (scene.motion !== undefined && !MOTION_PRESETS.has(scene.motion)) {
+			diags.push(
+				diagnostic(
+					fileName,
+					1,
+					1,
+					`Unknown motion "${scene.motion}"`,
+					`Known presets: ${[...MOTION_PRESETS].join(", ")}`,
+				),
+			);
+		}
 	}
 
 	const actionIds = new Set<string>();

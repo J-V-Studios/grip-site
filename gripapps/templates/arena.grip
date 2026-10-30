@@ -6,12 +6,26 @@ meta {
 
 state {
   score 0
+  player_x 80
+  player_y 90
 }
 
 scene game {
-  canvas {
-    clear "#89dceb"
-    sprite player
-    score_hud
+  vibe deep_space motion pulse
+  stack {
+    canvas {
+      clear "#1e1e2e"
+      sprite player emoji "🚀"
+      score_hud
+      particles
+    }
+    button boost label "boost!" -> action boost
   }
+}
+
+action boost {
+  set player_x 140
+  set player_y 40
+  set score 1
+  toast "boost engaged — rocket go brr"
 }

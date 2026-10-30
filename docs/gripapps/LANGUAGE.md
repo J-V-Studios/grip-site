@@ -57,8 +57,40 @@ These scene children take a `{ ... }` body with nested UI nodes:
 | Preset |
 | --- |
 | `lilgrip_default` |
+| `neon_lagoon` |
+| `barn_night` |
+| `candy_arcade` |
+| `deep_space` |
 
-Set in `meta { theme <preset> }`.
+Set in `meta { theme <preset> }`. Scenes may repeat atmosphere with `vibe <preset>` inside `scene <id> { ... }`.
+
+## Scene atmosphere (inside `scene`)
+
+| Line | Syntax |
+| --- | --- |
+| `vibe` | `vibe <theme>` — scene-level theme override (same preset names as `meta.theme`) |
+| `motion` | `motion bounce \| float \| pulse \| none` — decorative CSS motion; toned down when `prefers-reduced-motion: reduce` |
+
+Example:
+
+```text
+scene play {
+  vibe neon_lagoon motion bounce
+  stack { hero { ... } canvas { ... } }
+}
+```
+
+## Hero block
+
+Inside `hero { ... }`:
+
+| Child | Syntax |
+| --- | --- |
+| `title` | `title "<text>"` |
+| `blurb` | `blurb "<text>"` |
+| `emoji` | `emoji "<emoji>"` |
+
+Hero renders as a full-bleed visual block (gradient + title/blurb/emoji), not a flat grey card.
 
 ## Action steps
 

@@ -110,6 +110,8 @@ Sandbox writes ONLY: public/community/${handle}/**
 
 Produce a markdown plan (plan_md) with: gallery title, blurb, UX sketch, GripApps scenes/actions inside sandbox, moderation confirmation.
 
+Visual requirements (non-negotiable): pick a named meta.theme (neon_lagoon, barn_night, candy_arcade, deep_space, or lilgrip_default); open with hero and/or canvas play (or emoji_stage for tap toys); use scene vibe/motion where it fits. Do NOT plan text+button-only stack walls.
+
 Visitor brief:
 ${elaboratedBrief}
 `;
@@ -133,7 +135,15 @@ Branch: ${branchName}
 Writes ONLY under: public/community/${handle}/**
 Required: app.grip, index.html, app.grip.js, manifest.json, vendor/gripapps/runtime.js
 
-Implement the approved plan with GripApps: write app.grip, run bun run gripc -- check, then bun run gripc -- build ... --out public/community/${handle} --handle ${handle}. Commit built assets. Wipe prior built files in this handle folder when replacing.
+Implement the approved plan with GripApps under the visual enrich workflow:
+
+1. Draft app.grip (start from gripapps/templates/visual_play.grip): meta.theme required; hero and/or canvas (or emoji_stage). Reject shipping text+button-only UI.
+2. bun run gripc -- enrich public/community/${handle}/app.grip — expand thin lines in place; maintain enrich-notes.md; raw_module only if Grip cannot carry the look.
+3. bun run gripc -- check public/community/${handle}/app.grip
+4. bun run gripc -- check --visual public/community/${handle}/app.grip (must pass)
+5. bun run gripc -- build public/community/${handle}/app.grip --out public/community/${handle} --handle ${handle}
+
+Commit app.grip, enrich-notes.md if present, and built assets. Wipe prior built files in this handle folder when replacing.
 
 Plan / brief:
 ${planOrBrief}

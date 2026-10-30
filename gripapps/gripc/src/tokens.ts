@@ -40,4 +40,12 @@ export const LAYOUT_BLOCK_KEYWORDS = new Set([
 	"tabs",
 ]);
 
-export const THEME_PRESETS = new Set(["lilgrip_default"]);
+export const THEME_PRESETS = new Set([
+	"lilgrip_default",
+	"neon_lagoon",
+	"barn_night",
+	"candy_arcade",
+	"deep_space",
+]);
+
+export const MOTION_PRESETS = new Set(["bounce", "float", "pulse", "none"]);

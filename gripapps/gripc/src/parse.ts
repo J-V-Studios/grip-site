@@ -393,11 +393,32 @@ function parseSceneBlock(ctx: ParseContext): SceneBlock {
 	ctx.skipWhitespaceAndComments();
 	const block = readBlockBody(ctx);
 	const inner = nestedContext(ctx, block.body, block.start);
+
+	let vibe: string | undefined;
+	let motion: string | undefined;
+	while (!inner.eof()) {
+		inner.skipWhitespaceAndComments();
+		if (inner.eof()) break;
+		const kw = inner.peekWord();
+		if (kw === "}") break;
+		if (kw === "vibe") {
+			inner.readWord();
+			vibe = inner.readWord();
+			continue;
+		}
+		if (kw === "motion") {
+			inner.readWord();
+			motion = inner.readWord();
+			continue;
+		}
+		break;
+	}
+
 	const root = parseUiNodes(inner);
 	if (!root) {
-		return { id, root: { kind: "stack", children: [] } };
+		return { id, vibe, motion, root: { kind: "stack", children: [] } };
 	}
-	return { id, root };
+	return { id, vibe, motion, root };
 }
 
 function parseUiNodes(ctx: ParseContext): UiNode | null {
@@ -443,6 +464,9 @@ function parseUiNode(ctx: ParseContext): UiNode {
 	}
 
 	if (LAYOUT_BLOCK_KEYWORDS.has(kw)) {
+		if (kw === "hero") {
+			return parseHeroBlock(ctx);
+		}
 		const block = readBlockBody(ctx);
 		const inner = nestedContext(ctx, block.body, block.start);
 		const children = parseUiNodeList(inner);
@@ -510,8 +534,61 @@ function parseUiNode(ctx: ParseContext): UiNode {
 		return { kind: kw };
 	}
 
+	if (kw === "sprite") {
+		const id = ctx.readWord();
+		ctx.skipWhitespaceAndComments();
+		let emoji: string | undefined;
+		if (ctx.peekWord() === "emoji") {
+			ctx.readWord();
+			emoji = String(readScalar(ctx));
+		}
+		return emoji !== undefined
+			? { kind: "sprite", id, emoji }
+			: { kind: "sprite", id };
+	}
+
 	const id = ctx.readWord();
-	return { kind: kw as "toggle" | "slider" | "sprite" | "timer", id };
+	return { kind: kw as "toggle" | "slider" | "timer", id };
+}
+
+function parseHeroBlock(ctx: ParseContext): UiNode {
+	const block = readBlockBody(ctx);
+	const inner = nestedContext(ctx, block.body, block.start);
+	let title: string | undefined;
+	let blurb: string | undefined;
+	let emoji: string | undefined;
+	const children: UiNode[] = [];
+
+	while (!inner.eof()) {
+		inner.skipWhitespaceAndComments();
+		if (inner.eof()) break;
+		const kw = inner.peekWord();
+		if (kw === "}") break;
+		if (kw === "title") {
+			inner.readWord();
+			title = String(readScalar(inner));
+			continue;
+		}
+		if (kw === "blurb") {
+			inner.readWord();
+			blurb = String(readScalar(inner));
+			continue;
+		}
+		if (kw === "emoji") {
+			inner.readWord();
+			emoji = String(readScalar(inner));
+			continue;
+		}
+		children.push(parseUiNode(inner));
+	}
+
+	return {
+		kind: "hero",
+		...(title !== undefined ? { title } : {}),
+		...(blurb !== undefined ? { blurb } : {}),
+		...(emoji !== undefined ? { emoji } : {}),
+		children,
+	};
 }
 
 type LayoutKind = "stack" | "grid" | "hero" | "card" | "modal" | "canvas" | "tabs";

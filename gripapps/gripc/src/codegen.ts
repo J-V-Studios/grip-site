@@ -13,7 +13,7 @@ export type GripAppIr = {
 	apiVersion: number;
 	meta: GripApp["meta"];
 	state: GripApp["state"];
-	scenes: Array<{ id: string; root: IrUiNode }>;
+	scenes: Array<{ id: string; vibe?: string; motion?: string; root: IrUiNode }>;
 	actions: Array<{ id: string; steps: ActionStep[] }>;
 	rawModules: RawModuleBlock[];
 };
@@ -38,6 +38,8 @@ function uiNodeToIr(node: UiNode): IrUiNode {
 function sceneToIr(scene: SceneBlock) {
 	return {
 		id: scene.id,
+		...(scene.vibe !== undefined ? { vibe: scene.vibe } : {}),
+		...(scene.motion !== undefined ? { motion: scene.motion } : {}),
 		root: uiNodeToIr(scene.root),
 	};
 }
