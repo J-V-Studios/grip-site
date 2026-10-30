@@ -4,38 +4,381 @@ meta {
   theme neon_lagoon
 }
 
+shell {
+  header off
+}
+
 state {
   score 0
-  squid_x 36
-  squid_y 140
-  shark_x 240
-  shark_y 40
+  squid_x 24
+  squid_y 148
+  shark_x 248
+  shark_y 36
+  green_x 146
+  green_y 18
+  red_x 420
+  red_y 220
+  boom_x 420
+  boom_y 220
+  crab_x 168
+  crab_y 96
+  bubble_x 420
+  bubble_y 220
+  star_x 420
+  star_y 220
 }
 
 scene gate {
-  vibe neon_lagoon motion bounce
+  vibe candy_arcade motion float
   stack {
     hero {
       title "Lazer Shark Squid Run"
-      blurb "toy lasers only"
+      blurb "green light scoot, red light freeze, booms are bubbles"
       emoji "🦈"
     }
-    canvas {
-      clear "#0b1020"
-      sprite squid emoji "🦑"
-      sprite shark emoji "🦈"
-      score_hud
-      particles
+    emoji_stage "🦑"
+    text "A toy track. The lazer shark draws sparkles, never anything mean."
+    grid {
+      card {
+        text "green light"
+        text "the squid scoots"
+        button gate_scoot label "peek a scoot" -> action scoot
+      }
+      card {
+        text "red light"
+        text "everybody freezes"
+        button gate_freeze label "peek a freeze" -> action freeze
+      }
+      card {
+        text "bubble boom"
+        text "confetti water only"
+        button gate_boom label "peek a boom" -> action bubble_boom
+      }
     }
-    button dash label "dash!" -> action dash
+    button enter label "start the run" -> action enter_track
   }
 }
 
-action dash {
-  set squid_x 16
-  set squid_y 130
-  set shark_x 250
-  set shark_y 28
-  set score 3
-  toast "dash! the toy laser drew a heart and missed."
+scene track {
+  vibe neon_lagoon motion bounce
+  stack {
+    hero {
+      title "Sparkle track"
+      blurb "tap a beat. the squid, the shark, and the lights hop."
+      emoji "🟢"
+    }
+    canvas {
+      clear "#07111f"
+      sprite squid emoji "🦑"
+      sprite shark emoji "🦈"
+      sprite green emoji "🟢"
+      sprite red emoji "🔴"
+      sprite boom emoji "💥"
+      sprite crab emoji "🦀"
+      sprite bubble emoji "🫧"
+      sprite star emoji "⭐"
+      score_hud
+      particles
+    }
+    grid {
+      button scoot label "green light" -> action scoot
+      button freeze label "red light" -> action freeze
+      button wiggle label "wiggle oops" -> action wiggle
+      button dash label "lazer dash" -> action lazer_dash
+      button zoom label "shark zoom" -> action shark_zoom
+      button boom label "bubble boom" -> action bubble_boom
+      button pet label "pet shark" -> action pet_shark
+      button finish label "cross finish" -> action cross_finish
+    }
+    button dock label "back to the dock" -> action go_gate
+  }
+}
+
+scene finale {
+  vibe deep_space motion pulse
+  stack {
+    hero {
+      title "Bubble fireworks"
+      blurb "you crossed. stickers for the squid and the shark."
+      emoji "💥"
+    }
+    canvas {
+      clear "#14081f"
+      sprite squid emoji "🦑"
+      sprite shark emoji "🦈"
+      sprite green emoji "🟢"
+      sprite red emoji "🔴"
+      sprite boom emoji "💥"
+      sprite crab emoji "🦀"
+      sprite bubble emoji "🫧"
+      sprite star emoji "⭐"
+      score_hud
+      particles
+    }
+    grid {
+      button encore label "bigger boom" -> action bigger_boom
+      button replay label "run it back" -> action enter_track
+      button lounge label "chill lounge" -> action go_lounge
+    }
+  }
+}
+
+scene lounge {
+  vibe barn_night motion float
+  stack {
+    hero {
+      title "Chill dock"
+      blurb "lasers off. bubbles on. everybody waves."
+      emoji "🫧"
+    }
+    emoji_stage "🦈"
+    grid {
+      card {
+        text "sticker squid"
+        text "finished the toy track"
+      }
+      card {
+        text "purring shark"
+        text "sparkles set to night-light"
+      }
+      card {
+        text "crab pal"
+        text "clapped with both claws"
+      }
+    }
+    grid {
+      button again label "one more run" -> action enter_track
+      button home label "back to the gate" -> action go_gate
+    }
+  }
+}
+
+action enter_track {
+  set score 0
+  set squid_x 24
+  set squid_y 148
+  set shark_x 248
+  set shark_y 36
+  set green_x 146
+  set green_y 18
+  set red_x 420
+  set red_y 220
+  set boom_x 420
+  set boom_y 220
+  set crab_x 168
+  set crab_y 96
+  set bubble_x 420
+  set bubble_y 220
+  set star_x 420
+  set star_y 220
+  goto track
+  toast "green light. scoot the squid. lasers are sparkles."
+}
+
+action scoot {
+  set score 4
+  set squid_x 108
+  set squid_y 118
+  set shark_x 260
+  set shark_y 40
+  set green_x 146
+  set green_y 18
+  set red_x 420
+  set red_y 220
+  set boom_x 420
+  set boom_y 220
+  set crab_x 176
+  set crab_y 86
+  set bubble_x 72
+  set bubble_y 64
+  set star_x 210
+  set star_y 48
+  goto track
+  toast "green light. the squid scoots. a toy laser draws a heart."
+}
+
+action freeze {
+  set score 6
+  set squid_x 108
+  set squid_y 118
+  set shark_x 196
+  set shark_y 72
+  set green_x 420
+  set green_y 220
+  set red_x 146
+  set red_y 18
+  set boom_x 420
+  set boom_y 220
+  set crab_x 40
+  set crab_y 150
+  set bubble_x 420
+  set bubble_y 220
+  set star_x 236
+  set star_y 44
+  goto track
+  toast "red light. the squid freezes. the lazer shark blinks and waits."
+}
+
+action wiggle {
+  set score 2
+  set squid_x 24
+  set squid_y 148
+  set shark_x 176
+  set shark_y 88
+  set green_x 420
+  set green_y 220
+  set red_x 146
+  set red_y 18
+  set boom_x 64
+  set boom_y 108
+  set crab_x 210
+  set crab_y 140
+  set bubble_x 96
+  set bubble_y 72
+  set star_x 36
+  set star_y 52
+  goto track
+  toast "wiggle on red. bubble boom, then back to the start. still chill."
+}
+
+action lazer_dash {
+  set score 11
+  set squid_x 204
+  set squid_y 64
+  set shark_x 268
+  set shark_y 124
+  set green_x 146
+  set green_y 18
+  set red_x 420
+  set red_y 220
+  set boom_x 228
+  set boom_y 36
+  set crab_x 88
+  set crab_y 150
+  set bubble_x 156
+  set bubble_y 36
+  set star_x 244
+  set star_y 92
+  goto track
+  toast "lazer dash. sparkles zip by. the shark beam is a doodle heart."
+}
+
+action shark_zoom {
+  set score 9
+  set squid_x 180
+  set squid_y 140
+  set shark_x 36
+  set shark_y 36
+  set green_x 146
+  set green_y 18
+  set red_x 420
+  set red_y 220
+  set boom_x 112
+  set boom_y 28
+  set crab_x 230
+  set crab_y 150
+  set bubble_x 80
+  set bubble_y 100
+  set star_x 70
+  set star_y 78
+  goto track
+  toast "zoom. the lazer shark looped the track and waved a fin."
+}
+
+action bubble_boom {
+  set score 18
+  set squid_x 148
+  set squid_y 96
+  set shark_x 228
+  set shark_y 48
+  set green_x 100
+  set green_y 16
+  set red_x 196
+  set red_y 16
+  set boom_x 52
+  set boom_y 36
+  set crab_x 96
+  set crab_y 150
+  set bubble_x 36
+  set bubble_y 136
+  set star_x 250
+  set star_y 136
+  goto track
+  toast "bubble boom. confetti water, zero damage, maximum silly."
+}
+
+action pet_shark {
+  set score 14
+  set squid_x 124
+  set squid_y 88
+  set shark_x 172
+  set shark_y 88
+  set green_x 146
+  set green_y 18
+  set red_x 420
+  set red_y 220
+  set boom_x 420
+  set boom_y 220
+  set crab_x 36
+  set crab_y 150
+  set bubble_x 148
+  set bubble_y 40
+  set star_x 148
+  set star_y 132
+  goto track
+  toast "you pet the lazer shark. it purrs in bubbles and dims the sparkles."
+}
+
+action cross_finish {
+  set score 42
+  set squid_x 246
+  set squid_y 78
+  set shark_x 72
+  set shark_y 56
+  set green_x 120
+  set green_y 16
+  set red_x 184
+  set red_y 16
+  set boom_x 36
+  set boom_y 28
+  set crab_x 20
+  set crab_y 148
+  set bubble_x 196
+  set bubble_y 36
+  set star_x 140
+  set star_y 140
+  goto finale
+  toast "you crossed. fireworks are bubbles. everyone gets a sticker."
+}
+
+action bigger_boom {
+  set score 77
+  set squid_x 150
+  set squid_y 90
+  set shark_x 210
+  set shark_y 40
+  set green_x 40
+  set green_y 30
+  set red_x 260
+  set red_y 30
+  set boom_x 80
+  set boom_y 130
+  set crab_x 40
+  set crab_y 150
+  set bubble_x 230
+  set bubble_y 140
+  set star_x 150
+  set star_y 36
+  toast "bigger boom. the sky is stickers and the shark is delighted."
+}
+
+action go_lounge {
+  set score 42
+  goto lounge
+  toast "lasers off. the dock hums. very chill."
+}
+
+action go_gate {
+  goto gate
+  toast "back at the gate. the shark saves you a fin-wave."
 }
