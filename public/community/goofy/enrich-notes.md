@@ -22,6 +22,7 @@ Agent expands `app.grip` in place (CLI does not call an LLM). Re-run `gripc enri
 - Lounge (`barn_night`, `float`): hero, shark `emoji_stage`, sticker cards.
 - Toasts stay toy-only: sparkle lasers, bubble booms, no harm.
 - Motion and particles stay in the Grip runtime, which already skips them when `prefers-reduced-motion: reduce`.
+- No `shell` block. `gripc` does not emit `shell`, so a `header off` line would not hide the runtime title banner.
 
 ## Escalation (only if Grip cannot carry the look)
 

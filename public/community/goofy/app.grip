@@ -4,10 +4,6 @@ meta {
   theme neon_lagoon
 }
 
-shell {
-  header off
-}
-
 state {
   score 0
   squid_x 24
@@ -90,7 +86,7 @@ scene track {
       button pet label "pet shark" -> action pet_shark
       button finish label "cross finish" -> action cross_finish
     }
-    button dock label "back to the dock" -> action go_gate
+    button dock label "back to the gate" -> action go_gate
   }
 }
 
