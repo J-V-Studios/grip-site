@@ -1,0 +1,858 @@
+/**
+ * GripApps shared runtime — apiVersion 1
+ * Pure step reducer kept in sync with gripapps/runtime/reduce.ts
+ */
+(function (global) {
+	"use strict";
+
+	var API_VERSION = 1;
+
+	var THEMES = {
+		lilgrip_default: {
+			"--color-base": "#1e1e2e",
+			"--color-surface": "#262637",
+			"--color-surface-soft": "#313244",
+			"--color-text": "#cdd6f4",
+			"--color-subtext": "#a6adc8",
+			"--color-sky": "#89dceb",
+			"--color-blue": "#89b4fa",
+			"--color-teal": "#94e2d5",
+			"--color-peach": "#fab387",
+			"--color-mauve": "#cba6f7",
+			"--grip-bg-gradient":
+				"linear-gradient(165deg,#1e1e2e 0%,#181825 55%,#11111b 100%)",
+			"--grip-hero-gradient":
+				"linear-gradient(135deg,#313244 0%,#262637 100%)",
+		},
+		neon_lagoon: {
+			"--color-base": "#061018",
+			"--color-surface": "#0b1f2a",
+			"--color-surface-soft": "#123040",
+			"--color-text": "#d4f8ff",
+			"--color-subtext": "#7ec8e3",
+			"--color-sky": "#00f5d4",
+			"--color-blue": "#00bbf9",
+			"--color-teal": "#9b5de5",
+			"--color-peach": "#fee440",
+			"--color-mauve": "#f15bb5",
+			"--grip-bg-gradient":
+				"linear-gradient(165deg,#061018 0%,#0a2a35 45%,#051520 100%)",
+			"--grip-hero-gradient":
+				"linear-gradient(135deg,#0b2a3d 0%,#123040 50%,#1a1040 100%)",
+		},
+		barn_night: {
+			"--color-base": "#1a120c",
+			"--color-surface": "#2a1c12",
+			"--color-surface-soft": "#3d2818",
+			"--color-text": "#f5e6d3",
+			"--color-subtext": "#c4a882",
+			"--color-sky": "#ffb347",
+			"--color-blue": "#e8a87c",
+			"--color-teal": "#c38d4e",
+			"--color-peach": "#ff6b35",
+			"--color-mauve": "#d4a574",
+			"--grip-bg-gradient":
+				"linear-gradient(165deg,#1a120c 0%,#241810 50%,#120a06 100%)",
+			"--grip-hero-gradient":
+				"linear-gradient(135deg,#3d2818 0%,#2a1c12 100%)",
+		},
+		candy_arcade: {
+			"--color-base": "#1a0a24",
+			"--color-surface": "#2d1240",
+			"--color-surface-soft": "#451a62",
+			"--color-text": "#fff0f8",
+			"--color-subtext": "#e8b4f8",
+			"--color-sky": "#ff6bcb",
+			"--color-blue": "#7b61ff",
+			"--color-teal": "#00f5d4",
+			"--color-peach": "#ffe066",
+			"--color-mauve": "#ff9ff3",
+			"--grip-bg-gradient":
+				"linear-gradient(165deg,#1a0a24 0%,#2a1050 45%,#120818 100%)",
+			"--grip-hero-gradient":
+				"linear-gradient(135deg,#451a62 0%,#2d1240 55%,#1a3060 100%)",
+		},
+		deep_space: {
+			"--color-base": "#050510",
+			"--color-surface": "#0c0c24",
+			"--color-surface-soft": "#151538",
+			"--color-text": "#e8e8ff",
+			"--color-subtext": "#9898c8",
+			"--color-sky": "#7b68ee",
+			"--color-blue": "#4169e1",
+			"--color-teal": "#9370db",
+			"--color-peach": "#ff7f50",
+			"--color-mauve": "#da70d6",
+			"--grip-bg-gradient":
+				"linear-gradient(165deg,#050510 0%,#0a0a28 50%,#020208 100%)",
+			"--grip-hero-gradient":
+				"linear-gradient(135deg,#151538 0%,#0c0c24 100%)",
+		},
+	};
+
+	function applySteps(ctx, steps) {
+		var next = {
+			state: Object.assign({}, ctx.state),
+			scene: ctx.scene,
+			stack: ctx.stack.slice(),
+			toast: ctx.toast,
+		};
+		for (var i = 0; i < steps.length; i++) {
+			var step = steps[i];
+			if (step.op === "set") {
+				next.state[step.key] = step.value;
+			} else if (step.op === "goto") {
+				next.scene = step.scene;
+				next.stack = next.stack.concat([step.scene]);
+			} else if (step.op === "back") {
+				if (next.stack.length > 1) {
+					next.stack = next.stack.slice(0, -1);
+					next.scene = next.stack[next.stack.length - 1];
+				}
+			} else if (step.op === "toast") {
+				next.toast = step.message;
+			}
+		}
+		return next;
+	}
+
+	function validateIr(ir) {
+		if (!ir || typeof ir !== "object") return "Missing app data";
+		if (ir.apiVersion !== API_VERSION && ir.apiVersion !== API_VERSION - 1) {
+			return "Unsupported apiVersion " + ir.apiVersion;
+		}
+		if (!ir.meta || !ir.meta.title) return "Invalid meta";
+		if (!Array.isArray(ir.scenes) || ir.scenes.length === 0) {
+			return "App has no scenes";
+		}
+		for (var s = 0; s < ir.scenes.length; s++) {
+			if (!ir.scenes[s].id || !ir.scenes[s].root) {
+				return "Invalid scene at index " + s;
+			}
+		}
+		return null;
+	}
+
+	function prefersReducedMotion() {
+		try {
+			return global.matchMedia("(prefers-reduced-motion: reduce)").matches;
+		} catch (_e) {
+			return false;
+		}
+	}
+
+	function injectStyles(root) {
+		if (root.querySelector("[data-grip-runtime-style]")) return;
+		var style = document.createElement("style");
+		style.setAttribute("data-grip-runtime-style", "1");
+		style.textContent =
+			".grip-app{min-height:100%;box-sizing:border-box;font-family:system-ui,sans-serif}" +
+			".grip-shell{display:flex;flex-direction:column;min-height:100vh;padding:1rem;gap:1rem}" +
+			".grip-shell-header{font-size:1.25rem;font-weight:600;color:var(--color-sky)}" +
+			".grip-blurb{color:var(--color-subtext);margin:0}" +
+			".grip-stack{display:flex;flex-direction:column;gap:0.75rem}" +
+			".grip-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(8rem,1fr));gap:0.75rem}" +
+			".grip-hero{display:flex;flex-direction:column;gap:0.75rem;padding:1.25rem;border-radius:0.75rem;background:var(--color-surface)}" +
+			".grip-hero-bleed{margin-left:-1rem;margin-right:-1rem;width:calc(100% + 2rem);max-width:none;border-radius:0;padding:2rem 1.25rem;background:var(--grip-hero-gradient,var(--color-surface));box-shadow:inset 0 -1px 0 rgba(255,255,255,0.06)}" +
+			".grip-hero-emoji{font-size:3rem;line-height:1}" +
+			".grip-hero-title{margin:0;font-size:1.75rem;font-weight:700;color:var(--color-text)}" +
+			".grip-hero-blurb{margin:0;color:var(--color-subtext);line-height:1.5}" +
+			".grip-card{display:flex;flex-direction:column;gap:0.5rem;padding:1rem;border-radius:0.75rem;background:var(--color-surface-soft)}" +
+			".grip-modal{display:flex;flex-direction:column;gap:0.75rem;padding:1rem;border-radius:0.75rem;background:var(--color-surface);border:1px solid var(--color-mauve)}" +
+			".grip-tabs{display:flex;flex-wrap:wrap;gap:0.75rem}" +
+			".grip-text{margin:0;line-height:1.5}" +
+			".grip-btn{cursor:pointer;border:none;border-radius:0.5rem;padding:0.6rem 1rem;font-size:1rem;background:var(--color-sky);color:var(--color-base);font-weight:600}" +
+			".grip-btn:focus-visible{outline:2px solid var(--color-mauve);outline-offset:2px}" +
+			".grip-toast{position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);background:var(--color-surface-soft);color:var(--color-text);padding:0.75rem 1.25rem;border-radius:0.5rem;box-shadow:0 4px 24px rgba(0,0,0,0.35);z-index:9999;max-width:90vw}" +
+			".grip-boundary{padding:1.5rem;border-radius:0.75rem;background:var(--color-surface);border:1px solid var(--color-peach);color:var(--color-text)}" +
+			".grip-boundary h2{margin:0 0 0.5rem;color:var(--color-peach)}" +
+			".grip-boundary pre{white-space:pre-wrap;font-size:0.85rem;color:var(--color-subtext)}" +
+			".grip-boundary button{margin-top:1rem}" +
+			".grip-canvas-wrap{position:relative;display:inline-block;max-width:100%}" +
+			".grip-canvas{display:block;width:100%;max-width:20rem;height:auto;border-radius:0.5rem;background:var(--color-surface-soft)}" +
+			".grip-score-hud{position:absolute;top:0.5rem;left:0.5rem;padding:0.25rem 0.5rem;border-radius:0.35rem;background:rgba(0,0,0,0.45);color:var(--color-text);font-size:0.85rem;font-weight:600}" +
+			".grip-particles{pointer-events:none;position:absolute;inset:0;border-radius:0.5rem;overflow:hidden}" +
+			".grip-emoji-stage{font-size:4rem;line-height:1;text-align:center}" +
+			".grip-image{max-width:100%;border-radius:0.5rem}" +
+			".grip-raw-slot{min-height:0.5rem}" +
+			(!prefersReducedMotion()
+				? ".grip-scene{animation:grip-fade-in 0.2s ease}.grip-toast{transition:opacity 0.2s ease}.grip-particles::after{content:'';position:absolute;width:6px;height:6px;border-radius:50%;background:var(--color-peach);animation:grip-sparkle 1.4s ease-in-out infinite}.grip-motion-bounce{animation:grip-fade-in 0.2s ease,grip-bounce 2.4s ease-in-out infinite}.grip-motion-float{animation:grip-fade-in 0.2s ease,grip-float 3.2s ease-in-out infinite}.grip-motion-pulse{animation:grip-fade-in 0.2s ease,grip-pulse 2s ease-in-out infinite}@keyframes grip-fade-in{from{opacity:0}to{opacity:1}}@keyframes grip-sparkle{0%,100%{opacity:0.2;transform:translate(20%,60%)}50%{opacity:1;transform:translate(70%,20%)}}@keyframes grip-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}@keyframes grip-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}@keyframes grip-pulse{0%,100%{opacity:1}50%{opacity:0.92}}"
+				: "");
+		root.appendChild(style);
+	}
+
+	function applyTheme(root, themeName) {
+		var tokens = THEMES[themeName] || THEMES.lilgrip_default;
+		for (var key in tokens) {
+			if (Object.prototype.hasOwnProperty.call(tokens, key)) {
+				root.style.setProperty(key, tokens[key]);
+			}
+		}
+		root.style.background =
+			"var(--grip-bg-gradient, var(--color-base))";
+		root.style.color = "var(--color-text)";
+	}
+
+	function showBoundary(root, message, onRetry) {
+		root.innerHTML = "";
+		injectStyles(root);
+		applyTheme(root, "lilgrip_default");
+		var box = document.createElement("div");
+		box.className = "grip-app grip-boundary";
+		box.setAttribute("role", "alert");
+		var h = document.createElement("h2");
+		h.textContent = "Something went sideways";
+		var pre = document.createElement("pre");
+		pre.textContent = String(message || "Unknown error");
+		var btn = document.createElement("button");
+		btn.type = "button";
+		btn.className = "grip-btn";
+		btn.textContent = "Retry";
+		btn.addEventListener("click", function () {
+			if (typeof onRetry === "function") onRetry();
+		});
+		box.appendChild(h);
+		box.appendChild(pre);
+		box.appendChild(btn);
+		root.appendChild(box);
+	}
+
+	function createRuntime(rootEl, ir) {
+		var actionMap = {};
+		if (Array.isArray(ir.actions)) {
+			for (var a = 0; a < ir.actions.length; a++) {
+				actionMap[ir.actions[a].id] = ir.actions[a].steps || [];
+			}
+		}
+
+		var sceneMap = {};
+		for (var i = 0; i < ir.scenes.length; i++) {
+			sceneMap[ir.scenes[i].id] = ir.scenes[i];
+		}
+
+		var firstScene = ir.scenes[0].id;
+		var snapshot = {
+			state: Object.assign({}, ir.state || {}),
+			scene: firstScene,
+			stack: [firstScene],
+			toast: null,
+		};
+
+		var toastTimer = null;
+		var sceneHost = null;
+		var shellEl = null;
+		var toastEl = null;
+		var slotRegistry = {};
+		var mountedRaw = {};
+		var canvasCleanups = [];
+
+		function sceneThemeName(scene) {
+			var base =
+				ir.meta && ir.meta.theme ? ir.meta.theme : "lilgrip_default";
+			if (scene && scene.vibe) return scene.vibe;
+			return base;
+		}
+
+		function sceneMotion(scene) {
+			if (scene && scene.motion) return scene.motion;
+			return "none";
+		}
+
+		function clearToastTimer() {
+			if (toastTimer) {
+				clearTimeout(toastTimer);
+				toastTimer = null;
+			}
+		}
+
+		function showToast(message) {
+			if (!toastEl) {
+				toastEl = document.createElement("div");
+				toastEl.className = "grip-toast";
+				toastEl.setAttribute("role", "status");
+				rootEl.appendChild(toastEl);
+			}
+			toastEl.textContent = message;
+			toastEl.hidden = false;
+			clearToastTimer();
+			toastTimer = setTimeout(function () {
+				if (toastEl) toastEl.hidden = true;
+			}, 3200);
+		}
+
+		function runAction(actionId) {
+			var steps = actionMap[actionId];
+			if (!steps) return;
+			snapshot = applySteps(snapshot, steps);
+			if (snapshot.toast) {
+				showToast(snapshot.toast);
+				snapshot.toast = null;
+			}
+			renderScene();
+		}
+
+		function applyHostSteps(steps) {
+			snapshot = applySteps(snapshot, steps);
+			if (snapshot.toast) {
+				showToast(snapshot.toast);
+				snapshot.toast = null;
+			}
+			renderScene();
+		}
+
+		function buildHostApi() {
+			return {
+				ui: {
+					mount: function (slotName, node) {
+						if (!slotName || !node) return;
+						var target =
+							getRegisteredSlot(slotName) ||
+							rootEl.querySelector(
+								'[data-grip-slot="' + slotName + '"]',
+							);
+						if (!target) return;
+						target.innerHTML = "";
+						target.appendChild(node);
+						mountedRaw[slotName] = node;
+					},
+				},
+				state: {
+					get: function (key) {
+						return snapshot.state[key];
+					},
+					set: function (key, value) {
+						snapshot.state[key] = value;
+						renderScene();
+					},
+				},
+				scene: {
+					goto: function (sceneId) {
+						applyHostSteps([{ op: "goto", scene: sceneId }]);
+					},
+					back: function () {
+						applyHostSteps([{ op: "back" }]);
+					},
+				},
+				toast: function (message) {
+					showToast(String(message));
+				},
+			};
+		}
+
+		function isAllowedRawPath(path) {
+			if (
+				typeof path !== "string" ||
+				path.indexOf("./raw/") !== 0 ||
+				path.indexOf("..") !== -1 ||
+				path.indexOf("%") !== -1
+			) {
+				return false;
+			}
+			var decoded;
+			try {
+				decoded = decodeURIComponent(path);
+			} catch (err) {
+				return false;
+			}
+			if (decoded.indexOf("..") !== -1) {
+				return false;
+			}
+			if (
+				decoded.charAt(0) === "/" ||
+				decoded.indexOf("//") === 0 ||
+				/^[a-zA-Z]:[\\/]/.test(decoded)
+			) {
+				return false;
+			}
+			return true;
+		}
+
+		function pathnameUnderRawDir(pathname, rawDirPathname) {
+			if (pathname.indexOf(rawDirPathname) !== 0) {
+				return false;
+			}
+			if (pathname.length === rawDirPathname.length) {
+				return true;
+			}
+			return pathname.charAt(rawDirPathname.length) === "/";
+		}
+
+		function resolveRawModuleUrl(path) {
+			var base =
+				typeof document !== "undefined" && document.baseURI
+					? document.baseURI
+					: "https://lilgrip.com/";
+			var url = new URL(path, base);
+			var rawDirPathname = new URL("./raw/", base).pathname;
+			if (!pathnameUnderRawDir(url.pathname, rawDirPathname)) {
+				throw new Error("raw_module path escapes ./raw/");
+			}
+			return url.href;
+		}
+
+		function loadRawModules() {
+			var mods = ir.rawModules;
+			if (!Array.isArray(mods) || mods.length === 0) return;
+			var host = buildHostApi();
+			for (var m = 0; m < mods.length; m++) {
+				(function (mod) {
+					if (!isAllowedRawPath(mod.path)) {
+						showToast("raw_module path rejected");
+						return;
+					}
+					var exportName = mod.exportName;
+					var url;
+					try {
+						url = resolveRawModuleUrl(mod.path);
+					} catch (err) {
+						showToast(
+							"raw_module failed: " +
+								(err && err.message ? err.message : String(err)),
+						);
+						return;
+					}
+					import(url)
+						.then(function (ns) {
+							var fn = ns[exportName];
+							if (typeof fn !== "function") {
+								showToast(
+									'raw_module export "' +
+										exportName +
+										'" is not a function',
+								);
+								return;
+							}
+							fn(host);
+						})
+						.catch(function (err) {
+							showToast(
+								"raw_module failed: " +
+									(err && err.message
+										? err.message
+										: String(err)),
+							);
+						});
+				})(mods[m]);
+			}
+		}
+
+		function teardownCanvasLoops() {
+			for (var i = 0; i < canvasCleanups.length; i++) {
+				if (typeof canvasCleanups[i] === "function") {
+					canvasCleanups[i]();
+				}
+			}
+			canvasCleanups = [];
+		}
+
+		function isSlotConnected(el) {
+			return el && el.isConnected;
+		}
+
+		/** Drop registry entries whose nodes were removed from the document (e.g. scene change). */
+		function reconcileSlotRegistry() {
+			for (var key in slotRegistry) {
+				if (!isSlotConnected(slotRegistry[key])) {
+					delete slotRegistry[key];
+				}
+			}
+		}
+
+		function getRegisteredSlot(name) {
+			var el = slotRegistry[name];
+			if (isSlotConnected(el)) return el;
+			if (el) delete slotRegistry[name];
+			return null;
+		}
+
+		function registerSlot(name, el) {
+			if (name && el) slotRegistry[name] = el;
+		}
+
+		function removeShellSlotDupes(slotName, keep) {
+			if (!shellEl) return;
+			var nodes = shellEl.querySelectorAll(
+				'[data-grip-slot="' + slotName + '"]',
+			);
+			for (var i = 0; i < nodes.length; i++) {
+				var el = nodes[i];
+				if (el === keep) continue;
+				if (el.getAttribute("data-grip-shell-slot") === "1") {
+					el.remove();
+				}
+			}
+		}
+
+		function ensureRawModuleSlots() {
+			if (!shellEl) return;
+			var mods = ir.rawModules;
+			if (!Array.isArray(mods)) return;
+			var seen = {};
+			for (var i = 0; i < mods.length; i++) {
+				var slotName = mods[i].slot;
+				if (!slotName || seen[slotName]) continue;
+				seen[slotName] = true;
+				var existing = getRegisteredSlot(slotName);
+				if (existing) {
+					removeShellSlotDupes(slotName, existing);
+					continue;
+				}
+				var slot = document.createElement("div");
+				slot.className = "grip-raw-slot";
+				slot.setAttribute("data-grip-slot", slotName);
+				slot.setAttribute("data-grip-shell-slot", "1");
+				shellEl.appendChild(slot);
+				registerSlot(slotName, slot);
+			}
+		}
+
+		function detachMountedRaw() {
+			for (var name in mountedRaw) {
+				var node = mountedRaw[name];
+				if (node && node.parentNode) node.parentNode.removeChild(node);
+			}
+		}
+
+		function reattachMountedRaw() {
+			for (var name in mountedRaw) {
+				var node = mountedRaw[name];
+				if (!node) continue;
+				var slot = getRegisteredSlot(name);
+				if (!slot || node.parentNode === slot) continue;
+				slot.appendChild(node);
+			}
+		}
+
+		function renderCanvasNode(node) {
+			var wrap = document.createElement("div");
+			wrap.className = "grip-canvas-wrap";
+			wrap.setAttribute("data-grip-canvas-wrap", "1");
+
+			var clearColor = "#262637";
+			var sprites = [];
+			var showHud = false;
+			var showParticles = false;
+			var kids = node.children || [];
+			for (var k = 0; k < kids.length; k++) {
+				var ch = kids[k];
+				if (ch.type === "clear" && ch.color) clearColor = String(ch.color);
+				if (ch.type === "sprite" && ch.id) {
+					sprites.push({
+						id: ch.id,
+						emoji:
+							ch.emoji != null && ch.emoji !== ""
+								? String(ch.emoji)
+								: null,
+					});
+				}
+				if (ch.type === "score_hud") showHud = true;
+				if (ch.type === "particles") showParticles = true;
+			}
+
+			var scene = sceneMap[snapshot.scene];
+			var motion = sceneMotion(scene);
+			var spriteDrift =
+				motion !== "none" && !prefersReducedMotion();
+
+			var canvas = document.createElement("canvas");
+			canvas.className = "grip-canvas";
+			canvas.width = 320;
+			canvas.height = 200;
+			canvas.setAttribute("role", "img");
+			canvas.setAttribute("aria-label", "play canvas");
+			wrap.appendChild(canvas);
+
+			if (showHud) {
+				var hud = document.createElement("div");
+				hud.className = "grip-score-hud";
+				var scoreVal = snapshot.state.score;
+				hud.textContent =
+					"Score: " + (scoreVal != null ? String(scoreVal) : "0");
+				wrap.appendChild(hud);
+			}
+
+			if (showParticles && !prefersReducedMotion()) {
+				var particles = document.createElement("div");
+				particles.className = "grip-particles";
+				particles.setAttribute("aria-hidden", "true");
+				wrap.appendChild(particles);
+			}
+
+			var ctx = canvas.getContext("2d");
+			var running = true;
+			var tickStart = Date.now();
+			function frame() {
+				if (!running || !ctx) return;
+				ctx.fillStyle = clearColor;
+				ctx.fillRect(0, 0, canvas.width, canvas.height);
+				var t = (Date.now() - tickStart) / 1000;
+				for (var s = 0; s < sprites.length; s++) {
+					var sp = sprites[s];
+					var sid = sp.id;
+					var sx = Number(snapshot.state[sid + "_x"]);
+					var sy = Number(snapshot.state[sid + "_y"]);
+					if (!sx && sx !== 0) sx = 24 + s * 36;
+					if (!sy && sy !== 0) sy = 80;
+					var driftX = 0;
+					var driftY = 0;
+					if (spriteDrift) {
+						driftX = Math.sin(t * 0.9 + s * 0.65) * 5;
+						driftY = Math.cos(t * 0.75 + s * 0.4) * 4;
+					}
+					sx += driftX;
+					sy += driftY;
+					if (sp.emoji) {
+						ctx.font = "28px system-ui,sans-serif";
+						ctx.textAlign = "center";
+						ctx.textBaseline = "middle";
+						ctx.fillText(sp.emoji, sx + 14, sy + 14);
+					} else {
+						ctx.fillStyle = "#89b4fa";
+						ctx.fillRect(sx, sy, 28, 28);
+					}
+				}
+				if (running) global.requestAnimationFrame(frame);
+			}
+			canvasCleanups.push(function () {
+				running = false;
+			});
+			frame();
+			return wrap;
+		}
+
+		function renderNode(node) {
+			if (!node || !node.type) return null;
+			var layoutClass = {
+				stack: "grip-stack",
+				grid: "grip-grid",
+				card: "grip-card",
+				modal: "grip-modal",
+				tabs: "grip-tabs",
+			};
+			if (node.type === "hero") {
+				var heroEl = document.createElement("div");
+				heroEl.className = "grip-hero grip-hero-bleed";
+				if (node.emoji != null && node.emoji !== "") {
+					var heroEmoji = document.createElement("div");
+					heroEmoji.className = "grip-hero-emoji";
+					heroEmoji.textContent = String(node.emoji);
+					heroEl.appendChild(heroEmoji);
+				}
+				if (node.title != null && node.title !== "") {
+					var heroTitle = document.createElement("h1");
+					heroTitle.className = "grip-hero-title";
+					heroTitle.textContent = String(node.title);
+					heroEl.appendChild(heroTitle);
+				}
+				if (node.blurb != null && node.blurb !== "") {
+					var heroBlurb = document.createElement("p");
+					heroBlurb.className = "grip-hero-blurb";
+					heroBlurb.textContent = String(node.blurb);
+					heroEl.appendChild(heroBlurb);
+				}
+				var heroKids = node.children || [];
+				for (var hc = 0; hc < heroKids.length; hc++) {
+					var heroChild = renderNode(heroKids[hc]);
+					if (heroChild) heroEl.appendChild(heroChild);
+				}
+				return heroEl;
+			}
+			if (layoutClass[node.type]) {
+				var layout = document.createElement(
+					node.type === "modal" ? "section" : "div",
+				);
+				layout.className = layoutClass[node.type];
+				if (node.type === "modal") layout.setAttribute("role", "dialog");
+				var kids = node.children || [];
+				for (var c = 0; c < kids.length; c++) {
+					var child = renderNode(kids[c]);
+					if (child) layout.appendChild(child);
+				}
+				return layout;
+			}
+			if (node.type === "text") {
+				var p = document.createElement("p");
+				p.className = "grip-text";
+				p.textContent = node.value != null ? String(node.value) : "";
+				return p;
+			}
+			if (node.type === "button") {
+				var btn = document.createElement("button");
+				btn.type = "button";
+				btn.className = "grip-btn";
+				btn.id = node.id || "";
+				btn.textContent = node.label || "Button";
+				var actionId = node.action;
+				btn.addEventListener("click", function () {
+					runAction(actionId);
+				});
+				return btn;
+			}
+			if (node.type === "canvas") {
+				return renderCanvasNode(node);
+			}
+			if (node.type === "emoji_stage") {
+				var stage = document.createElement("div");
+				stage.className = "grip-emoji-stage";
+				stage.textContent = node.emoji != null ? String(node.emoji) : "";
+				return stage;
+			}
+			if (node.type === "image") {
+				var img = document.createElement("img");
+				img.className = "grip-image";
+				img.alt = "";
+				img.src = node.src != null ? String(node.src) : "";
+				return img;
+			}
+			if (node.type === "raw_slot") {
+				var slotEl = document.createElement("div");
+				slotEl.className = "grip-raw-slot";
+				var slotId = node.id || "";
+				slotEl.setAttribute("data-grip-slot", slotId);
+				registerSlot(slotId, slotEl);
+				return slotEl;
+			}
+			if (node.type === "particles" && prefersReducedMotion()) {
+				return null;
+			}
+			if (
+				node.type === "toggle" ||
+				node.type === "slider" ||
+				node.type === "timer" ||
+				node.type === "toast"
+			) {
+				return null;
+			}
+			var stub = document.createElement("div");
+			stub.className = "grip-stub";
+			stub.hidden = true;
+			stub.setAttribute("data-grip-type", node.type);
+			return stub;
+		}
+
+		function renderScene() {
+			var scene = sceneMap[snapshot.scene];
+			if (!sceneHost) return;
+			teardownCanvasLoops();
+			detachMountedRaw();
+			sceneHost.innerHTML = "";
+			reconcileSlotRegistry();
+			applyTheme(rootEl, sceneThemeName(scene));
+			sceneHost.className = "grip-scene";
+			var motion = sceneMotion(scene);
+			if (motion !== "none" && !prefersReducedMotion()) {
+				sceneHost.classList.add("grip-motion-" + motion);
+			}
+			var rootNode = renderNode(scene && scene.root);
+			if (rootNode) sceneHost.appendChild(rootNode);
+			ensureRawModuleSlots();
+			reattachMountedRaw();
+		}
+
+		function mount() {
+			rootEl.innerHTML = "";
+			rootEl.className = "grip-app";
+			slotRegistry = {};
+			mountedRaw = {};
+			injectStyles(rootEl);
+			var themeName =
+				ir.meta && ir.meta.theme ? ir.meta.theme : "lilgrip_default";
+			applyTheme(rootEl, themeName);
+
+			var shell = document.createElement("div");
+			shellEl = shell;
+			shell.className = "grip-shell";
+
+			var showHeader = true;
+			if (
+				ir.shell &&
+				(ir.shell.header === false || ir.shell.header === "off")
+			) {
+				showHeader = false;
+			}
+			if (showHeader) {
+				var header = document.createElement("header");
+				header.className = "grip-shell-header";
+				header.textContent = ir.meta.title || "Grip App";
+				shell.appendChild(header);
+				if (ir.meta.blurb) {
+					var blurb = document.createElement("p");
+					blurb.className = "grip-blurb";
+					blurb.textContent = ir.meta.blurb;
+					shell.appendChild(blurb);
+				}
+			}
+
+			sceneHost = document.createElement("main");
+			sceneHost.setAttribute("aria-live", "polite");
+			shell.appendChild(sceneHost);
+			rootEl.appendChild(shell);
+			renderScene();
+			loadRawModules();
+		}
+
+		return {
+			mount: mount,
+			getSnapshot: function () {
+				return snapshot;
+			},
+		};
+	}
+
+	var activeRoot = null;
+	var errorHandlersInstalled = false;
+
+	function installErrorHandlers() {
+		if (errorHandlersInstalled) return;
+		errorHandlersInstalled = true;
+		global.addEventListener("error", function (ev) {
+			if (!activeRoot) return;
+			var msg = ev.message || "Script error";
+			showBoundary(activeRoot, msg, function () {
+				startApp(activeRoot);
+			});
+		});
+		global.addEventListener("unhandledrejection", function (ev) {
+			if (!activeRoot) return;
+			var reason = ev.reason;
+			var msg =
+				reason && reason.message
+					? reason.message
+					: String(reason || "Unhandled promise rejection");
+			showBoundary(activeRoot, msg, function () {
+				startApp(activeRoot);
+			});
+		});
+	}
+
+	function startApp(rootEl) {
+		if (!rootEl) return;
+		activeRoot = rootEl;
+		installErrorHandlers();
+		var ir = global.__GRIP_APP__;
+		var err = validateIr(ir);
+		if (err) {
+			showBoundary(rootEl, err, function () {
+				startApp(rootEl);
+			});
+			return;
+		}
+		try {
+			var rt = createRuntime(rootEl, ir);
+			rt.mount();
+		} catch (e) {
+			showBoundary(
+				rootEl,
+				e && e.message ? e.message : String(e),
+				function () {
+					startApp(rootEl);
+				},
+			);
+		}
+	}
+
+	global.GripApps = {
+		start: startApp,
+		_apiVersion: API_VERSION,
+	};
+})(typeof globalThis !== "undefined" ? globalThis : window);
