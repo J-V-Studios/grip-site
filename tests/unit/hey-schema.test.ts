@@ -18,4 +18,13 @@ describe("parseHeyInput", () => {
 		const result = parseHeyInput({ name: "josiah", body: "slay" });
 		expect(result.data).toEqual({ name: "josiah", body: "slay" });
 	});
+
+	it("allows empty body when a photo is attached", () => {
+		const result = parseHeyInput(
+			{ name: "grip", body: "  " },
+			{ allowEmptyBody: true },
+		);
+		expect(result.error).toBeNull();
+		expect(result.data).toEqual({ name: "grip", body: "" });
+	});
 });

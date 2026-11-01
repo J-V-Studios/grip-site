@@ -1,3 +1,4 @@
+/** Say-hey pulse island: short comments with optional photos. */
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import {
 	QueryClient,
@@ -7,13 +8,19 @@ import {
 	useQueryClient,
 } from "@tanstack/react-query";
 import confetti from "canvas-confetti";
-import { MessageCircleHeart, Send, Sparkles } from "lucide-react";
+import { ImagePlus, MessageCircleHeart, Send, Sparkles, X } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useOptimistic, useState, useTransition } from "react";
+import { useOptimistic, useRef, useState, useTransition } from "react";
 import Balancer from "react-wrap-balancer";
 import { toast } from "sonner";
 import { parseHeyInput } from "@/lib/hey-schema";
-import { fetchNotes, insertNote, type Note } from "@/lib/notes";
+import {
+	fetchNotes,
+	insertNote,
+	type Note,
+	publicHeyPhotoUrl,
+	validateHeyImage,
+} from "@/lib/notes";
 import { usePulseStore } from "@/lib/pulse-store";
 
 const queryClient = new QueryClient({
@@ -40,6 +47,9 @@ function SayHeyInner() {
 	const recordPulse = usePulseStore((s) => s.recordPulse);
 	const pulseCount = usePulseStore((s) => s.pulseCount);
 	const [bloomText, setBloomText] = useState<string | null>(null);
+	const [photo, setPhoto] = useState<File | null>(null);
+	const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+	const fileRef = useRef<HTMLInputElement>(null);
 	const [, startTransition] = useTransition();
 	const [listParent] = useAutoAnimate();
 
@@ -68,6 +78,30 @@ function SayHeyInner() {
 		},
 	});
 
+	function clearPhoto() {
+		if (photoPreview) URL.revokeObjectURL(photoPreview);
+		setPhoto(null);
+		setPhotoPreview(null);
+		if (fileRef.current) fileRef.current.value = "";
+	}
+
+	function onPhotoChange(event: { currentTarget: HTMLInputElement }) {
+		const file = event.currentTarget.files?.[0] ?? null;
+		if (!file) {
+			clearPhoto();
+			return;
+		}
+		const invalid = validateHeyImage(file);
+		if (invalid) {
+			toast.error(invalid);
+			event.currentTarget.value = "";
+			return;
+		}
+		if (photoPreview) URL.revokeObjectURL(photoPreview);
+		setPhoto(file);
+		setPhotoPreview(URL.createObjectURL(file));
+	}
+
 	async function onSubmit(event: {
 		preventDefault(): void;
 		currentTarget: HTMLFormElement;
@@ -75,12 +109,20 @@ function SayHeyInner() {
 		event.preventDefault();
 		const form = event.currentTarget;
 		const data = new FormData(form);
-		const parsed = parseHeyInput({
-			name: String(data.get("name") || ""),
-			body: String(data.get("body") || ""),
-		});
+		const hasPhoto = Boolean(photo);
+		const parsed = parseHeyInput(
+			{
+				name: String(data.get("name") || ""),
+				body: String(data.get("body") || ""),
+			},
+			{ allowEmptyBody: hasPhoto },
+		);
 		if (!parsed.data) {
 			toast.error(parsed.error ?? "that hey bounced.");
+			return;
+		}
+		if (!parsed.data.body && !hasPhoto) {
+			toast.error("add a hey or a photo");
 			return;
 		}
 
@@ -88,25 +130,30 @@ function SayHeyInner() {
 		const optimistic: Note = {
 			id: `optimistic-${crypto.randomUUID()}`,
 			name,
-			body,
+			body: body || "📷",
+			photo_path: hasPhoto ? "optimistic" : null,
 		};
 
 		startTransition(() => {
 			addOptimistic(optimistic);
 		});
 
-		const result = await mutation.mutateAsync({ name, body });
+		const result = await mutation.mutateAsync({
+			name,
+			body,
+			photo,
+		});
 		if (result.error || !result.note) {
 			toast.error(
 				result.error?.includes("Supabase")
 					? "heys are offline right now."
-					: "that hey bounced. try again.",
+					: (result.error ?? "that hey bounced. try again."),
 			);
 			return;
 		}
 
-		recordPulse(body);
-		setBloomText(body);
+		recordPulse(body || "photo hey");
+		setBloomText(body || "📷");
 		window.setTimeout(() => setBloomText(null), 900);
 		firePulseConfetti();
 		toast.success("pulse locked in", {
@@ -114,6 +161,7 @@ function SayHeyInner() {
 			icon: <Sparkles className="size-4 text-sky" />,
 		});
 		form.reset();
+		clearPhoto();
 		await qc.invalidateQueries({ queryKey: ["heys"] });
 	}
 
@@ -155,7 +203,8 @@ function SayHeyInner() {
 					</h2>
 					<p className="m-0 mt-2 max-w-[32rem] text-[1.02rem] text-subtext">
 						<Balancer>
-							One shot. Big pulse. Then it chill-lists under here for everyone.
+							Drop a line, a pic, or both. It blooms, then chill-lists for
+							everyone.
 						</Balancer>
 					</p>
 				</div>
@@ -176,46 +225,78 @@ function SayHeyInner() {
 				/>
 			</div>
 
-			<form
-				className="grid gap-3 sm:grid-cols-[9rem_minmax(0,1fr)_auto] sm:items-end"
-				onSubmit={onSubmit}
-			>
-				<label className="grid gap-1 text-[0.72rem] font-semibold tracking-[0.12em] text-subtext uppercase">
-					name
-					<input
-						type="text"
-						name="name"
-						maxLength={24}
-						autoComplete="nickname"
-						placeholder="anon"
-						className="w-full rounded-2xl border border-white/10 bg-base/85 px-4 py-3 text-base text-text focus-visible:border-sky/55 focus-visible:shadow-[0_0_0_4px_rgba(137,220,235,0.12)] focus-visible:outline-none"
-					/>
-				</label>
-				<label className="grid gap-1 text-[0.72rem] font-semibold tracking-[0.12em] text-subtext uppercase">
-					hey
-					<input
-						type="text"
-						name="body"
-						maxLength={200}
-						required
-						placeholder="yo lilgrip ✌️"
-						className="w-full rounded-2xl border border-white/10 bg-base/85 px-4 py-3 text-base text-text focus-visible:border-sky/55 focus-visible:shadow-[0_0_0_4px_rgba(137,220,235,0.12)] focus-visible:outline-none"
-					/>
-				</label>
-				<button
-					type="submit"
-					disabled={mutation.isPending}
-					className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-sky px-6 py-3 font-bold text-base text-base transition-[transform,box-shadow,opacity] duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(137,220,235,0.3)] focus-visible:outline-none disabled:opacity-65 sm:mb-[1px]"
-				>
-					<Send className="size-4" aria-hidden="true" />
-					{mutation.isPending ? "sending…" : "pulse it"}
-				</button>
+			<form className="grid gap-3" onSubmit={onSubmit}>
+				<div className="grid gap-3 sm:grid-cols-[9rem_minmax(0,1fr)_auto] sm:items-end">
+					<label className="grid gap-1 text-[0.72rem] font-semibold tracking-[0.12em] text-subtext uppercase">
+						name
+						<input
+							type="text"
+							name="name"
+							maxLength={24}
+							autoComplete="nickname"
+							placeholder="anon"
+							className="w-full rounded-2xl border border-white/10 bg-base/85 px-4 py-3 text-base text-text focus-visible:border-sky/55 focus-visible:shadow-[0_0_0_4px_rgba(137,220,235,0.12)] focus-visible:outline-none"
+						/>
+					</label>
+					<label className="grid gap-1 text-[0.72rem] font-semibold tracking-[0.12em] text-subtext uppercase">
+						hey
+						<input
+							type="text"
+							name="body"
+							maxLength={200}
+							placeholder="yo lilgrip ✌️"
+							className="w-full rounded-2xl border border-white/10 bg-base/85 px-4 py-3 text-base text-text focus-visible:border-sky/55 focus-visible:shadow-[0_0_0_4px_rgba(137,220,235,0.12)] focus-visible:outline-none"
+						/>
+					</label>
+					<button
+						type="submit"
+						disabled={mutation.isPending}
+						className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-sky px-6 py-3 font-bold text-base text-base transition-[transform,box-shadow,opacity] duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(137,220,235,0.3)] focus-visible:outline-none disabled:opacity-65 sm:mb-[1px]"
+					>
+						<Send className="size-4" aria-hidden="true" />
+						{mutation.isPending ? "sending…" : "pulse it"}
+					</button>
+				</div>
+
+				<div className="flex flex-wrap items-center gap-3">
+					<label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-surface/50 px-4 py-2 text-sm font-semibold text-subtext transition-colors hover:border-sky/40 hover:text-sky">
+						<ImagePlus className="size-4" aria-hidden="true" />
+						{photo ? "change photo" : "add photo"}
+						<input
+							ref={fileRef}
+							type="file"
+							accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+							className="sr-only"
+							onChange={onPhotoChange}
+						/>
+					</label>
+					{photoPreview ? (
+						<div className="relative">
+							<img
+								src={photoPreview}
+								alt="Selected hey preview"
+								className="h-16 w-16 rounded-xl border border-white/10 object-cover"
+							/>
+							<button
+								type="button"
+								onClick={clearPhoto}
+								className="absolute -top-2 -right-2 inline-flex size-6 items-center justify-center rounded-full bg-base text-peach shadow"
+								aria-label="Remove photo"
+							>
+								<X className="size-3.5" aria-hidden="true" />
+							</button>
+						</div>
+					) : null}
+					<span className="text-[0.8rem] text-subtext">
+						optional · jpg/png/webp · max 5MB
+					</span>
+				</div>
 			</form>
 
 			<p className="mt-3 text-[0.92rem] text-subtext">
 				{notesQuery.isError
 					? "heys could not load. try again in a minute."
-					: "drop a line. it blooms, then hangs out below."}
+					: "text, pic, or both — then it hangs out below."}
 			</p>
 
 			<ul ref={listParent} className="m-0 mt-6 grid list-none gap-3 p-0">
@@ -230,7 +311,23 @@ function SayHeyInner() {
 							className="rounded-2xl border border-white/5 bg-surface/60 px-4 py-3"
 						>
 							<strong className="text-peach">{note.name}</strong>
-							<p className="m-0 mt-1 leading-snug text-text">{note.body}</p>
+							{note.body ? (
+								<p className="m-0 mt-1 leading-snug text-text">{note.body}</p>
+							) : null}
+							{note.photo_path && note.photo_path !== "optimistic" ? (
+								<img
+									src={publicHeyPhotoUrl(note.photo_path)}
+									alt=""
+									loading="lazy"
+									className="mt-3 max-h-72 w-full max-w-md rounded-xl border border-white/10 object-cover"
+								/>
+							) : note.photo_path === "optimistic" && photoPreview ? (
+								<img
+									src={photoPreview}
+									alt=""
+									className="mt-3 max-h-72 w-full max-w-md rounded-xl border border-white/10 object-cover opacity-80"
+								/>
+							) : null}
 						</li>
 					))
 				)}
