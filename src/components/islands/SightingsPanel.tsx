@@ -41,6 +41,7 @@ export default function SightingsPanel() {
 	const [userId, setUserId] = useState<string | null>(null);
 	const [authMode, setAuthMode] = useState<"signin" | "signup">("signup");
 	const [hint, setHint] = useState(DEFAULT_HINT);
+	const [authHint, setAuthHint] = useState("");
 	const [photo, setPhoto] = useState<File | null>(null);
 	const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 	const [submitting, setSubmitting] = useState(false);
@@ -140,30 +141,39 @@ export default function SightingsPanel() {
 		const username = String(data.get("username") || "");
 
 		setAuthBusy(true);
+		setAuthHint("talking to the auth server…");
 		if (authMode === "signup") {
 			const result = await signUpHunter({ email, password, username });
 			setAuthBusy(false);
 			if (result.error) {
+				setAuthHint(result.error);
 				setHint(result.error);
 				return;
 			}
 			if (result.needsEmailConfirm) {
-				setHint("check your email to confirm, then sign in.");
+				const msg =
+					"account made — check your email to confirm, then use “have account”.";
+				setAuthHint(msg);
+				setHint(msg);
 				setAuthMode("signin");
 				return;
 			}
 			await refreshAuth();
-			setHint(`welcome @${normalizeDisplay(username)}. log a sighting.`);
+			const welcome = `welcome @${normalizeDisplay(username)}. log a sighting.`;
+			setAuthHint(welcome);
+			setHint(welcome);
 			return;
 		}
 
 		const result = await signInHunter({ email, password });
 		setAuthBusy(false);
 		if (result.error) {
+			setAuthHint(result.error);
 			setHint(result.error);
 			return;
 		}
 		await refreshAuth();
+		setAuthHint("signed in. snap the gripster.");
 		setHint("signed in. snap the gripster.");
 	}
 
@@ -316,28 +326,42 @@ export default function SightingsPanel() {
 					className="mb-5 grid gap-[0.85rem] rounded-2xl border border-white/8 bg-surface/55 p-4"
 					onSubmit={onAuthSubmit}
 				>
-					<div className="flex flex-wrap gap-2">
+					<div
+						className="flex flex-wrap gap-2"
+						role="tablist"
+						aria-label="Account mode"
+					>
 						<button
 							type="button"
-							onClick={() => setAuthMode("signup")}
+							role="tab"
+							aria-selected={authMode === "signup"}
+							onClick={() => {
+								setAuthMode("signup");
+								setHint(DEFAULT_HINT);
+							}}
 							className={`rounded-full px-3 py-1.5 text-sm font-semibold ${
 								authMode === "signup"
 									? "bg-sky text-base"
 									: "border border-white/10 text-subtext"
 							}`}
 						>
-							create account
+							new hunter
 						</button>
 						<button
 							type="button"
-							onClick={() => setAuthMode("signin")}
+							role="tab"
+							aria-selected={authMode === "signin"}
+							onClick={() => {
+								setAuthMode("signin");
+								setHint(DEFAULT_HINT);
+							}}
 							className={`rounded-full px-3 py-1.5 text-sm font-semibold ${
 								authMode === "signin"
 									? "bg-sky text-base"
 									: "border border-white/10 text-subtext"
 							}`}
 						>
-							sign in
+							have account
 						</button>
 					</div>
 					{authMode === "signup" ? (
@@ -389,8 +413,12 @@ export default function SightingsPanel() {
 							? "working…"
 							: authMode === "signup"
 								? "create hunter account"
-								: "sign in"}
+								: "log into hunter"}
 					</button>
+					<p className="m-0 text-[0.9rem] text-peach" aria-live="polite">
+						{authHint ||
+							"use a real email — confirm it if asked, then come back."}
+					</p>
 				</form>
 			) : (
 				<div className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-white/8 bg-surface/55 px-4 py-3">
