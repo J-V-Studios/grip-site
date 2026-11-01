@@ -44,8 +44,8 @@ You are working on **the lilgriper** site: Astro 7 static site on GitHub Pages a
 
 - Env (client-safe only): `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` — see `.env.example`.
 - **Never** commit `.env` or use service-role keys in the browser.
-- Tables: `lilgrip_comments`, `grip_sightings`; bucket: `grip-sightings` (anon select/insert as designed).
-- Sanitize/clamp user text in `src/lib/` before insert; cap upload size/MIME for sightings.
+- Tables: `lilgrip_comments`, `grip_sightings`; buckets: `grip-heys`, `grip-sightings` (anon select/insert as designed).
+- Sanitize/clamp user text in `src/lib/` before insert; cap upload size/MIME for hey photos and sightings.
 - Document schema or RLS changes in `OVERVIEW.md`.
 
 ## Code quality

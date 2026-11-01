@@ -65,10 +65,11 @@ Shared chrome: `SiteHeader`, `SiteFooter` via `BaseLayout`.
 - **Build:** Bun, Astro 7, `@astrojs/react`, Tailwind v4
 - **Fonts:** Google Fonts — Outfit, Fraunces (see layout)
 - **Data:** `@supabase/supabase-js` via `src/lib/supabase.ts`
-  - `lilgrip_comments` — notes
+  - `lilgrip_comments` — say-hey notes (`body`, optional `photo_path`)
   - `grip_sightings` — sightings metadata + points
   - `community_gallery` — live community page metadata (anon read)
-  - Storage bucket `grip-sightings` — public photos
+  - Storage bucket `grip-heys` — public say-hey photos
+  - Storage bucket `grip-sightings` — public sighting photos
 - **Community orchestrator:** Supabase Edge Function `community-orchestrator` — claim handle, enqueue build, poll status; secrets on function only (see `docs/community/DEPLOY.md`)
 - **Env:** `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `PUBLIC_COMMUNITY_ORCHESTRATOR_URL` (see `.env.example`)
 - **Hosting:** GitHub Pages + custom domain `lilgrip.com`
@@ -130,13 +131,13 @@ When adding or changing a feature, update this section using:
 
 ### Documented features (current)
 
-#### Notes for lilgrip
+#### Say hey (notes)
 
-- **User goal:** leave a short public note.
-- **UI:** `NotesPanel.tsx`.
-- **Data:** `lilgrip_comments` via `src/lib/notes.ts`.
-- **Permissions:** anon select + insert.
-- **Limits:** name ≤ 24, body ≤ 200 (enforced in lib).
+- **User goal:** leave a short public hey, optionally with a photo.
+- **UI:** `SayHeyPanel.tsx`.
+- **Data:** `lilgrip_comments` (`photo_path` nullable) + bucket `grip-heys` via `src/lib/notes.ts`.
+- **Permissions:** anon select + insert (table + bucket).
+- **Limits:** name ≤ 24, body ≤ 200 (body optional when a photo is attached); images jpg/png/webp/heic ≤ 5MB.
 
 #### Grip sightings
 

@@ -6,13 +6,25 @@ export const heyInputSchema = z.object({
 	body: z.string().trim().min(1, "hey body is empty").max(200),
 });
 
+/** Same shape, but body may be empty when a photo is attached. */
+export const heyInputWithPhotoSchema = z.object({
+	name: z.string().trim().max(24).optional().default(""),
+	body: z.string().trim().max(200).optional().default(""),
+});
+
 export type HeyInput = z.infer<typeof heyInputSchema>;
 
-export function parseHeyInput(input: unknown): {
+export function parseHeyInput(
+	input: unknown,
+	options?: { allowEmptyBody?: boolean },
+): {
 	data: { name: string; body: string } | null;
 	error: string | null;
 } {
-	const result = heyInputSchema.safeParse(input);
+	const schema = options?.allowEmptyBody
+		? heyInputWithPhotoSchema
+		: heyInputSchema;
+	const result = schema.safeParse(input);
 	if (!result.success) {
 		return {
 			data: null,
@@ -22,7 +34,7 @@ export function parseHeyInput(input: unknown): {
 	return {
 		data: {
 			name: result.data.name || "anon",
-			body: result.data.body,
+			body: result.data.body ?? "",
 		},
 		error: null,
 	};
