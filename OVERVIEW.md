@@ -57,8 +57,8 @@ Shared chrome: `SiteHeader`, `SiteFooter` via `BaseLayout`.
 | --- | --- | --- |
 | Hero | `Hero.astro` | Brand, chill line, 1 Corinthians 16:14, photo |
 | Explore | `ExploreCards.astro` | Links to subroutes |
-| Grip sightings | `SightingsPanel.tsx` | Upload photo; points; leaderboard |
-| Notes | `NotesPanel.tsx` | Shared public comments |
+| Grip sightings | `SightingsPanel.tsx` | Upload photo; +10 points; leaderboard; flag non-gripster |
+| Say hey | `SayHeyPanel.tsx` | Shared public comments (+ optional photo) |
 
 ### Runtime dependencies
 
@@ -142,10 +142,11 @@ When adding or changing a feature, update this section using:
 #### Grip sightings
 
 - **User goal:** upload a photo when spotting lilgriper IRL; earn grip points.
-- **UI:** `SightingsPanel.tsx`.
-- **Data:** `grip_sightings` + bucket `grip-sightings` via `src/lib/sightings.ts`; hunter name in `localStorage` (`lilgrip-hunter`).
-- **Points:** `+10` per successful sighting; leaderboard by hunter name.
-- **Limits:** image size/MIME caps; place length clamp in lib.
+- **UI:** `SightingsPanel.tsx` on the home page.
+- **Data:** `grip_sightings` + bucket `grip-sightings` via `src/lib/sightings.ts`; hunter name in `localStorage` (`lilgrip-hunter`); reporter key in `localStorage` (`lilgrip-reporter`).
+- **Points:** `+10` per successful sighting; leaderboard by hunter name (hidden rows count as 0).
+- **Moderation:** “not the gripster?” report → after **2** distinct reporters, row is hidden (`is_hidden`) and points zeroed via `report_grip_sighting` RPC.
+- **Limits:** image size/MIME caps (≤5MB jpg/png/webp/heic); place length clamp in lib.
 
 #### Explore cards
 

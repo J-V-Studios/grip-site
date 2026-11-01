@@ -2,6 +2,7 @@
 import ExploreCards from "../components/ExploreCards.astro";
 import ExploreMotion from "../components/islands/ExploreMotion";
 import SayHeyPanel from "../components/islands/SayHeyPanel";
+import SightingsPanel from "../components/islands/SightingsPanel";
 import SplashPlane from "../components/SplashPlane.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
@@ -13,5 +14,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 	<SplashPlane />
 	<ExploreCards />
 	<ExploreMotion client:load />
+	<SightingsPanel client:load />
 	<SayHeyPanel client:load />
 </BaseLayout>
