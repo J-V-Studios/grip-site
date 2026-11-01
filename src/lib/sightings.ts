@@ -47,13 +47,54 @@ export type Sighting = {
 };
 
 export const POINTS_PER_SIGHTING = 10;
+export const SIGHTING_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+export const REPORTS_TO_HIDE = 2;
+
 const TABLE = "grip_sightings";
 const BUCKET = "grip-sightings";
+const REPORTER_KEY = "lilgrip-reporter";
+
+const SIGHTING_MIME = new Set([
+	"image/jpeg",
+	"image/jpg",
+	"image/png",
+	"image/webp",
+	"image/heic",
+	"image/heif",
+]);
+
+export function validateSightingImage(file: File): string | null {
+	const allowedExt = new Set(["jpg", "jpeg", "png", "webp", "heic", "heif"]);
+	const fromName = (file.name.split(".").pop() || "").toLowerCase();
+	const mimeOk = Boolean(file.type) && SIGHTING_MIME.has(file.type);
+	const extOk = allowedExt.has(fromName);
+	if (!mimeOk && !extOk) {
+		return "photo must be jpg, png, webp, or heic";
+	}
+	if (file.size <= 0) return "photo is empty";
+	if (file.size > SIGHTING_IMAGE_MAX_BYTES) {
+		return "keep the photo under 5MB";
+	}
+	return null;
+}
+
+export function getReporterKey(): string {
+	try {
+		const existing = localStorage.getItem(REPORTER_KEY);
+		if (existing && existing.length >= 8) return existing.slice(0, 64);
+		const next = `r-${crypto.randomUUID().replace(/-/g, "")}`;
+		localStorage.setItem(REPORTER_KEY, next);
+		return next;
+	} catch {
+		return `r-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
+	}
+}
 
 export async function fetchSightings(): Promise<Sighting[]> {
 	const { data, error } = await getSupabase()
 		.from(TABLE)
 		.select("id,hunter,place,photo_path,points,created_at")
+		.eq("is_hidden", false)
 		.order("created_at", { ascending: false })
 		.limit(24);
 
@@ -68,6 +109,9 @@ export function publicPhotoUrl(path: string): string {
 export async function uploadSightingPhoto(
 	file: File,
 ): Promise<{ path: string | null; error: string | null }> {
+	const invalid = validateSightingImage(file);
+	if (invalid) return { path: null, error: invalid };
+
 	const storagePath = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.${extFor(file)}`;
 
 	const { error } = await getSupabase()
@@ -101,4 +145,44 @@ export async function insertSighting(input: {
 
 	if (error) return { error: error.message };
 	return { error: null };
+}
+
+export type ReportSightingResult = {
+	ok: boolean;
+	reportCount?: number;
+	hidden?: boolean;
+	error?: string;
+};
+
+/** Flag a photo as not the lilgriper. Two distinct reporters hide it and zero points. */
+export async function reportNotGripster(
+	sightingId: string,
+	reporterKey = getReporterKey(),
+): Promise<ReportSightingResult> {
+	const { data, error } = await getSupabase().rpc("report_grip_sighting", {
+		p_sighting_id: sightingId,
+		p_reporter_key: reporterKey,
+		p_reason: "not_gripster",
+	});
+
+	if (error) {
+		return { ok: false, error: error.message };
+	}
+
+	const payload = (data ?? {}) as {
+		ok?: boolean;
+		reportCount?: number;
+		hidden?: boolean;
+		error?: string;
+	};
+
+	if (payload.ok === false) {
+		return { ok: false, error: payload.error ?? "report failed" };
+	}
+
+	return {
+		ok: true,
+		reportCount: payload.reportCount ?? 0,
+		hidden: Boolean(payload.hidden),
+	};
 }
