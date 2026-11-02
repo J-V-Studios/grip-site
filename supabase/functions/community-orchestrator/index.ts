@@ -141,14 +141,14 @@ function elaborateBrief(handle: string, prompt: string): string {
 ${prompt}
 
 ## Constraints
-- GripApps only. Write \`app.grip\` and run \`bun run gripc -- check\` then \`bun run gripc -- build\`
 - Static output only under \`public/community/${handle}/\`
-- Required files: \`app.grip\`, \`app.grip.js\`, \`index.html\`, \`manifest.json\`, \`vendor/gripapps/runtime.js\`
-- Goofy, chill, mobile-friendly; respect docs/community/MODERATION.md and .cursor/skills/gripapps/SKILL.md
+- Required files: \`index.html\`, \`manifest.json\`
+- Optional Vite/React (or similar) under \`_src/\` — see docs/community/SCAFFOLD.md
+- Goofy, chill, mobile-friendly; respect docs/community/MODERATION.md and .cursor/skills/community-builder/SKILL.md
+- Do NOT use GripLang / \`app.grip\` / \`gripc\` for this build
 
 ## Deliverables
-- GripLang source plus the gripc build (boot HTML, compiled JS, vendored runtime)
-- Gallery title and one-line blurb in manifest
+- Built static page (HTML/CSS/JS) + \`manifest.json\` with gallery title and blurb
 `;
 }
 

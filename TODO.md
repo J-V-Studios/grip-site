@@ -19,6 +19,7 @@ Check items off as they ship. Prefer small PRs / commits. Align with `AGENTS.md`
 - [x] Community builds: hub UI, orchestrator edge function, path guard CI, moderation unit tests, [DEPLOY.md](./docs/community/DEPLOY.md)
 - [x] GripApps: GripLang + `gripc` check/build/vendor, shared `public/gripapps/runtime.js`, docs + `.cursor/skills/gripapps/`
 - [x] GripApps: orchestrator planner/builder prompts + community doc redirects from legacy `community-builder`
+- [x] Revert websight community builder to pre-GripLang (community-builder skill + static scaffold)
 - [x] GripApps: CI path guard + `gripc check` on `app.grip` PRs; `gripapps-demo` e2e smoke
 
 ---

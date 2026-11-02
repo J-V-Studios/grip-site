@@ -1,11 +1,13 @@
 ---
 name: gripapps
-description: Plan or build lilgrip Community Builds with GripApps (app.grip + gripc). Use for orchestrator planner runs (markdown plan) or builder runs (compiled static output under public/community/<handle>/). Enforces sandbox paths, moderation, manifest.json, visual enrich workflow, and lilgrip tone.
+description: Optional GripLang / gripc toolchain docs. Community Builds on the live websight use community-builder (static Vite/HTML), not this skill.
 ---
 
-# GripApps (Community Builds)
+# GripApps (optional toolchain)
 
-Use this skill when the orchestrator assigns a **Community Build** for a claimed handle on lilgrip.com.
+**Community Builds (websight) do not use this skill.** Orchestrator runs follow [community-builder](../community-builder/SKILL.md) and ship static `index.html` + `manifest.json` under `public/community/<handle>/`.
+
+Use this skill only when someone explicitly asks for GripLang / `app.grip` / `gripc`.
 
 **Read first:**
 
