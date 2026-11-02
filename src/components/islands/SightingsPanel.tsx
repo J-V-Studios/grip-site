@@ -17,16 +17,17 @@ import {
 	insertSighting,
 	type LeaderEntry,
 	POINTS_PER_SIGHTING,
+	preflightSightingPhoto,
 	publicPhotoUrl,
 	reportNotGripster,
+	SIGHTING_COOLDOWN_MINUTES,
 	type Sighting,
 	uploadSightingPhoto,
 	validateSightingImage,
 } from "@/lib/sightings";
 import { clean } from "@/lib/text";
 
-const DEFAULT_HINT =
-	"sign in, snap the lilgriper, earn +10 grip points. flag fakes.";
+const DEFAULT_HINT = `sign in, snap the real lilgriper (+${POINTS_PER_SIGHTING}). no repeats · ${SIGHTING_COOLDOWN_MINUTES}m cooldown · fakes get flagged.`;
 
 const labelClass =
 	"grid gap-[0.4rem] text-[0.75rem] font-semibold tracking-[0.12em] text-subtext uppercase";
@@ -255,6 +256,22 @@ export default function SightingsPanel() {
 		}
 
 		setSubmitting(true);
+		setHint("scanning photo…");
+
+		let preflight: Awaited<ReturnType<typeof preflightSightingPhoto>>;
+		try {
+			preflight = await preflightSightingPhoto(file, userId);
+		} catch {
+			setSubmitting(false);
+			setHint("scan failed — try again in a sec.");
+			return;
+		}
+		if (!preflight.ok) {
+			setSubmitting(false);
+			setHint(preflight.error);
+			return;
+		}
+
 		setHint("logging your grip sighting…");
 
 		const { path, error: uploadError } = await uploadSightingPhoto(file);
@@ -270,6 +287,8 @@ export default function SightingsPanel() {
 			photo_path: path,
 			points: POINTS_PER_SIGHTING,
 			user_id: userId,
+			photo_sha256: preflight.sha256,
+			photo_dhash: preflight.dhash,
 		});
 
 		setSubmitting(false);
@@ -303,7 +322,8 @@ export default function SightingsPanel() {
 						grip sightings
 					</h2>
 					<p className="m-0 mt-2 max-w-[34rem] text-[1.02rem] leading-relaxed text-subtext">
-						Make an account. Spot the lilgriper. Snap a pic. Climb the{" "}
+						Make an account. Snap a real lilgriper pic (we scan for faces +
+						dupes). Climb the{" "}
 						<strong className="font-semibold text-sky">grip leaderboard</strong>
 						.
 					</p>

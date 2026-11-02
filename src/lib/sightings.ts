@@ -1,5 +1,18 @@
+import {
+	cooldownRemainingMs,
+	dhashFromUrl,
+	formatCooldown,
+	GRIPSTER_REF_PATHS,
+	SIGHTING_COOLDOWN_MINUTES,
+	scanSightingPhoto,
+} from "@/lib/sighting-scan";
 import { getSupabase } from "@/lib/supabase";
 import { clean } from "@/lib/text";
+
+export {
+	formatCooldown,
+	SIGHTING_COOLDOWN_MINUTES,
+} from "@/lib/sighting-scan";
 
 export function aggregatePoints(
 	rows: { hunter: string; points: number }[],
@@ -186,12 +199,114 @@ export async function uploadSightingPhoto(
 	return { path: storagePath, error: null };
 }
 
+export async function fetchSightingFingerprints(): Promise<{
+	sha256: string[];
+	dhashes: string[];
+}> {
+	const { data, error } = await getSupabase().rpc(
+		"grip_sighting_fingerprints",
+		{
+			p_limit: 80,
+		},
+	);
+	if (error) throw error;
+	const sha256: string[] = [];
+	const dhashes: string[] = [];
+	for (const row of (data ?? []) as {
+		photo_sha256: string | null;
+		photo_dhash: string | null;
+	}[]) {
+		if (row.photo_sha256) sha256.push(row.photo_sha256);
+		if (row.photo_dhash) dhashes.push(row.photo_dhash);
+	}
+	return { sha256, dhashes };
+}
+
+let siteDhashCache: string[] | null = null;
+
+export async function fetchSiteGripsterDhashes(): Promise<string[]> {
+	if (siteDhashCache) return siteDhashCache;
+	const hashes: string[] = [];
+	for (const path of GRIPSTER_REF_PATHS) {
+		const hash = await dhashFromUrl(path);
+		if (hash) hashes.push(hash);
+	}
+	siteDhashCache = hashes;
+	return hashes;
+}
+
+export async function fetchMyLastSightingAt(
+	userId: string,
+): Promise<string | null> {
+	const { data, error } = await getSupabase()
+		.from(TABLE)
+		.select("created_at")
+		.eq("user_id", userId)
+		.order("created_at", { ascending: false })
+		.limit(1)
+		.maybeSingle();
+	if (error) throw error;
+	return data?.created_at ?? null;
+}
+
+export async function checkSightingCooldown(
+	userId: string,
+): Promise<{ ok: true } | { ok: false; error: string; retryAfterMs: number }> {
+	const last = await fetchMyLastSightingAt(userId);
+	const remaining = cooldownRemainingMs(last);
+	if (remaining > 0) {
+		return {
+			ok: false,
+			retryAfterMs: remaining,
+			error: `cooldown — wait ${formatCooldown(remaining)} before another sighting`,
+		};
+	}
+	return { ok: true };
+}
+
+/** Scan + cooldown + dedupe gates before upload. */
+export async function preflightSightingPhoto(
+	file: File,
+	userId: string,
+): Promise<
+	| {
+			ok: true;
+			sha256: string;
+			dhash: string | null;
+	  }
+	| { ok: false; error: string }
+> {
+	const cool = await checkSightingCooldown(userId);
+	if (!cool.ok) return { ok: false, error: cool.error };
+
+	const [prints, siteDhashes] = await Promise.all([
+		fetchSightingFingerprints(),
+		fetchSiteGripsterDhashes(),
+	]);
+
+	const scanned = await scanSightingPhoto({
+		file,
+		knownSha256: prints.sha256,
+		knownDhashes: prints.dhashes,
+		siteDhashes,
+	});
+
+	if (!scanned.ok) return scanned;
+	return {
+		ok: true,
+		sha256: scanned.sha256,
+		dhash: scanned.dhash,
+	};
+}
+
 export async function insertSighting(input: {
 	hunter: string;
 	place: string;
 	photo_path: string;
 	points?: number;
 	user_id: string;
+	photo_sha256: string;
+	photo_dhash?: string | null;
 }): Promise<{ error: string | null }> {
 	const hunter = clean(input.hunter, 24) || "anon";
 	const place = clean(input.place, 80);
@@ -200,16 +315,26 @@ export async function insertSighting(input: {
 	if (!input.user_id) {
 		return { error: "sign in to log a sighting" };
 	}
+	if (!input.photo_sha256) {
+		return { error: "photo scan incomplete — try another image" };
+	}
 
-	const { error } = await getSupabase().from(TABLE).insert({
-		hunter,
-		place,
-		photo_path: input.photo_path,
-		points,
-		user_id: input.user_id,
+	const { data, error } = await getSupabase().rpc("submit_grip_sighting", {
+		p_hunter: hunter,
+		p_place: place,
+		p_photo_path: input.photo_path,
+		p_photo_sha256: input.photo_sha256,
+		p_photo_dhash: input.photo_dhash ?? null,
+		p_points: points,
+		p_cooldown_minutes: SIGHTING_COOLDOWN_MINUTES,
 	});
 
 	if (error) return { error: error.message };
+
+	const payload = (data ?? {}) as { ok?: boolean; error?: string };
+	if (payload.ok === false) {
+		return { error: payload.error ?? "sighting did not save" };
+	}
 	return { error: null };
 }
 

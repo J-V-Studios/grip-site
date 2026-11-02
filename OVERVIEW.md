@@ -57,7 +57,7 @@ Shared chrome: `SiteHeader`, `SiteFooter` via `BaseLayout`.
 | --- | --- | --- |
 | Hero | `Hero.astro` | Brand, chill line, 1 Corinthians 16:14, photo |
 | Explore | `ExploreCards.astro` | Links to subroutes |
-| Grip sightings | `SightingsPanel.tsx` | Account login; upload photo; +10 points; leaderboard; flag non-gripster |
+| Grip sightings | `SightingsPanel.tsx` | Account login; scan/dedupe/cooldown; +10 points; leaderboard; flag non-gripster |
 | Say hey | `SayHeyPanel.tsx` | Shared public comments (+ optional photo) |
 
 ### Runtime dependencies
