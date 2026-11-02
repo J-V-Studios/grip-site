@@ -37,6 +37,31 @@ export function extFor(file: { name: string; type: string }): string {
 	return map[file.type] || "jpg";
 }
 
+/** Bucket-safe Content-Type (phones often send empty or image/jpg). */
+export function contentTypeFor(file: { name: string; type: string }): string {
+	const raw = (file.type || "").toLowerCase();
+	if (raw === "image/jpg") return "image/jpeg";
+	if (
+		raw === "image/jpeg" ||
+		raw === "image/png" ||
+		raw === "image/webp" ||
+		raw === "image/heic" ||
+		raw === "image/heif"
+	) {
+		return raw;
+	}
+	const ext = extFor(file);
+	const map: Record<string, string> = {
+		jpg: "image/jpeg",
+		jpeg: "image/jpeg",
+		png: "image/png",
+		webp: "image/webp",
+		heic: "image/heic",
+		heif: "image/heif",
+	};
+	return map[ext] || "image/jpeg";
+}
+
 export type Sighting = {
 	id: string;
 	hunter: string;
@@ -44,6 +69,14 @@ export type Sighting = {
 	photo_path: string;
 	points: number;
 	created_at: string;
+	user_id?: string | null;
+};
+
+export type LeaderEntry = {
+	user_id: string;
+	hunter: string;
+	points: number;
+	sightings: number;
 };
 
 export const POINTS_PER_SIGHTING = 10;
@@ -93,13 +126,33 @@ export function getReporterKey(): string {
 export async function fetchSightings(): Promise<Sighting[]> {
 	const { data, error } = await getSupabase()
 		.from(TABLE)
-		.select("id,hunter,place,photo_path,points,created_at")
+		.select("id,hunter,place,photo_path,points,created_at,user_id")
 		.eq("is_hidden", false)
 		.order("created_at", { ascending: false })
 		.limit(24);
 
 	if (error) throw error;
 	return (data ?? []) as Sighting[];
+}
+
+export async function fetchLeaderboard(limit = 10): Promise<LeaderEntry[]> {
+	const { data, error } = await getSupabase().rpc("grip_points_leaderboard", {
+		p_limit: limit,
+	});
+	if (error) throw error;
+	return (
+		(data ?? []) as {
+			user_id: string;
+			hunter: string;
+			points: number | string;
+			sightings: number | string;
+		}[]
+	).map((row) => ({
+		user_id: row.user_id,
+		hunter: row.hunter,
+		points: Number(row.points) || 0,
+		sightings: Number(row.sightings) || 0,
+	}));
 }
 
 export function publicPhotoUrl(path: string): string {
@@ -112,13 +165,20 @@ export async function uploadSightingPhoto(
 	const invalid = validateSightingImage(file);
 	if (invalid) return { path: null, error: invalid };
 
+	const contentType = contentTypeFor(file);
 	const storagePath = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.${extFor(file)}`;
+
+	// Re-wrap when browsers omit MIME — storage bucket rejects empty Content-Type.
+	const body =
+		file.type && file.type === contentType
+			? file
+			: new Blob([await file.arrayBuffer()], { type: contentType });
 
 	const { error } = await getSupabase()
 		.storage.from(BUCKET)
-		.upload(storagePath, file, {
+		.upload(storagePath, body, {
 			cacheControl: "3600",
-			contentType: file.type || "image/jpeg",
+			contentType,
 			upsert: false,
 		});
 
@@ -131,16 +191,22 @@ export async function insertSighting(input: {
 	place: string;
 	photo_path: string;
 	points?: number;
+	user_id: string;
 }): Promise<{ error: string | null }> {
 	const hunter = clean(input.hunter, 24) || "anon";
 	const place = clean(input.place, 80);
 	const points = input.points ?? POINTS_PER_SIGHTING;
+
+	if (!input.user_id) {
+		return { error: "sign in to log a sighting" };
+	}
 
 	const { error } = await getSupabase().from(TABLE).insert({
 		hunter,
 		place,
 		photo_path: input.photo_path,
 		points,
+		user_id: input.user_id,
 	});
 
 	if (error) return { error: error.message };

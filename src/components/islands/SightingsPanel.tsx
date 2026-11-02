@@ -1,12 +1,23 @@
-// Grip sightings form, gallery, and leaderboard (+10 pts).
+// Grip sightings: auth accounts, photo upload, gallery, leaderboard (+10 pts).
 import { useCallback, useEffect, useId, useState } from "react";
 import {
-	aggregatePoints,
+	claimUsername,
+	fetchMyProfile,
+	type GripProfile,
+	hunterLabel,
+	onAuthChange,
+	signInHunter,
+	signOutHunter,
+	signUpHunter,
+	validateUsername,
+} from "@/lib/auth";
+import {
+	fetchLeaderboard,
 	fetchSightings,
 	insertSighting,
+	type LeaderEntry,
 	POINTS_PER_SIGHTING,
 	publicPhotoUrl,
-	rankedLeaders,
 	reportNotGripster,
 	type Sighting,
 	uploadSightingPhoto,
@@ -14,42 +25,38 @@ import {
 } from "@/lib/sightings";
 import { clean } from "@/lib/text";
 
-const HUNTER_KEY = "lilgrip-hunter";
 const DEFAULT_HINT =
-	"photos go live for everyone. only real lilgriper sightings — flag fakes.";
+	"sign in, snap the lilgriper, earn +10 grip points. flag fakes.";
 
 const labelClass =
 	"grid gap-[0.4rem] text-[0.75rem] font-semibold tracking-[0.12em] text-subtext uppercase";
 const fieldClass =
 	"w-full rounded-[0.95rem] border border-white/10 bg-base/85 px-[0.95rem] py-[0.85rem] text-base text-text transition-[border-color,box-shadow] focus-visible:border-sky/55 focus-visible:shadow-[0_0_0_4px_rgba(137,220,235,0.12)] focus-visible:outline-none";
 
-function savedHunter(): string {
-	try {
-		return localStorage.getItem(HUNTER_KEY) || "";
-	} catch {
-		return "";
-	}
-}
-
-function rememberHunter(name: string) {
-	try {
-		localStorage.setItem(HUNTER_KEY, name);
-	} catch {
-		/* ignore */
-	}
-}
-
 export default function SightingsPanel() {
 	const photoInputId = useId();
 	const [sightings, setSightings] = useState<Sighting[]>([]);
-	const [hunter, setHunter] = useState("");
+	const [leaders, setLeaders] = useState<LeaderEntry[]>([]);
+	const [profile, setProfile] = useState<GripProfile | null>(null);
+	const [userId, setUserId] = useState<string | null>(null);
+	const [authMode, setAuthMode] = useState<"signin" | "signup">("signup");
 	const [hint, setHint] = useState(DEFAULT_HINT);
-	const [photoLabel, setPhotoLabel] = useState("take or choose a photo");
+	const [authHint, setAuthHint] = useState("");
+	const [photo, setPhoto] = useState<File | null>(null);
+	const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 	const [submitting, setSubmitting] = useState(false);
+	const [authBusy, setAuthBusy] = useState(false);
+	const [reportingId, setReportingId] = useState<string | null>(null);
+	const [claimName, setClaimName] = useState("");
 
-	const refresh = useCallback(async () => {
+	const refreshLists = useCallback(async () => {
 		try {
-			setSightings(await fetchSightings());
+			const [rows, board] = await Promise.all([
+				fetchSightings(),
+				fetchLeaderboard(10),
+			]);
+			setSightings(rows);
+			setLeaders(board);
 			setHint((h) =>
 				h === "sightings could not load. try again in a minute."
 					? DEFAULT_HINT
@@ -60,21 +67,139 @@ export default function SightingsPanel() {
 		}
 	}, []);
 
+	const refreshAuth = useCallback(async () => {
+		let me = await fetchMyProfile();
+		if (me && !me.username) {
+			try {
+				const pending = localStorage.getItem("lilgrip-pending-username");
+				if (pending) {
+					const claimed = await claimUsername(pending);
+					if (!claimed.error) {
+						localStorage.removeItem("lilgrip-pending-username");
+						me = await fetchMyProfile();
+					}
+				}
+			} catch {
+				/* ignore */
+			}
+		}
+		setProfile(me);
+		setUserId(me?.id ?? null);
+		if (me?.username) setClaimName(me.username);
+	}, []);
+
 	useEffect(() => {
-		const known = savedHunter();
-		if (known) setHunter(known);
-		void refresh();
-	}, [refresh]);
+		void refreshLists();
+		void refreshAuth();
+		return onAuthChange(() => {
+			void refreshAuth();
+		});
+	}, [refreshAuth, refreshLists]);
 
-	const me = clean(hunter || savedHunter(), 24) || "anon";
-	const myPoints = aggregatePoints(sightings).get(me) ?? 0;
-	const leaders = rankedLeaders(sightings);
-	const [reportingId, setReportingId] = useState<string | null>(null);
+	useEffect(() => {
+		return () => {
+			if (photoPreview) URL.revokeObjectURL(photoPreview);
+		};
+	}, [photoPreview]);
 
-	function onHunterChange(value: string) {
-		setHunter(value);
-		const name = clean(value, 24);
-		if (name) rememberHunter(name);
+	const me = hunterLabel(profile);
+	const myPoints =
+		leaders.find((row) => row.user_id === userId)?.points ??
+		sightings
+			.filter((row) => row.user_id === userId)
+			.reduce((sum, row) => sum + row.points, 0);
+
+	function onPhotoChange(fileList: FileList | null) {
+		const file = fileList?.[0] ?? null;
+		if (photoPreview) URL.revokeObjectURL(photoPreview);
+		if (!file) {
+			setPhoto(null);
+			setPhotoPreview(null);
+			return;
+		}
+		const invalid = validateSightingImage(file);
+		if (invalid) {
+			setHint(invalid);
+			setPhoto(null);
+			setPhotoPreview(null);
+			return;
+		}
+		setPhoto(file);
+		setPhotoPreview(URL.createObjectURL(file));
+		setHint(DEFAULT_HINT);
+	}
+
+	async function onAuthSubmit(event: {
+		preventDefault(): void;
+		currentTarget: HTMLFormElement;
+	}) {
+		event.preventDefault();
+		const form = event.currentTarget;
+		const data = new FormData(form);
+		const email = String(data.get("email") || "");
+		const password = String(data.get("password") || "");
+		const username = String(data.get("username") || "");
+
+		setAuthBusy(true);
+		setAuthHint("talking to the auth server…");
+		if (authMode === "signup") {
+			const result = await signUpHunter({ email, password, username });
+			setAuthBusy(false);
+			if (result.error) {
+				setAuthHint(result.error);
+				setHint(result.error);
+				return;
+			}
+			if (result.needsEmailConfirm) {
+				const msg =
+					"account made — check your email to confirm, then use “have account”.";
+				setAuthHint(msg);
+				setHint(msg);
+				setAuthMode("signin");
+				return;
+			}
+			await refreshAuth();
+			const welcome = `welcome @${normalizeDisplay(username)}. log a sighting.`;
+			setAuthHint(welcome);
+			setHint(welcome);
+			return;
+		}
+
+		const result = await signInHunter({ email, password });
+		setAuthBusy(false);
+		if (result.error) {
+			setAuthHint(result.error);
+			setHint(result.error);
+			return;
+		}
+		await refreshAuth();
+		setAuthHint("signed in. snap the gripster.");
+		setHint("signed in. snap the gripster.");
+	}
+
+	async function onClaimUsername(event: { preventDefault(): void }) {
+		event.preventDefault();
+		const invalid = validateUsername(claimName);
+		if (invalid) {
+			setHint(invalid);
+			return;
+		}
+		setAuthBusy(true);
+		const result = await claimUsername(claimName);
+		setAuthBusy(false);
+		if (result.error) {
+			setHint(result.error);
+			return;
+		}
+		await refreshAuth();
+		setHint(`hunter name locked: @${result.username}`);
+	}
+
+	async function onSignOut() {
+		await signOutHunter();
+		setProfile(null);
+		setUserId(null);
+		setHint("signed out.");
 	}
 
 	async function onReportNotGripster(id: string) {
@@ -91,7 +216,7 @@ export default function SightingsPanel() {
 		}
 		if (result.hidden) {
 			setHint("taken down — enough people said it wasn't the gripster.");
-			void refresh();
+			void refreshLists();
 			return;
 		}
 		setHint(
@@ -104,13 +229,22 @@ export default function SightingsPanel() {
 		currentTarget: HTMLFormElement;
 	}) {
 		event.preventDefault();
+		if (!userId || !profile) {
+			setHint("sign in first to earn grip points.");
+			return;
+		}
+		const hunterName = hunterLabel(profile);
+		if (!profile.username) {
+			setHint("pick a hunter username before logging a sighting.");
+			return;
+		}
+
 		const form = event.currentTarget;
 		const data = new FormData(form);
-		const hunterName = clean(String(data.get("hunter") || ""), 24) || "anon";
 		const place = clean(String(data.get("place") || ""), 80);
-		const file = data.get("photo");
+		const file = photo;
 
-		if (!(file instanceof File) || !file.size) {
+		if (!file?.size) {
 			setHint("add a photo of the lilgriper first.");
 			return;
 		}
@@ -135,21 +269,24 @@ export default function SightingsPanel() {
 			place,
 			photo_path: path,
 			points: POINTS_PER_SIGHTING,
+			user_id: userId,
 		});
 
 		setSubmitting(false);
 
 		if (error) {
-			setHint("sighting did not save. try again.");
+			setHint(
+				error.includes("JWT") ? "session expired — sign in again." : error,
+			);
 			return;
 		}
 
-		rememberHunter(hunterName);
-		setHunter(hunterName);
 		form.reset();
-		setPhotoLabel("take or choose a photo");
-		setHint("+10 grip points locked in. nice find.");
-		void refresh();
+		if (photoPreview) URL.revokeObjectURL(photoPreview);
+		setPhoto(null);
+		setPhotoPreview(null);
+		setHint(`+${POINTS_PER_SIGHTING} grip points locked in. nice find.`);
+		void refreshLists();
 	}
 
 	return (
@@ -166,8 +303,9 @@ export default function SightingsPanel() {
 						grip sightings
 					</h2>
 					<p className="m-0 mt-2 max-w-[34rem] text-[1.02rem] leading-relaxed text-subtext">
-						Spot the lilgriper. Snap a pic. Claim{" "}
-						<strong className="font-semibold text-sky">+10 grip points</strong>.
+						Make an account. Spot the lilgriper. Snap a pic. Climb the{" "}
+						<strong className="font-semibold text-sky">grip leaderboard</strong>
+						.
 					</p>
 				</div>
 				<div
@@ -175,7 +313,7 @@ export default function SightingsPanel() {
 					aria-live="polite"
 				>
 					<span className="text-[0.7rem] font-semibold tracking-[0.12em] text-subtext uppercase">
-						your grip points
+						{userId ? `@${me}` : "your grip points"}
 					</span>
 					<strong className="text-[1.55rem] leading-none text-sky">
 						{myPoints}
@@ -183,20 +321,154 @@ export default function SightingsPanel() {
 				</div>
 			</div>
 
+			{!userId ? (
+				<form
+					className="mb-5 grid gap-[0.85rem] rounded-2xl border border-white/8 bg-surface/55 p-4"
+					onSubmit={onAuthSubmit}
+				>
+					<div
+						className="flex flex-wrap gap-2"
+						role="tablist"
+						aria-label="Account mode"
+					>
+						<button
+							type="button"
+							role="tab"
+							aria-selected={authMode === "signup"}
+							onClick={() => {
+								setAuthMode("signup");
+								setHint(DEFAULT_HINT);
+							}}
+							className={`rounded-full px-3 py-1.5 text-sm font-semibold ${
+								authMode === "signup"
+									? "bg-sky text-base"
+									: "border border-white/10 text-subtext"
+							}`}
+						>
+							new hunter
+						</button>
+						<button
+							type="button"
+							role="tab"
+							aria-selected={authMode === "signin"}
+							onClick={() => {
+								setAuthMode("signin");
+								setHint(DEFAULT_HINT);
+							}}
+							className={`rounded-full px-3 py-1.5 text-sm font-semibold ${
+								authMode === "signin"
+									? "bg-sky text-base"
+									: "border border-white/10 text-subtext"
+							}`}
+						>
+							have account
+						</button>
+					</div>
+					{authMode === "signup" ? (
+						<label className={labelClass}>
+							hunter username
+							<input
+								type="text"
+								name="username"
+								required
+								minLength={3}
+								maxLength={24}
+								autoComplete="username"
+								placeholder="gripfan42"
+								className={fieldClass}
+							/>
+						</label>
+					) : null}
+					<label className={labelClass}>
+						email
+						<input
+							type="email"
+							name="email"
+							required
+							autoComplete="email"
+							placeholder="you@example.com"
+							className={fieldClass}
+						/>
+					</label>
+					<label className={labelClass}>
+						password
+						<input
+							type="password"
+							name="password"
+							required
+							minLength={6}
+							autoComplete={
+								authMode === "signup" ? "new-password" : "current-password"
+							}
+							placeholder="••••••••"
+							className={fieldClass}
+						/>
+					</label>
+					<button
+						type="submit"
+						disabled={authBusy}
+						className="min-h-12 justify-self-start rounded-full bg-sky px-[1.35rem] py-3 font-bold text-base text-base transition-[transform,box-shadow,opacity] duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(137,220,235,0.28)] focus-visible:outline-none disabled:opacity-65"
+					>
+						{authBusy
+							? "working…"
+							: authMode === "signup"
+								? "create hunter account"
+								: "log into hunter"}
+					</button>
+					<p className="m-0 text-[0.9rem] text-peach" aria-live="polite">
+						{authHint ||
+							"use a real email — confirm it if asked, then come back."}
+					</p>
+				</form>
+			) : (
+				<div className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-white/8 bg-surface/55 px-4 py-3">
+					<p className="m-0 flex-1 text-[0.95rem] text-subtext">
+						signed in as{" "}
+						<strong className="text-sky">
+							{profile?.username
+								? `@${profile.username}`
+								: "hunter (set a name)"}
+						</strong>
+					</p>
+					<button
+						type="button"
+						onClick={() => void onSignOut()}
+						className="rounded-full border border-white/12 px-3 py-1.5 text-sm font-semibold text-subtext hover:border-peach/40 hover:text-peach"
+					>
+						sign out
+					</button>
+				</div>
+			)}
+
+			{userId && !profile?.username ? (
+				<form
+					className="mb-5 grid gap-[0.85rem] rounded-2xl border border-peach/25 bg-surface/55 p-4"
+					onSubmit={onClaimUsername}
+				>
+					<label className={labelClass}>
+						claim hunter username
+						<input
+							type="text"
+							value={claimName}
+							onChange={(e) => setClaimName(e.target.value)}
+							minLength={3}
+							maxLength={24}
+							required
+							placeholder="gripfan42"
+							className={fieldClass}
+						/>
+					</label>
+					<button
+						type="submit"
+						disabled={authBusy}
+						className="min-h-11 justify-self-start rounded-full bg-peach px-4 py-2.5 font-bold text-base text-base disabled:opacity-65"
+					>
+						{authBusy ? "saving…" : "save username"}
+					</button>
+				</form>
+			) : null}
+
 			<form className="grid gap-[0.85rem]" onSubmit={onSubmit}>
-				<label className={labelClass}>
-					hunter name
-					<input
-						type="text"
-						name="hunter"
-						maxLength={24}
-						autoComplete="nickname"
-						placeholder="anon"
-						value={hunter}
-						onChange={(e) => onHunterChange(e.target.value)}
-						className={fieldClass}
-					/>
-				</label>
 				<label className={labelClass}>
 					where
 					<input
@@ -204,34 +476,44 @@ export default function SightingsPanel() {
 						name="place"
 						maxLength={80}
 						placeholder="school hallway, target, youth group…"
+						disabled={!userId}
 						className={fieldClass}
 					/>
 				</label>
-				<label className={`${labelClass} relative`}>
-					photo of the lilgriper
-					<input
-						id={photoInputId}
-						name="photo"
-						type="file"
-						accept="image/*"
-						capture="environment"
-						required
-						className="absolute inset-0 cursor-pointer opacity-0"
-						onChange={(e) => {
-							const file = e.target.files?.[0];
-							setPhotoLabel(file ? file.name : "take or choose a photo");
-						}}
-					/>
-					<span className="flex min-h-[52px] items-center justify-center rounded-[0.95rem] border border-dashed border-mauve/45 bg-base/75 px-4 py-[0.85rem] text-center text-[0.95rem] font-semibold tracking-[0.02em] text-mauve">
-						{photoLabel}
-					</span>
-				</label>
+				<div className="grid gap-2">
+					<span className={labelClass}>photo of the lilgriper</span>
+					<label
+						htmlFor={photoInputId}
+						className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-[0.95rem] border border-dashed border-mauve/45 bg-base/75 px-4 py-[0.85rem] text-center text-[0.95rem] font-semibold tracking-[0.02em] text-mauve transition-colors hover:border-sky/50 hover:text-sky"
+					>
+						{photo ? "change photo" : "take or choose a photo"}
+						<input
+							id={photoInputId}
+							type="file"
+							accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*"
+							className="sr-only"
+							disabled={!userId || submitting}
+							onChange={(e) => onPhotoChange(e.target.files)}
+						/>
+					</label>
+					{photoPreview ? (
+						<img
+							src={photoPreview}
+							alt="Selected sighting preview"
+							className="mt-1 h-28 w-28 rounded-xl border border-white/10 object-cover"
+						/>
+					) : null}
+				</div>
 				<button
 					type="submit"
-					disabled={submitting}
+					disabled={submitting || !userId}
 					className="min-h-12 justify-self-start rounded-full bg-sky px-[1.35rem] py-3 font-bold text-base text-base transition-[transform,box-shadow,opacity] duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(137,220,235,0.28)] focus-visible:-translate-y-0.5 focus-visible:shadow-[0_10px_28px_rgba(137,220,235,0.28)] focus-visible:outline-none disabled:opacity-65 disabled:transform-none disabled:shadow-none"
 				>
-					{submitting ? "uploading…" : `log sighting · +${POINTS_PER_SIGHTING}`}
+					{submitting
+						? "uploading…"
+						: !userId
+							? "sign in to log"
+							: `log sighting · +${POINTS_PER_SIGHTING}`}
 				</button>
 			</form>
 
@@ -290,12 +572,12 @@ export default function SightingsPanel() {
 					<ol className="m-0 grid list-none gap-3 p-0">
 						{leaders.length === 0 ? (
 							<li className="text-[0.92rem] text-subtext">
-								no grip points yet.
+								no grip points yet. create an account and log a sighting.
 							</li>
 						) : (
 							leaders.map((entry, index) => (
 								<li
-									key={entry.hunter}
+									key={entry.user_id}
 									className="grid grid-cols-[1.6rem_minmax(0,1fr)_auto] items-center gap-2 rounded-2xl bg-surface/72 px-[0.85rem] py-3"
 								>
 									<span className="font-semibold text-mauve">{index + 1}</span>
@@ -311,4 +593,10 @@ export default function SightingsPanel() {
 			</div>
 		</section>
 	);
+}
+
+function normalizeDisplay(raw: string): string {
+	return clean(raw, 24)
+		.toLowerCase()
+		.replace(/[^a-z0-9_]/g, "");
 }

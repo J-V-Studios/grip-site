@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
 	aggregatePoints,
+	contentTypeFor,
 	extFor,
 	REPORTS_TO_HIDE,
 	rankedLeaders,
@@ -35,6 +36,12 @@ describe("sightings helpers", () => {
 
 	it("maps jpeg extension", () => {
 		expect(extFor({ name: "x.JPEG", type: "image/jpeg" })).toBe("jpg");
+	});
+
+	it("normalizes content types for empty and image/jpg", () => {
+		expect(contentTypeFor({ name: "cam.jpg", type: "" })).toBe("image/jpeg");
+		expect(contentTypeFor({ name: "x", type: "image/jpg" })).toBe("image/jpeg");
+		expect(contentTypeFor({ name: "a.heic", type: "" })).toBe("image/heic");
 	});
 
 	it("validates sighting photos", () => {

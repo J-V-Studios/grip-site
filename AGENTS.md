@@ -57,7 +57,7 @@ Optional: `bun run lint:fix`, `bun run knip` (unused exports; also in CI).
 | `/money/` | `src/pages/money.astro` | Placeholder |
 | `/community/` | `src/pages/community/index.astro` | Claim handle, enqueue builds, gallery (`CommunityHub.tsx`) |
 
-**Supabase (anon/publishable only):** tables `lilgrip_comments`, `grip_sightings`, `community_gallery` (read); storage buckets `grip-heys`, `grip-sightings`. Community writes go through the **edge orchestrator** (service role on server only). All client access via `src/lib/`.
+**Supabase (anon/publishable only):** tables `lilgrip_comments`, `grip_sightings`, `profiles`, `community_gallery` (read); storage buckets `grip-heys`, `grip-sightings`. Grip points need Auth (email + password) + claimed username; leaderboard via `grip_points_leaderboard()`. Community writes go through the **edge orchestrator** (service role on server only). All client access via `src/lib/`.
 
 **Community:** `docs/community/` (deploy: [DEPLOY.md](./docs/community/DEPLOY.md)); moderation rules in `src/lib/community-moderation.ts` (mirrored in `supabase/functions/community-orchestrator/moderation.ts`).
 

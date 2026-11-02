@@ -6,6 +6,7 @@ Check items off as they ship. Prefer small PRs / commits. Align with `AGENTS.md`
 
 - [x] Goofy redesign: meme splash, say-hey pulse
 - [x] Restore grip sightings + points; community flag for non-gripster photos
+- [x] Fix sightings photo upload UX; hunter accounts + grip points leaderboard
 
 - [x] Vanilla static shell (legacy `index.html`, `styles.css`, `script.js`) — baseline before migration
 - [x] Hero, notes, sightings, Supabase, GitHub Pages + `lilgrip.com` (vanilla era)

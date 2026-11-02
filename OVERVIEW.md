@@ -57,7 +57,7 @@ Shared chrome: `SiteHeader`, `SiteFooter` via `BaseLayout`.
 | --- | --- | --- |
 | Hero | `Hero.astro` | Brand, chill line, 1 Corinthians 16:14, photo |
 | Explore | `ExploreCards.astro` | Links to subroutes |
-| Grip sightings | `SightingsPanel.tsx` | Upload photo; +10 points; leaderboard; flag non-gripster |
+| Grip sightings | `SightingsPanel.tsx` | Account login; upload photo; +10 points; leaderboard; flag non-gripster |
 | Say hey | `SayHeyPanel.tsx` | Shared public comments (+ optional photo) |
 
 ### Runtime dependencies
@@ -66,10 +66,13 @@ Shared chrome: `SiteHeader`, `SiteFooter` via `BaseLayout`.
 - **Fonts:** Google Fonts — Outfit, Fraunces (see layout)
 - **Data:** `@supabase/supabase-js` via `src/lib/supabase.ts`
   - `lilgrip_comments` — say-hey notes (`body`, optional `photo_path`)
-  - `grip_sightings` — sightings metadata + points
+  - `grip_sightings` — sightings metadata + points (`user_id` links to auth account)
+  - `profiles` — hunter username / display name (claimed via `claim_grip_username`)
+  - `grip_points_leaderboard()` — public ranked points by account
   - `community_gallery` — live community page metadata (anon read)
   - Storage bucket `grip-heys` — public say-hey photos
   - Storage bucket `grip-sightings` — public sighting photos
+  - Auth: email + password (confirm email if project requires it); must be signed in to log sightings
 - **Community orchestrator:** Supabase Edge Function `community-orchestrator` — claim handle, enqueue build, poll status; secrets on function only (see `docs/community/DEPLOY.md`)
 - **Env:** `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `PUBLIC_COMMUNITY_ORCHESTRATOR_URL` (see `.env.example`)
 - **Hosting:** GitHub Pages + custom domain `lilgrip.com`
