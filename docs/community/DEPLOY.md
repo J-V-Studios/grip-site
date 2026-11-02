@@ -15,7 +15,7 @@ End-to-end checklist for the visitor community feature: Supabase Edge Function o
 - Gateway `verify_jwt` is **off** (site uses publishable `sb_publishable_…` keys, which are not JWTs).
 - The function authorizes callers by matching the `apikey` header to `SUPABASE_ANON_KEY` / `SUPABASE_PUBLISHABLE_KEYS` (auto-injected by the platform).
 - Redeploy from repo: MCP `deploy_edge_function` or `supabase functions deploy community-orchestrator --project-ref lendvtrjkehanndudjfd` (see `supabase/config.toml`).
-- **GripApps:** planner/builder Cloud Agent prompts live in `supabase/functions/community-orchestrator/cursor.ts`. They point agents at `.cursor/skills/gripapps/SKILL.md`, `docs/gripapps/AGENT_GUIDE.md`, and `docs/gripapps/COOKBOOK.md`, and require draft → `gripc enrich` → `check` → `check --visual` → `build` under `public/community/<handle>/`. **Redeploy `community-orchestrator` whenever `cursor.ts` changes** (`verify_jwt = false`) so production enqueue runs pick up prompt updates.
+- Planner/builder prompts live in `supabase/functions/community-orchestrator/cursor.ts` and point at `.cursor/skills/community-builder/SKILL.md` + `docs/community/*` (static Vite/HTML scaffold — **not** GripLang). Redeploy the function whenever those prompts change (`verify_jwt = false`).
 
 ## 2. Edge Function secrets
 
@@ -59,19 +59,17 @@ Local dev: `.env` with the same `PUBLIC_*` values; `bun run dev` → `/community
 - [x] `bun run check`, `bun run lint`, `bun run build`
 - [x] `bun run test:e2e` — `/community` hub heading smoke
 
-### Deployed orchestrator
+### Deployed orchestrator (no Cursor key yet)
 
 - [x] **Deploy** `community-orchestrator` (`verify_jwt = false`, apikey gate)
 - [x] Set `PUBLIC_COMMUNITY_ORCHESTRATOR_URL` in `.env.production` / CI vars
 - [x] **Claim** works (201 + edit code); duplicate handle → 409
 - [x] **Moderation:** prompt `kill people` → `rejected` + vibe-check message
 - [x] **Second enqueue** same handle same UTC day → 429
-- [x] Set `CURSOR_API_KEY` (+ optional `EDIT_CODE_PEPPER`) in Edge Function secrets
-- [ ] **Cursor billing:** the account behind `CURSOR_API_KEY` must have Cloud Agents prepaid balance / auto top-up. Empty balance returns Cursor API `400 usage_limit_exceeded` and builds fail immediately after enqueue.
+- [ ] Set `CURSOR_API_KEY` (+ optional `EDIT_CODE_PEPPER`) in Edge Function secrets
 - [ ] **Enqueue** harmless prompt: `make a bouncing blue square` → agents launch
 - [ ] Confirm build status progresses (`queued` → `planning` → `building` → `live` or terminal state)
 - [ ] Confirm planner/builder agents run; PR branch `community/<handle>-*` only touches `public/community/<handle>/`
-- [ ] GripApps builder output: `app.grip`, `app.grip.js`, `index.html`, `manifest.json`, `vendor/gripapps/runtime.js` (path guard + CI `gripc check` when `app.grip` present)
 - [ ] Confirm PR auto-merges (path guard workflow) and page is live at `/community/<handle>/`
 
 ### curl examples (after deploy)
@@ -108,5 +106,3 @@ Rule logic lives in `src/lib/community-moderation.ts` (unit tested). The edge fu
 - [README.md](./README.md) — doc index
 - [AGENT_GUIDE.md](./AGENT_GUIDE.md) — planner/builder workflow
 - [../superpowers/specs/2026-10-26-community-builds-design.md](../superpowers/specs/2026-10-26-community-builds-design.md) — product spec
-- [../superpowers/specs/2026-10-27-gripapps-design.md](../superpowers/specs/2026-10-27-gripapps-design.md) — GripApps design (implemented)
-- [../gripapps/README.md](../gripapps/README.md) — GripLang / `gripc` / runtime docs

@@ -165,7 +165,7 @@ describe("mergeGalleryLists", () => {
 });
 
 describe("elaborateBrief", () => {
-	it("describes GripApps only", async () => {
+	it("describes static community-builder scaffold (not GripLang)", async () => {
 		const src = await readFile(
 			"supabase/functions/community-orchestrator/index.ts",
 			"utf8",
@@ -173,7 +173,23 @@ describe("elaborateBrief", () => {
 		const start = src.indexOf("function elaborateBrief");
 		const end = src.indexOf("function serviceClient");
 		const body = src.slice(start, end);
-		expect(body).toContain("app.grip");
-		expect(body).not.toMatch(/Vite|_src_/);
+		expect(body).toContain("index.html");
+		expect(body).toContain("manifest.json");
+		expect(body).toContain("community-builder");
+		expect(body).toMatch(/Vite|_src_/);
+		expect(body).toMatch(/Do NOT use GripLang/);
+	});
+});
+
+describe("community orchestrator prompts", () => {
+	it("points planner/builder at community-builder skill", async () => {
+		const src = await readFile(
+			"supabase/functions/community-orchestrator/cursor.ts",
+			"utf8",
+		);
+		expect(src).toContain(".cursor/skills/community-builder/SKILL.md");
+		expect(src).not.toContain(".cursor/skills/gripapps/SKILL.md");
+		expect(src).toContain("index.html and manifest.json");
+		expect(src).not.toContain("app.grip");
 	});
 });

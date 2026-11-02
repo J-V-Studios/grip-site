@@ -1,6 +1,4 @@
-# Community mini-app scaffold (legacy)
-
-> **New community builds use [GripApps](../gripapps/README.md)** (`app.grip` + `gripc`). This document describes the older Vite + React scaffold for reference or exceptional cases.
+# Community mini-app scaffold
 
 Canonical workflow for building static pages that GitHub Pages serves at `/community/<handle>/`.
 
