@@ -537,7 +537,18 @@ export default function SightingsPanel() {
 				</button>
 			</form>
 
-			<p className="mt-3 text-[0.92rem] text-subtext">{hint}</p>
+			<p
+				className={`mt-3 text-[0.95rem] ${
+					/cooldown|already|duplicate|scan|fail|sign in|blocked|site photo|didn't find/i.test(
+						hint,
+					)
+						? "font-semibold text-peach"
+						: "text-subtext"
+				}`}
+				aria-live="assertive"
+			>
+				{hint}
+			</p>
 
 			<div className="mt-4 grid gap-5 min-[821px]:grid-cols-[minmax(0,1.4fr)_minmax(220px,0.7fr)]">
 				<div>

@@ -8,6 +8,7 @@ Check items off as they ship. Prefer small PRs / commits. Align with `AGENTS.md`
 - [x] Restore grip sightings + points; community flag for non-gripster photos
 - [x] Fix sightings photo upload UX; hunter accounts + grip points leaderboard
 - [x] Sightings scan: face check, hash dedupe, site-photo reuse block, 15m cooldown
+- [x] Enforce scan RPC-only inserts + backfill hashes (stop cached-client bypass)
 
 - [x] Vanilla static shell (legacy `index.html`, `styles.css`, `script.js`) — baseline before migration
 - [x] Hero, notes, sightings, Supabase, GitHub Pages + `lilgrip.com` (vanilla era)

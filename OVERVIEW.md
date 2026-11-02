@@ -66,7 +66,7 @@ Shared chrome: `SiteHeader`, `SiteFooter` via `BaseLayout`.
 - **Fonts:** Google Fonts — Outfit, Fraunces (see layout)
 - **Data:** `@supabase/supabase-js` via `src/lib/supabase.ts`
   - `lilgrip_comments` — say-hey notes (`body`, optional `photo_path`)
-  - `grip_sightings` — sightings metadata + points (`user_id` links to auth account)
+  - `grip_sightings` — sightings metadata + points (`user_id` links to auth account); inserts only via `submit_grip_sighting` (hash + cooldown)
   - `profiles` — hunter username / display name (claimed via `claim_grip_username`)
   - `grip_points_leaderboard()` — public ranked points by account
   - `community_gallery` — live community page metadata (anon read)
