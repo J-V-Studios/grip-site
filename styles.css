@@ -119,7 +119,6 @@ main {
 .hero-copy,
 .portrait,
 .explore,
-.sightings,
 .notes,
 .page {
   animation: rise 0.75s var(--ease) both;
@@ -238,8 +237,6 @@ blockquote cite {
 }
 
 .section-head h2,
-.sightings h2,
-.sightings h3,
 .notes h2 {
   margin: 0 0 0.45rem;
   color: var(--mauve);
@@ -249,14 +246,8 @@ blockquote cite {
   text-transform: uppercase;
 }
 
-.sightings h3 {
-  margin-top: 1.5rem;
-  color: var(--teal);
-}
-
 .section-head p,
-.page-lede,
-.sightings-lede {
+.page-lede {
   margin: 0;
   max-width: 34rem;
   color: var(--subtext);
@@ -393,57 +384,16 @@ blockquote cite {
   outline: none;
 }
 
-.sightings,
 .notes {
   padding: 2rem 0 1rem;
 }
 
-.sightings-head {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem 1.25rem;
-  align-items: end;
-  justify-content: space-between;
-  margin-bottom: 1.25rem;
-}
-
-.sightings-lede strong {
-  color: var(--peach);
-}
-
-.points-chip {
-  display: grid;
-  gap: 0.2rem;
-  min-width: 8.5rem;
-  padding: 0.85rem 1rem;
-  border: 1px solid rgba(243, 139, 168, 0.28);
-  border-radius: 1rem;
-  background: rgba(49, 50, 68, 0.75);
-  text-align: right;
-}
-
-.points-chip span {
-  color: var(--subtext);
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.points-chip strong {
-  color: var(--pink);
-  font-size: 1.55rem;
-  line-height: 1;
-}
-
-#note-form,
-#sighting-form {
+#note-form {
   display: grid;
   gap: 0.85rem;
 }
 
-#note-form label,
-#sighting-form label {
+#note-form label {
   display: grid;
   gap: 0.4rem;
   color: var(--subtext);
@@ -454,8 +404,7 @@ blockquote cite {
 }
 
 #note-form input,
-#note-form textarea,
-#sighting-form input:not([type="file"]) {
+#note-form textarea {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 0.95rem;
@@ -467,8 +416,7 @@ blockquote cite {
 }
 
 #note-form input:focus-visible,
-#note-form textarea:focus-visible,
-#sighting-form input:not([type="file"]):focus-visible {
+#note-form textarea:focus-visible {
   border-color: rgba(243, 139, 168, 0.55);
   box-shadow: 0 0 0 4px rgba(243, 139, 168, 0.12);
   outline: none;
@@ -479,8 +427,7 @@ blockquote cite {
   resize: vertical;
 }
 
-#note-form button,
-#sighting-form button {
+#note-form button {
   justify-self: start;
   min-height: 48px;
   padding: 0 1.35rem;
@@ -495,52 +442,16 @@ blockquote cite {
 }
 
 #note-form button:hover,
-#sighting-form button:hover,
-#note-form button:focus-visible,
-#sighting-form button:focus-visible {
+#note-form button:focus-visible {
   transform: translateY(-2px);
   box-shadow: 0 10px 28px rgba(243, 139, 168, 0.28);
   outline: none;
 }
 
-#note-form button:disabled,
-#sighting-form button:disabled {
+#note-form button:disabled {
   opacity: 0.65;
   transform: none;
   box-shadow: none;
-}
-
-.photo-pick {
-  position: relative;
-}
-
-.photo-pick input[type="file"] {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.photo-pick-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 52px;
-  padding: 0.85rem 1rem;
-  border: 1px dashed rgba(203, 166, 247, 0.45);
-  border-radius: 0.95rem;
-  background: rgba(24, 24, 37, 0.75);
-  color: var(--mauve);
-  font: 600 0.95rem/1.2 "Outfit", sans-serif;
-  letter-spacing: 0.02em;
-  text-transform: none;
-  text-align: center;
-  transition: border-color 0.25s var(--ease), background 0.25s var(--ease);
-}
-
-.photo-pick:hover .photo-pick-btn {
-  border-color: rgba(243, 139, 168, 0.55);
-  background: rgba(49, 50, 68, 0.55);
 }
 
 .hint,
@@ -549,15 +460,6 @@ blockquote cite {
   font-size: 0.92rem;
 }
 
-.sightings-board {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(220px, 0.7fr);
-  gap: 1.1rem 1.3rem;
-  margin-top: 0.5rem;
-}
-
-#sighting-list,
-#leaderboard,
 #note-list {
   display: grid;
   gap: 0.75rem;
@@ -566,75 +468,20 @@ blockquote cite {
   list-style: none;
 }
 
-.sighting-card,
-.note-card,
-.board-row {
+.note-card {
+  padding: 0.9rem 1rem;
   border-radius: 1rem;
   background: rgba(49, 50, 68, 0.72);
   animation: rise 0.4s var(--ease);
 }
 
-.sighting-card {
-  display: grid;
-  grid-template-columns: 108px minmax(0, 1fr);
-  gap: 0.8rem;
-  padding: 0.55rem;
-}
-
-.sighting-card img {
-  width: 100%;
-  aspect-ratio: 1;
-  object-fit: cover;
-  border-radius: 0.8rem;
-  background: rgba(24, 24, 37, 0.9);
-}
-
-.sighting-card strong,
 .note-card strong {
   color: var(--peach);
 }
 
-.sighting-card p,
 .note-card p {
   margin: 0.3rem 0 0;
   line-height: 1.4;
-}
-
-.sighting-card .pts {
-  display: inline-block;
-  margin-top: 0.45rem;
-  color: var(--pink);
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.board-row {
-  display: grid;
-  grid-template-columns: 1.6rem minmax(0, 1fr) auto;
-  gap: 0.55rem;
-  align-items: center;
-  padding: 0.75rem 0.85rem;
-}
-
-.board-row .rank {
-  color: var(--mauve);
-  font-weight: 600;
-}
-
-.board-row strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.board-row .score {
-  color: var(--pink);
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.note-card {
-  padding: 0.9rem 1rem;
 }
 
 .site-footer {
@@ -653,8 +500,7 @@ blockquote cite {
   }
 
   .hero,
-  .card-grid,
-  .sightings-board {
+  .card-grid {
     grid-template-columns: 1fr;
   }
 
@@ -662,14 +508,8 @@ blockquote cite {
     text-align: left;
   }
 
-  #note-form button,
-  #sighting-form button {
+  #note-form button {
     width: 100%;
-  }
-
-  .points-chip {
-    width: 100%;
-    text-align: left;
   }
 
   .site-nav {
