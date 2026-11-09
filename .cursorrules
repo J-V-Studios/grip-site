@@ -8,7 +8,7 @@ You are working on **the lilgriper** site: a static, vanilla web project hosted 
 - **Never** introduce React, Vue, Svelte, Angular, Next, Nuxt, or similar.
 - **Never** introduce Tailwind, Bootstrap, Bulma, or CSS-in-JS libraries.
 - **Never** add a bundler or build step (no Vite, Webpack, Parcel, npm scripts for UI).
-- Allowed third-party use: Google Fonts CDN, and the existing Supabase JS client via ESM CDN (`esm.sh`) for shared comments/sightings only.
+- Allowed third-party use: Google Fonts CDN, and the existing Supabase JS client via ESM CDN (`esm.sh`) for shared notes only.
 - Prefer progressive enhancement: the page must remain readable if JS fails.
 
 ## File split (enforce)
@@ -57,10 +57,10 @@ Keep a clean root layout. Do not collapse everything into one file.
 - Use `const`/`let`, arrow functions where clear, async/await for network work.
 - Bind behavior with `addEventListener` — no inline `onclick=` attributes.
 - Query the DOM once at the top (or in small scoped helpers); null-check before use.
-- Keep concerns separated: screen commands, notes, sightings/points should not become one tangled mega-function.
+- Keep concerns separated: screen commands and notes should not become one tangled mega-function.
 - Sanitize/clamp user text before insert (`clean()` pattern already used).
 - Do not store secrets in the client. Only the Supabase **publishable/anon** key may appear in `script.js`.
-- Prefer `localStorage` only for non-sensitive UX state (e.g. hunter name). Shared data (comments, sightings) lives in Supabase.
+- Prefer `localStorage` only for non-sensitive UX state. Shared notes live in Supabase.
 - Honor `prefers-reduced-motion` when choosing to animate or tick live counters.
 
 ## Supabase / data rules
@@ -68,8 +68,6 @@ Keep a clean root layout. Do not collapse everything into one file.
 Existing shared features:
 
 - Table `lilgrip_comments` — public notes (select/insert for anon).
-- Table `grip_sightings` — hunter, place, photo path, points (select/insert for anon).
-- Storage bucket `grip-sightings` — public image uploads for sightings.
 
 When changing data:
 
@@ -83,7 +81,7 @@ When changing data:
 - Keep pink as a primary accent; Catppuccin tokens for the rest.
 - Scripture quote on the hero: 1 Corinthians 16:14 (WEB): “Let all that you do be done in love.”
 - Prefer clean whitespace, soft motion, and multi-page nav cards over dense dashboards.
-- Do not reintroduce “peace” gags, terminal consoles, or cluttered sticker/tag spam unless the user asks.
+- Do not reintroduce “peace” gags, terminal consoles, cluttered sticker/tag spam, or grip sightings unless the user asks.
 
 ## Git / deploy awareness
 
@@ -95,6 +93,6 @@ When changing data:
 ## When unsure
 
 - Inspect existing `index.html` / `styles.css` / `script.js` before inventing new patterns.
-- Prefer extending current sections (hero, lilgrip screen, grip sightings, notes) over adding unrelated pages.
+- Prefer extending current sections (hero, explore cards, notes) over adding unrelated pages.
 - Update `TODO.md` when finishing or discovering follow-up work.
 - Update `OVERVIEW.md` when structure, tokens, or features change materially.

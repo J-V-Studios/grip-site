@@ -9,8 +9,8 @@ Check items off as they ship. Prefer small PRs / commits. Keep this list aligned
 - [x] Catppuccin-leaning color tokens + responsive layout
 - [x] Lilgrip interactive screen + gauges
 - [x] Shared notes via Supabase
-- [x] Grip sightings + photo upload + grip points leaderboard
 - [x] GitHub Pages + `lilgrip.com` custom domain wiring
+- [x] Removed grip sightings (form, photo upload, points, leaderboard)
 - [x] Workspace context files (`.cursorrules`, `OVERVIEW.md`, `TODO.md`)
 - [x] Hero portrait keeps its 3:4 ratio (`img { height: auto }` honors the HTML width and height as the aspect ratio)
 
@@ -18,10 +18,9 @@ Check items off as they ship. Prefer small PRs / commits. Keep this list aligned
 
 ## Wireframing / layout
 
-- [ ] Sketch mobile scroll order: hero → screen → sightings → notes (confirm no section fights for the first viewport)
-- [ ] Decide whether sightings gallery should be a denser grid on desktop
+- [ ] Sketch mobile scroll order: hero → explore → notes (confirm no section fights for the first viewport)
 - [ ] Optional sticky mini-nav (brand only) — only if multi-section length becomes hard to scan
-- [ ] Empty-state illustrations vs plain copy for notes/sightings
+- [ ] Empty-state illustrations vs plain copy for notes
 
 ## Core styling
 
@@ -35,16 +34,13 @@ Check items off as they ship. Prefer small PRs / commits. Keep this list aligned
 ## JavaScript interactions
 
 - [ ] Split `script.js` into clear regions or tiny modules *without* a bundler (still one entry `script.js`, or ES module imports colocated) if file growth continues
-- [ ] Sightings: client-side image resize/compress before upload (mobile friendliness)
-- [ ] Sightings: optimistic UI + clearer progress for slow uploads
-- [ ] Notes/sightings: basic rate-limit / duplicate-submit guard
-- [ ] Optional: realtime refresh (Supabase channel) for notes + sightings
-- [ ] Optional: “my sightings” filter using saved hunter name
+- [ ] Notes: basic rate-limit / duplicate-submit guard
+- [ ] Optional: realtime refresh (Supabase channel) for notes
 
 ## Accessibility audit
 
-- [ ] Keyboard path through screen commands, forms, and file picker
-- [ ] Screen reader pass on sightings cards (name, place, points)
+- [ ] Keyboard path through the notes form
+- [ ] Screen reader pass on note cards (name, comment)
 - [ ] Color contrast check (pink/peach on base)
 - [ ] `prefers-reduced-motion` verification for shimmer / bits / halo / counters
 - [ ] Form errors announced via `aria-live` where failures happen
@@ -52,16 +48,14 @@ Check items off as they ship. Prefer small PRs / commits. Keep this list aligned
 
 ## Content / product
 
-- [ ] Write short house rules for sightings (consent / chill / no harassment)
-- [ ] Decide if grip points stay flat `+10` or get bonuses (first of day, etc.)
-- [ ] Moderation path for bad uploads (owner-only delete or report) — needs non-anon privileges
+- [ ] Moderation path for notes (owner-only delete or report) — needs non-anon privileges
 - [ ] Refresh README DNS section if Squarespace/GitHub details change
 
 ## Quality / launch hygiene
 
 - [ ] Lighthouse pass (perf / a11y / best practices) on mobile + desktop
 - [ ] Smoke-test HTTPS enforce on `lilgrip.com` and `www` redirect
-- [ ] Verify Supabase RLS: anon cannot update/delete comments or sightings
+- [ ] Verify Supabase RLS: anon cannot update/delete comments
 - [ ] Backup note: document which Supabase tables/buckets this site owns
 
 ## Nice-to-haves (parked)
@@ -69,4 +63,3 @@ Check items off as they ship. Prefer small PRs / commits. Keep this list aligned
 - [ ] Offline shell / simple PWA manifest
 - [ ] OG image tailored for link previews
 - [ ] Seasonal skins via CSS variables only
-- [ ] Export leaderboard as shareable image (canvas) — still vanilla

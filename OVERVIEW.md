@@ -1,6 +1,6 @@
 # Project Overview — the lilgriper / lilgrip.com
 
-Personal static site for **the lilgriper**. Chill tone, Catppuccin-inspired colors, light CS/server flavor, shared notes and grip sightings.
+Personal static site for **the lilgriper**. Chill tone, Catppuccin-inspired colors, light CS/server flavor, and shared notes.
 
 Live: [https://lilgrip.com](https://lilgrip.com)  
 Repo publish: GitHub Pages from `main` (root).
@@ -11,13 +11,13 @@ Repo publish: GitHub Pages from `main` (root).
 
 ```text
 /
-├── index.html          # Home: hero, explore cards, sightings, notes
+├── index.html          # Home: hero, explore cards, notes
 ├── church-apps.html    # Church apps placeholder
 ├── fun-apps.html       # Fun apps placeholder
 ├── about.html          # About placeholder
 ├── money.html          # Money?? placeholder
 ├── styles.css          # Shared design system + layout
-├── script.js           # ES module: notes + sightings (home)
+├── script.js           # ES module: notes (home)
 ├── favicon.svg
 ├── CNAME               # lilgrip.com
 ├── .nojekyll
@@ -33,7 +33,7 @@ Repo publish: GitHub Pages from `main` (root).
 
 | Page | Purpose |
 | --- | --- |
-| `index.html` | Hero, explore nav cards, grip sightings, notes |
+| `index.html` | Hero, explore nav cards, notes |
 | `church-apps.html` | Church apps (coming soon) |
 | `fun-apps.html` | Fun projects / games (coming soon) |
 | `about.html` | About (coming soon) |
@@ -47,7 +47,6 @@ Shared chrome: `.site-header` brand + nav, `.site-footer`. Subpages include a **
 | --- | --- | --- |
 | Hero | `.hero` | Brand, chill line, 1 Corinthians 16:14, photo |
 | Explore | `.explore` / `.nav-card` | Links to Church Apps, Fun Apps, About, Money?? |
-| Grip sightings | `.sightings` | Upload photo when spotting lilgriper; earn points; leaderboard |
 | Notes | `.notes` | Shared public comments |
 
 ### Runtime dependencies
@@ -55,8 +54,6 @@ Shared chrome: `.site-header` brand + nav, `.site-footer`. Subpages include a **
 - Fonts: Google Fonts — Outfit, Fraunces, JetBrains Mono
 - Data: Supabase project (`createClient` from `esm.sh/@supabase/supabase-js@2`)
   - `lilgrip_comments` — notes
-  - `grip_sightings` — sightings metadata + points
-  - Storage bucket `grip-sightings` — public photos
 - Hosting: GitHub Pages + custom domain `lilgrip.com`
 
 No package.json, no build pipeline. The browser loads the three source files directly.
@@ -76,7 +73,7 @@ Fill and refine these tokens as the visual language evolves. Values below match 
 | `--subtext` | Muted labels | `#a6adc8` | |
 | `--pink` | Primary accent / brand | `#f38ba8` | Keep as hero accent |
 | `--mauve` | Secondary accent | `#cba6f7` | Eyebrows, chrome |
-| `--peach` | Tertiary / warmth | `#fab387` | Chill line, hunter names |
+| `--peach` | Tertiary / warmth | `#fab387` | Chill line, note names |
 | `--teal` | Status / cite | `#94e2d5` | Online, scripture cite |
 | _Placeholder — surface_ | Cards / panels | e.g. `#181825` / `#313244` | Formalize as `--surface0`, `--crust` if expanded |
 | _Placeholder — success_ | Live / OK | e.g. `#a6e3a1` | Used in pulse / lights |
@@ -129,7 +126,7 @@ When adding or changing a feature, update this section (or link a short subsecti
 - **UI location:** section / selectors.
 - **Data:** tables, buckets, localStorage keys.
 - **Permissions:** who can read/write (anon RLS, etc.).
-- **Points / side effects:** e.g. `+10` grip points per sighting.
+- **Points / side effects:** anything the action changes for other visitors.
 - **Empty / error states:** copy users see.
 - **A11y notes:** labels, live regions, keyboard.
 
@@ -142,14 +139,7 @@ When adding or changing a feature, update this section (or link a short subsecti
 - **Data:** `lilgrip_comments` (`name`, `body`).
 - **Permissions:** anon select + insert.
 - **Limits:** name ≤ 24, body ≤ 200.
-
-#### Grip sightings
-
-- **User goal:** if you see the lilgriper IRL, upload a photo and earn grip points.
-- **UI:** `#sighting-form`, `#sighting-list`, `#leaderboard`, `#my-points`.
-- **Data:** `grip_sightings` + storage `grip-sightings`; hunter name in `localStorage` key `lilgrip-hunter`.
-- **Points:** `+10` per successful sighting; leaderboard aggregates by hunter name.
-- **Limits:** image ≤ 5MB; jpg/png/webp/heic; place ≤ 80 chars.
+- **Empty / error states:** “no notes yet. say hey to the lilgriper.” / “notes could not load. try again in a minute.”
 
 #### Lilgrip screen
 
