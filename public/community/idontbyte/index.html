@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="theme-color" content="#1e1e2e" />
+		<meta
+			name="description"
+			content="Race a blocky boat, then stack a tiny plot. Just a chill guy."
+		/>
+		<title>Chill Harbor</title>
+		<link rel="stylesheet" href="./assets/harbor.css" />
+	</head>
+	<body>
+		<div class="wrap">
+			<header class="hero">
+				<p class="kicker">
+					<a href="../">lilgrip community</a>
+					· @idontbyte
+				</p>
+				<div class="title-row">
+					<svg class="mascot" viewBox="0 0 72 72" aria-hidden="true">
+						<rect x="8" y="40" width="56" height="16" rx="8" fill="#e6c89a" />
+						<rect x="14" y="46" width="44" height="8" rx="3" fill="#b5835a" />
+						<path d="M36 28 L50 44 H22 Z" fill="#89dceb" />
+						<rect x="26" y="10" width="20" height="18" rx="7" fill="#f5e0dc" />
+						<path d="M30 20 q6 5 12 0" fill="none" stroke="#1e1e2e" stroke-width="2" stroke-linecap="round" />
+						<circle cx="31" cy="17" r="1.4" fill="#1e1e2e" />
+						<circle cx="41" cy="17" r="1.4" fill="#1e1e2e" />
+						<rect x="22" y="26" width="28" height="16" rx="6" fill="#89b4fa" />
+					</svg>
+					<div>
+						<h1>Chill Harbor</h1>
+						<p class="lede">
+							i'm just a chill guy. race a blocky boat, then stack a tiny plot.
+						</p>
+					</div>
+				</div>
+			</header>
+
+			<div class="tabs" role="tablist" aria-label="Harbor activities">
+				<button
+					class="tab"
+					type="button"
+					id="tab-race"
+					role="tab"
+					aria-selected="true"
+					aria-controls="panel-race"
+				>
+					Boat race
+				</button>
+				<button
+					class="tab"
+					type="button"
+					id="tab-build"
+					role="tab"
+					aria-selected="false"
+					aria-controls="panel-build"
+					tabindex="-1"
+				>
+					Block plot
+				</button>
+			</div>
+
+			<section class="panel" id="panel-race" role="tabpanel" aria-labelledby="tab-race">
+				<div class="stage">
+					<canvas
+						id="race"
+						width="640"
+						height="420"
+						aria-label="Top-down boat race on a blocky river. Hold either side of the water, or the port and starboard buttons, to steer."
+					></canvas>
+					<div class="stage-hud">
+						<p id="race-stats">harbor's calm</p>
+						<button class="btn" type="button" id="shove">shove off</button>
+						<button class="btn ghost" type="button" id="pause" hidden>hold up</button>
+					</div>
+				</div>
+				<div class="steer">
+					<button class="steer-btn" type="button" id="port">port</button>
+					<button class="steer-btn" type="button" id="starboard">starboard</button>
+				</div>
+				<p class="hint">
+					Hold a side to steer. Grab the coins. Banks just nudge you back — no
+					wipeouts, no stress.
+				</p>
+				<p id="race-live" class="live" aria-live="polite"></p>
+			</section>
+
+			<section
+				class="panel"
+				id="panel-build"
+				role="tabpanel"
+				aria-labelledby="tab-build"
+				hidden
+			>
+				<form class="plot-form" id="plot-form">
+					<label for="plot-name">plot name</label>
+					<input
+						id="plot-name"
+						name="plot-name"
+						type="text"
+						maxlength="32"
+						autocomplete="off"
+						placeholder="untitled dock"
+						enterkeyhint="done"
+					/>
+				</form>
+				<div class="palette" id="palette" role="radiogroup" aria-label="Block type"></div>
+				<div class="tools">
+					<button class="btn" type="button" id="mode-place" aria-pressed="true">place</button>
+					<button class="btn ghost" type="button" id="mode-scoop" aria-pressed="false">
+						scoop
+					</button>
+					<button class="btn ghost" type="button" id="clear-plot">clear plot</button>
+				</div>
+				<p id="plot-count">placing grass · empty plot</p>
+				<div id="plot" class="plot" role="group" aria-label="Block plot, 8 by 8"></div>
+				<p id="plot-status" class="live" aria-live="polite"></p>
+			</section>
+
+			<footer class="foot">
+				<p>
+					Saves stay in this browser. Minecraft energy, original blocks — a fan
+					toy, not the game.
+				</p>
+			</footer>
+		</div>
+		<noscript>
+			<p>Chill Harbor uses a little JavaScript for the boat and the blocks.</p>
+		</noscript>
+		<script type="module" src="./assets/harbor.js"></script>
+	</body>
+</html>
