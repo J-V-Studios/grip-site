@@ -1,19 +1,12 @@
 ---
-import ExploreCards from "../components/ExploreCards.astro";
-import ExploreMotion from "../components/islands/ExploreMotion";
-import SayHeyPanel from "../components/islands/SayHeyPanel";
-import SightingsPanel from "../components/islands/SightingsPanel";
-import SplashPlane from "../components/SplashPlane.astro";
+import ResumePage from "../components/ResumePage.astro";
+import { resume } from "../data/resume";
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout
-	title="lilgrip"
-	description="lilgrip. Just a chill guy. 1 Corinthians 16:14."
+	title={`${resume.name} — Resume`}
+	description={`${resume.headline}. Placeholder content until details are filled in.`}
 >
-	<SplashPlane />
-	<ExploreCards />
-	<ExploreMotion client:load />
-	<SightingsPanel client:load />
-	<SayHeyPanel client:load />
+	<ResumePage />
 </BaseLayout>

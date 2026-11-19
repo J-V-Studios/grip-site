@@ -1,11 +1,8 @@
-# Project Overview — lilgrip / lilgrip.com
+# Project Overview — lilgrip.com (resume)
 
-Personal site for **lilgrip**. Chill/goofy tone, sky/blue-led Catppuccin theme, meme splash and say-hey pulse. Built with **Astro 7 + Bun + TypeScript + Tailwind v4**; React islands for Supabase-backed forms.
+Personal **resume site** at [https://lilgrip.com](https://lilgrip.com). Light sky/blue theme, Fraunces + Outfit. Built with **Astro 7 + Bun + TypeScript + Tailwind v4**. Static output → GitHub Pages from `dist/`.
 
-Live: [https://lilgrip.com](https://lilgrip.com)  
-Target publish: GitHub Pages from `main`, serving **`dist/`** after Astro build (Actions deploy on green `main`).
-
-**Source of truth:** `src/` + `public/`. Legacy vanilla root HTML/CSS/JS has been removed.
+**Source of truth:** `src/` + `public/`. Resume copy lives in **`src/data/resume.ts`** (placeholders until real details are supplied).
 
 ---
 
@@ -13,167 +10,77 @@ Target publish: GitHub Pages from `main`, serving **`dist/`** after Astro build 
 
 ```text
 /
-├── AGENTS.md               # Agent start-here (commands, map, env, deploy)
-├── .cursorrules            # Stack rules (Astro 7 + Bun)
+├── AGENTS.md
+├── .cursorrules
 ├── package.json / bun.lock
-├── astro.config.mjs
-├── tsconfig.json
-├── public/
-│   ├── CNAME               # lilgrip.com
-│   ├── favicon.svg
-│   └── images/lilgriper.jpg
+├── astro.config.mjs          # redirects old routes → /
+├── public/                   # CNAME, favicon, images
 ├── src/
-│   ├── pages/              # index, community, church-apps, fun-apps, about, money
+│   ├── data/resume.ts        # placeholder resume content
+│   ├── pages/index.astro     # resume home only
 │   ├── layouts/BaseLayout.astro
-│   ├── components/         # SiteHeader, Hero, ExploreCards, SiteFooter, …
-│   ├── components/islands/ # NotesPanel, SightingsPanel (React)
-│   ├── lib/                # supabase, notes, sightings, text helpers
-│   └── styles/global.css   # Tailwind v4 + @theme tokens
-├── tests/unit/             # Vitest
-├── README.md
-├── OVERVIEW.md             # This file
-├── TODO.md
-├── e2e/
+│   ├── components/ResumePage.astro
+│   ├── components/SiteHeader.astro
+│   ├── components/SiteFooter.astro
+│   └── styles/global.css     # resume theme tokens
+├── tests/unit/               # Vitest (legacy helpers still covered)
+├── e2e/smoke.spec.ts
 └── .github/workflows/ci.yml
 ```
 
 ### Routes
 
-| Route | File | Purpose |
-| --- | --- | --- |
-| `/` | `src/pages/index.astro` | Meme splash, explore, say hey |
-| `/church-apps/` | `src/pages/church-apps.astro` | Church apps (placeholder) |
-| `/fun-apps/` | `src/pages/fun-apps.astro` | Fun projects (placeholder) |
-| `/about/` | `src/pages/about.astro` | About (placeholder) |
-| `/money/` | `src/pages/money.astro` | Money?? (placeholder) |
-| `/community/` | `src/pages/community/index.astro` | Visitor builds hub + gallery |
-| `/community/<handle>/` | `public/community/<handle>/` | Static mini-pages (agent-built) |
-
-Shared chrome: `SiteHeader`, `SiteFooter` via `BaseLayout`.
+| Route | Purpose |
+| --- | --- |
+| `/` | Full resume page |
+| `/about/`, `/church-apps/`, `/fun-apps/`, `/money/`, `/community/` | Redirect to `/` |
 
 ### Home sections (top → bottom)
 
-| Section | Component | Purpose |
-| --- | --- | --- |
-| Hero | `Hero.astro` | Brand, chill line, 1 Corinthians 16:14, photo |
-| Explore | `ExploreCards.astro` | Links to subroutes |
-| Grip sightings | `SightingsPanel.tsx` | Account login; scan/dedupe/cooldown; +10 points; leaderboard; flag non-gripster |
-| Say hey | `SayHeyPanel.tsx` | Shared public comments (+ optional photo) |
-
-### Runtime dependencies
-
-- **Build:** Bun, Astro 7, `@astrojs/react`, Tailwind v4
-- **Fonts:** Google Fonts — Outfit, Fraunces (see layout)
-- **Data:** `@supabase/supabase-js` via `src/lib/supabase.ts`
-  - `lilgrip_comments` — say-hey notes (`body`, optional `photo_path`)
-  - `grip_sightings` — sightings metadata + points (`user_id` links to auth account); inserts only via `submit_grip_sighting` (hash + cooldown)
-  - `profiles` — hunter username / display name (claimed via `claim_grip_username`)
-  - `grip_points_leaderboard()` — public ranked points by account
-  - `community_gallery` — live community page metadata (anon read)
-  - Storage bucket `grip-heys` — public say-hey photos
-  - Storage bucket `grip-sightings` — public sighting photos
-  - Auth: email + password (confirm email if project requires it); must be signed in to log sightings
-- **Community orchestrator:** Supabase Edge Function `community-orchestrator` — claim handle, enqueue build, poll status; secrets on function only (see `docs/community/DEPLOY.md`)
-- **Env:** `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `PUBLIC_COMMUNITY_ORCHESTRATOR_URL` (see `.env.example`)
-- **Hosting:** GitHub Pages + custom domain `lilgrip.com`
-
-Local dev: `bun run dev`. Production artifact: `bun run build` → `dist/`.
-
----
-
-## Design system
-
-Tokens live in `src/styles/global.css` (`@theme`). Visual direction: **cooler Catppuccin** — sky/blue lead accents, not pink-primary brand.
-
-### Color (Tailwind @theme)
-
-| Token | Role | Value |
-| --- | --- | --- |
-| `--color-base` | Page background | `#1e1e2e` |
-| `--color-surface` / `--color-surface-soft` | Cards / panels | `#262637` / `#313244` |
-| `--color-text` | Body | `#cdd6f4` |
-| `--color-subtext` | Muted | `#a6adc8` |
-| `--color-sky` | Primary accent | `#89dceb` |
-| `--color-blue` | Primary accent | `#89b4fa` |
-| `--color-teal` | Status / cite | `#94e2d5` |
-| `--color-peach` | Warmth | `#fab387` |
-| `--color-mauve` | Secondary | `#cba6f7` |
-
-Do **not** reintroduce pink as the primary brand accent — keep sky/blue lead.
-
-### Typography
-
-| Role | Family |
+| Section | Purpose |
 | --- | --- |
-| UI / body | Outfit (`--font-sans`) |
-| Display quote | Fraunces (`--font-display`) |
+| Hero | Name (brand-level), headline, tagline, contact CTAs |
+| About | Short bio placeholder |
+| Experience | Roles + bullets |
+| Projects | Selected work |
+| Skills | Languages / tools / strengths |
+| Education | School + program |
+| Extras | Optional certifications / interests |
+| Contact | Mailto / LinkedIn / GitHub |
 
-Use fluid sizing with Tailwind utilities; gate motion with `prefers-reduced-motion` (e.g. `.motion-rise`).
+### Design tokens (`src/styles/global.css`)
 
-### Voice & imagery
+| Token | Role |
+| --- | --- |
+| `--color-base` / `--color-paper` | Soft cool paper background |
+| `--color-ink` / `--color-muted` | Body + secondary text |
+| `--color-sky` / `--color-deep` | Accent + CTA |
+| `--font-display` | Fraunces (name, section titles) |
+| `--font-sans` | Outfit (body, UI) |
 
-- Chill, not athletic; no terminal/hacker chrome.
-- Hero image: `public/images/lilgriper.jpg`.
-- Scripture: 1 Corinthians 16:14 — “Let all that you do be done in love.”
+Motion: hero rise + soft blob drift; section scroll-fade when supported; respects `prefers-reduced-motion`.
 
----
+### Runtime
 
-## Feature documentation standard
+- **Build:** Bun, Astro 7, Tailwind v4
+- **Fonts:** Google Fonts — Fraunces, Outfit
+- **Hosting:** GitHub Pages + `lilgrip.com`
+- Legacy Supabase / GripApps code may still exist under `src/lib/` and islands but is **not** mounted on the resume home.
 
-When adding or changing a feature, update this section using:
-
-### Feature: `<name>`
-
-- **User goal:** one sentence.
-- **UI location:** component / selectors.
-- **Data:** tables, buckets, localStorage keys.
-- **Permissions:** anon RLS.
-- **Points / side effects:** e.g. `+10` per sighting.
-- **Empty / error states:** user-visible copy.
-- **A11y:** labels, live regions, keyboard.
-
-### Documented features (current)
-
-#### Say hey (notes)
-
-- **User goal:** leave a short public hey, optionally with a photo.
-- **UI:** `SayHeyPanel.tsx`.
-- **Data:** `lilgrip_comments` (`photo_path` nullable) + bucket `grip-heys` via `src/lib/notes.ts`.
-- **Permissions:** anon select + insert (table + bucket).
-- **Limits:** name ≤ 24, body ≤ 200 (body optional when a photo is attached); images jpg/png/webp/heic ≤ 5MB.
-
-#### Grip sightings
-
-- **User goal:** upload a photo when spotting lilgriper IRL; earn grip points.
-- **UI:** `SightingsPanel.tsx` on the home page.
-- **Data:** `grip_sightings` + bucket `grip-sightings` via `src/lib/sightings.ts`; hunter name in `localStorage` (`lilgrip-hunter`); reporter key in `localStorage` (`lilgrip-reporter`).
-- **Points:** `+10` per successful sighting; leaderboard by hunter name (hidden rows count as 0).
-- **Moderation:** “not the gripster?” report → after **2** distinct reporters, row is hidden (`is_hidden`) and points zeroed via `report_grip_sighting` RPC.
-- **Limits:** image size/MIME caps (≤5MB jpg/png/webp/heic); place length clamp in lib.
-
-#### Explore cards
-
-- **User goal:** reach Church Apps, Fun Apps, About, Money?? from home.
-- **UI:** `ExploreCards.astro`.
-- **Data:** none.
-
-#### Community builds
-
-- **User goal:** claim a handle, submit one goofy build idea per UTC day, get a static mini-page at `/community/<handle>/`.
-- **UI:** `CommunityHub.tsx` on `/community`; live pages under `public/community/<handle>/`.
-- **Data:** `community_gallery` (build-time gallery list); orchestrator tables via edge function (`community_handles`, `community_builds`).
-- **Permissions:** anon read gallery; claim/enqueue via orchestrator with edit code; no service role in the browser.
-- **Moderation:** `src/lib/community-moderation.ts` before agent spend; rejected prompts show vibe-check copy.
-- **Deploy:** [docs/community/DEPLOY.md](./docs/community/DEPLOY.md).
+Local: `bun run dev`. Production: `bun run build` → `dist/`.
 
 ---
 
-## Architecture principles
+## Editing resume content
 
-1. Static-first Astro — ship `dist/` to GitHub Pages.
-2. One route per `src/pages/*.astro`; shared chrome in layouts/components.
-3. Supabase I/O only in `src/lib/`.
-4. React islands only where client interactivity is required.
-5. Sky/blue-led theme; no terminal chrome; no pink-primary brand face.
-6. Agents orient from `AGENTS.md` + `.cursorrules`; keep docs honest during migration.
-7. No service-role keys or committed secrets.
+1. Open `src/data/resume.ts`.
+2. Replace placeholders (`Your Name`, job titles, bullets, links).
+3. Leave empty strings for unused contacts (e.g. `phone: ""` hides phone).
+4. Rebuild / refresh — layout stays the same.
+
+---
+
+## Deploy notes
+
+- CI builds and publishes `dist/`.
+- Do not hand-edit root publish artifacts on `main`; they are overwritten from `dist/`.

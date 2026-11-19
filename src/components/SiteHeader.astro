@@ -1,48 +1,38 @@
 ---
-const pathname = Astro.url.pathname;
+import { resume } from "../data/resume";
 
 const navLinks = [
-	{ href: "/", label: "Home" },
-	{ href: "/community", label: "Community" },
-	{ href: "/church-apps", label: "Church Apps" },
-	{ href: "/fun-apps", label: "Fun Apps" },
-	{ href: "/about", label: "About" },
-	{ href: "/money", label: "Money??" },
+	{ href: "/#about-title", label: "About" },
+	{ href: "/#experience", label: "Experience" },
+	{ href: "/#projects-title", label: "Projects" },
+	{ href: "/#skills-title", label: "Skills" },
+	{ href: "/#contact", label: "Contact" },
 ];
-
-function isCurrent(href: string): boolean {
-	if (href === "/") return pathname === "/";
-	return pathname === href || pathname.startsWith(`${href}/`);
-}
 ---
 
 <header
-	class="relative z-20 flex flex-wrap items-center justify-between gap-x-6 gap-y-4 pt-[1.2rem] pb-2"
+	class="sticky top-0 z-30 border-b border-line/70 bg-paper/85 backdrop-blur-md"
 >
-	<a
-		href="/"
-		class="flex items-center gap-2.5 text-[1.15rem] font-bold tracking-tight text-text no-underline"
+	<div
+		class="mx-auto flex w-[min(1080px,calc(100%-1.5rem))] flex-wrap items-center justify-between gap-x-6 gap-y-3 py-3"
 	>
-		<img
-			src="/images/lilgrip-meme.png"
-			alt=""
-			width="36"
-			height="36"
-			class="size-9 rounded-xl border border-white/10 object-cover"
-		/>
-		<span class="text-sky">lilgrip</span>
-	</a>
-	<nav class="flex flex-wrap gap-x-0.5 gap-y-1" aria-label="Primary">
-		{
-			navLinks.map(({ href, label }) => (
-				<a
-					href={href}
-					class="rounded-full px-[0.85rem] py-[0.55rem] text-[0.92rem] font-medium text-subtext no-underline transition-[color,background,transform] duration-[250ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-surface-soft/85 hover:text-text focus-visible:bg-surface-soft/85 focus-visible:text-text focus-visible:outline-none aria-[current=page]:bg-sky aria-[current=page]:text-base"
-					aria-current={isCurrent(href) ? "page" : undefined}
-				>
-					{label}
-				</a>
-			))
-		}
-	</nav>
+		<a
+			href="/"
+			class="font-display text-[1.2rem] font-semibold tracking-[-0.02em] text-ink no-underline"
+		>
+			{resume.name}
+		</a>
+		<nav class="flex flex-wrap gap-x-1 gap-y-1" aria-label="Primary">
+			{
+				navLinks.map(({ href, label }) => (
+					<a
+						href={href}
+						class="rounded-md px-3 py-2 text-[0.92rem] font-medium text-muted no-underline transition-colors hover:bg-sky-soft hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky"
+					>
+						{label}
+					</a>
+				))
+			}
+		</nav>
+	</div>
 </header>
