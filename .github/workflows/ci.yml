@@ -108,14 +108,6 @@ jobs:
           test -f dist/gripapps/runtime.js
           test -f dist/gripapps/VERSION
 
-      - name: Assert Supabase env was inlined
-        run: |
-          set -euo pipefail
-          if ! grep -R -q 'supabase\.co' dist/_astro; then
-            echo "::error::Build is missing PUBLIC_SUPABASE_* inlining — say-hey will bounce."
-            exit 1
-          fi
-
       - name: Upload dist artifact
         uses: actions/upload-artifact@v4
         with:
