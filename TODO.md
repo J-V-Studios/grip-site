@@ -80,7 +80,7 @@ Check items off as they ship. Prefer small PRs / commits. Align with `AGENTS.md`
 
 ## Content / product
 
-- [ ] Fill real resume details in `src/data/resume.ts` (name, roles, projects, links)
+- [x] Fill real resume details in `src/data/resume.ts` (name, roles, projects, links)
 - [ ] Optional photo / headshot in resume hero
 - [ ] Remove or archive unused legacy islands/lib once resume is final
 - [ ] House rules for sightings (consent / chill / no harassment) — legacy

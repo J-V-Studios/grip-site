@@ -1,68 +1,88 @@
-/** Resume content — swap these placeholders when the look is approved. */
+/** Resume content for Josiah Eveland. */
 export const resume = {
-	name: "Your Name",
-	headline: "Your Role · Your Focus",
+	name: "Josiah Eveland",
+	headline: "Student · Looking for a first job",
 	tagline:
-		"Short one-liner about what you do and the kind of work you want next.",
-	location: "City, State",
-	email: "you@email.com",
+		"Fun, uplifting 11th grader who loves helping people — building projects, serving kids, and learning computer science.",
+	location: "Roseburg, Oregon",
+	email: "Josiahedev@gmail.com",
 	phone: "",
-	linkedin: "https://linkedin.com/in/your-handle",
-	github: "https://github.com/your-handle",
+	linkedin: "",
+	github: "https://github.com/J-V-Studios",
 	about:
-		"Two to four sentences about who you are. Background, strengths, and what you’re looking for. This is placeholder copy until you fill it in.",
+		"I’m a homeschooled junior who’s fun, uplifting, and happiest when I’m helping someone. I serve a lot in kids ministry at Roseburg Alliance Church, I’m dual-enrolled at UCC in Computer Science 160, and I build cool stuff on GitHub in my free time. This would be my first job — I’m ready to learn fast, lead when it helps, and show up with a good attitude.",
 	skills: {
-		languages: ["Language A", "Language B", "Language C"],
-		tools: ["Tool A", "Tool B", "Tool C", "Tool D"],
-		soft: ["Communication", "Leadership", "Problem solving"],
+		languages: ["English", "TypeScript", "Go", "CSS"],
+		tools: ["Microsoft Word", "Microsoft Excel", "GitHub", "Linux / Omarchy"],
+		soft: [
+			"Leadership",
+			"Problem solving",
+			"Friendly communicator",
+			"Comfortable working independently",
+			"Helping people",
+		],
 	},
 	experience: [
 		{
-			title: "Job Title",
-			company: "Company Name",
-			dates: "Month Year – Present",
-			location: "City, State",
+			title: "Kids Ministry Volunteer",
+			company: "Roseburg Alliance Church",
+			dates: "Ongoing",
+			location: "Roseburg, OR",
 			bullets: [
-				"Placeholder achievement with a clear result.",
-				"Placeholder responsibility that shows ownership.",
-				"Placeholder collaboration or impact bullet.",
-			],
-		},
-		{
-			title: "Earlier Role",
-			company: "Previous Company",
-			dates: "Month Year – Month Year",
-			location: "City, State",
-			bullets: [
-				"Placeholder win from this role.",
-				"Placeholder skill or project highlight.",
+				"Help lead and support kids ministry — showing up reliably and keeping energy positive.",
+				"Work with children and other volunteers; listen well and jump in where help is needed.",
+				"Practice leadership by staying calm, solving small problems on the spot, and making people feel welcome.",
 			],
 		},
 	],
 	projects: [
 		{
-			name: "Project Name",
-			link: "https://example.com",
-			blurb: "One-line description of what you built.",
+			name: "lilgrip.com",
+			link: "https://lilgrip.com",
+			blurb:
+				"My personal site — shipped on GitHub Pages with a modern Astro + TypeScript stack.",
 			bullets: [
-				"What problem it solved.",
-				"Stack or approach in plain language.",
+				"Designed and maintained a live public site end to end.",
+				"Stack includes Astro, TypeScript, Tailwind, and Bun.",
 			],
 		},
 		{
-			name: "Another Project",
-			link: "",
-			blurb: "Another short blurb for a personal or school project.",
-			bullets: ["Key outcome or lesson.", "What you owned."],
+			name: "Omarchy Kelp Theme",
+			link: "https://github.com/J-V-Studios/omarchy-kelp-theme",
+			blurb: "A custom Omarchy (Linux) theme with splashy screen effects.",
+			bullets: [
+				"Built cohesive CSS/theme assets for desktop apps and the shell.",
+				"Focused on look-and-feel details that make a desktop feel fun to use.",
+			],
+		},
+		{
+			name: "nova-pkg",
+			link: "https://github.com/J-V-Studios/nova-pkg",
+			blurb: "A Go CLI package helper that talks to pacman, AUR, and Flatpak.",
+			bullets: [
+				"Wrote install / search / list / update / remove flows in Go.",
+				"Unified a few package backends behind one command-line tool.",
+			],
 		},
 	],
 	education: [
 		{
-			school: "School Name",
-			program: "Degree or Program",
-			dates: "Year – Year",
-			notes: "Optional honors, GPA, or focus area.",
+			school: "Homeschool",
+			program: "11th Grade",
+			dates: "Current",
+			notes:
+				"Self-directed learning with a focus on computer science and creative projects.",
+		},
+		{
+			school: "Umpqua Community College (UCC)",
+			program: "Computer Science 160 — Dual Enrollment",
+			dates: "Current",
+			notes: "College-level CS while finishing high school.",
 		},
 	],
-	extras: ["Certification or award", "Language · fluency", "Interest or club"],
-} as const;
+	extras: [
+		"English · fluent (only language)",
+		"Kids ministry · Roseburg Alliance Church",
+		"Fun · uplifting · loves helping people",
+	],
+};
