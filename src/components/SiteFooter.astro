@@ -1,12 +1,10 @@
 ---
+import { resume } from "../data/resume";
 ---
 
-<footer
-	class="py-5 pb-[max(2.2rem,env(safe-area-inset-bottom))] text-[0.9rem] text-subtext"
->
-	<p class="m-0">lilgrip · just a chill guy</p>
-	<p class="m-0 mt-2 text-[0.72rem] tracking-[0.04em] text-subtext/80">
-		astro · react 19 · r3f · postfx · motion · gsap · lenis · tanstack · zustand
-		· zod · auto-animate · sonner
+<footer class="border-t border-line py-6 text-[0.9rem] text-muted">
+	<p class="m-0">{resume.name} · resume</p>
+	<p class="m-0 mt-1 text-[0.78rem]">
+		Placeholder content — ready for your real details.
 	</p>
 </footer>

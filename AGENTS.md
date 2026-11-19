@@ -1,8 +1,8 @@
 # AGENTS.md — start here
 
-**lilgrip** (`lilgrip.com`) is a chill/goofy personal site: meme splash, explore cards, and a say-hey pulse. The stack is **Astro 7 + Bun + TypeScript + Tailwind v4**, with React islands for Supabase-backed interactivity. Static output deploys to **GitHub Pages** at `https://lilgrip.com`.
+**lilgrip.com** is now a **resume site**: single-page resume with placeholder content in `src/data/resume.ts`. Stack stays **Astro 7 + Bun + TypeScript + Tailwind v4**. Static output deploys to **GitHub Pages** at `https://lilgrip.com`.
 
-**Ship all work in `src/` + `public/`.** The vanilla root HTML/CSS/JS sources have been removed.
+**Ship all work in `src/` + `public/`.** Fill real resume details in `src/data/resume.ts` once the look is approved.
 
 ## Commands (Bun)
 
@@ -30,16 +30,17 @@ Optional: `bun run lint:fix`, `bun run knip` (unused exports; also in CI).
 ├── OVERVIEW.md               ← design system + feature contracts
 ├── TODO.md                   ← living checklist
 ├── package.json / bun.lock
-├── astro.config.mjs          ← site URL, static output, React + Tailwind
+├── astro.config.mjs          ← site URL, static output, redirects
 ├── tsconfig.json             ← @/* → src/*
 ├── public/                   ← static assets (CNAME, favicon, images)
 ├── src/
-│   ├── pages/*.astro         ← one route per file
+│   ├── data/resume.ts        ← placeholder resume content (edit here)
+│   ├── pages/index.astro     ← resume home
 │   ├── layouts/BaseLayout.astro
-│   ├── components/           ← Astro chrome (header, hero, cards, footer)
-│   ├── components/islands/   ← React client islands (R3F, Motion, say-hey, scroll)
-│   ├── lib/                  ← Supabase client + data helpers (only place for I/O)
-│   └── styles/global.css     ← Tailwind v4 + @theme tokens
+│   ├── components/           ← ResumePage, SiteHeader, SiteFooter
+│   ├── styles/global.css     ← Tailwind v4 + resume theme tokens
+│   ├── components/islands/   ← legacy islands (not on resume home)
+│   └── lib/                  ← legacy Supabase helpers (unused on home)
 ├── tests/unit/               ← Vitest
 ├── e2e/                      ← Playwright smoke
 ├── .github/workflows/ci.yml  ← quality, build, smoke, Pages deploy
@@ -50,55 +51,42 @@ Optional: `bun run lint:fix`, `bun run knip` (unused exports; also in CI).
 
 | Route | File | Notes |
 | --- | --- | --- |
-| `/` | `src/pages/index.astro` | Splash + R3F field, explore cards, say-hey island |
-| `/church-apps/` | `src/pages/church-apps.astro` | Placeholder |
-| `/fun-apps/` | `src/pages/fun-apps.astro` | Placeholder |
-| `/about/` | `src/pages/about.astro` | Placeholder |
-| `/money/` | `src/pages/money.astro` | Placeholder |
-| `/community/` | `src/pages/community/index.astro` | Claim handle, enqueue builds, gallery (`CommunityHub.tsx`) |
+| `/` | `src/pages/index.astro` | Full resume (hero, about, experience, projects, skills, education, contact) |
+| `/about/`, `/church-apps/`, `/fun-apps/`, `/money/`, `/community/` | `astro.config.mjs` redirects | Redirect to `/` |
 
-**Supabase (anon/publishable only):** tables `lilgrip_comments`, `grip_sightings`, `profiles`, `community_gallery` (read); storage buckets `grip-heys`, `grip-sightings`. Grip points need Auth (email + password) + claimed username; leaderboard via `grip_points_leaderboard()`. Community writes go through the **edge orchestrator** (service role on server only). All client access via `src/lib/`.
-
-**Community:** `docs/community/` (deploy: [DEPLOY.md](./docs/community/DEPLOY.md)); moderation rules in `src/lib/community-moderation.ts` (mirrored in `supabase/functions/community-orchestrator/moderation.ts`).
+**Content source of truth:** `src/data/resume.ts` — name, headline, tagline, about, skills, experience, projects, education, contact links, extras.
 
 ## Environment
 
-Copy `.env.example` → `.env` (never commit `.env`).
+Copy `.env.example` → `.env` (never commit `.env`) if you revive Supabase features.
 
 | Variable | Use |
 | --- | --- |
-| `PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `PUBLIC_SUPABASE_URL` | Supabase project URL (legacy features) |
 | `PUBLIC_SUPABASE_ANON_KEY` | Publishable / anon key only |
-| `PUBLIC_COMMUNITY_ORCHESTRATOR_URL` | Supabase Edge Function URL for claim/enqueue/status |
 
-**Never** put `CURSOR_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, or `EDIT_CODE_PEPPER` in the repo, `.env.production`, or client bundle.
+**Never** put a service-role key in the repo or client bundle.
 
 ## Deploy
 
 - CI (`.github/workflows/ci.yml`): quality → build → smoke → on push to `main`, sync `dist/` to the branch root (legacy Pages) and attempt Actions deploy.
-- **Pages today:** still “Deploy from a branch” (`main` `/`). Root `CNAME`, `.nojekyll`, `index.html`, `_astro/`, etc. are the **published** site for that mode — do not hand-edit them; they are overwritten from `dist/` by CI.
-- **Preferred:** Settings → Pages → Source → **GitHub Actions**, then remove the `publish-legacy-root` job and root publish artifacts.
-- Custom domain source of truth in the app: `public/CNAME` → `lilgrip.com`.
+- Custom domain: `public/CNAME` → `lilgrip.com`.
 - `astro.config.mjs` sets `site: "https://lilgrip.com"` and `output: "static"`.
 
 ## Do / don’t
 
 **Do**
 
-- Use sky/blue-led Catppuccin theme tokens in `src/styles/global.css` (`--color-sky`, `--color-blue`).
-- Put shared layout in `src/layouts/` and `src/components/`; one route per `src/pages/*.astro`.
-- Route all Supabase reads/writes through `src/lib/` (`supabase.ts`, `notes.ts`, `sightings.ts`).
-- Start each island `*.tsx` with a one-line comment stating its purpose.
-- Use path alias `@/` for imports under `src/`.
+- Edit resume copy in `src/data/resume.ts` only (keep layout/components stable unless redesigning).
+- Use sky/blue resume theme tokens in `src/styles/global.css`.
 - Keep commits small; conventional messages (`feat:`, `fix:`, `docs:`).
 - Update `OVERVIEW.md` / `TODO.md` when behavior or structure changes.
 
 **Don’t**
 
 - Reintroduce terminal/hacker chrome or pink-primary brand accent as the main face.
-- Add secrets, service-role keys, or non-`PUBLIC_*` Supabase keys to client code.
-- Put Supabase calls directly in `.astro` pages or scattered in islands — use `src/lib/`.
-- Add a second CSS framework or turn marketing pages into a SPA.
+- Add secrets or service-role keys to client code.
+- Turn the resume into a multi-page SPA without an explicit ask.
 - Reintroduce root `index.html` / `styles.css` / `script.js` as a parallel site.
 
 ## Doc order

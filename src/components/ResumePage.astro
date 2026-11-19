@@ -1,0 +1,267 @@
+---
+import { resume } from "../data/resume";
+
+const contacts = [
+	resume.email ? { href: `mailto:${resume.email}`, label: resume.email } : null,
+	resume.phone ? { href: `tel:${resume.phone}`, label: resume.phone } : null,
+	resume.linkedin
+		? { href: resume.linkedin, label: "LinkedIn", external: true }
+		: null,
+	resume.github
+		? { href: resume.github, label: "GitHub", external: true }
+		: null,
+].filter(Boolean) as Array<{
+	href: string;
+	label: string;
+	external?: boolean;
+}>;
+---
+
+<div class="resume-shell">
+	<section
+		class="relative mx-auto grid min-h-[100svh] w-[min(1080px,calc(100%-1.5rem))] content-center gap-8 py-16 max-[820px]:py-12"
+		aria-labelledby="resume-name"
+	>
+		<div
+			class="motion-drift pointer-events-none absolute top-[12%] right-[-8%] h-64 w-64 rounded-full bg-sky-soft/80 blur-3xl max-[820px]:hidden"
+			aria-hidden="true"
+		>
+		</div>
+		<p
+			class="motion-rise m-0 text-[0.78rem] font-semibold tracking-[0.22em] text-sky uppercase"
+		>
+			{resume.location}
+		</p>
+		<h1
+			id="resume-name"
+			class="motion-rise m-0 max-w-[14ch] font-display text-[clamp(3rem,10vw,5.6rem)] leading-[0.95] font-semibold tracking-[-0.03em] text-ink"
+		>
+			{resume.name}
+		</h1>
+		<p
+			class="motion-rise-delay m-0 max-w-[28rem] text-[clamp(1.2rem,2.4vw,1.55rem)] font-medium text-deep"
+		>
+			{resume.headline}
+		</p>
+		<p
+			class="motion-rise-delay m-0 max-w-[34rem] text-[1.08rem] leading-relaxed text-muted"
+		>
+			{resume.tagline}
+		</p>
+		<div class="motion-rise-delay flex flex-wrap gap-3 pt-2">
+			{
+				contacts.map((item) => (
+					<a
+						href={item.href}
+						class="inline-flex min-h-11 items-center rounded-md border border-line bg-paper px-4 text-[0.95rem] font-semibold text-ink no-underline transition-[background,border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-sky hover:bg-sky-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky"
+						target={item.external ? "_blank" : undefined}
+						rel={item.external ? "noopener noreferrer" : undefined}
+					>
+						{item.label}
+					</a>
+				))
+			}
+			<a
+				href="#experience"
+				class="inline-flex min-h-11 items-center rounded-md bg-sky px-4 text-[0.95rem] font-semibold text-paper no-underline transition-[transform,background] duration-200 hover:-translate-y-0.5 hover:bg-deep focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky"
+			>
+				See experience
+			</a>
+		</div>
+	</section>
+
+	<div
+		class="mx-auto grid w-[min(1080px,calc(100%-1.5rem))] gap-16 pb-20 max-[820px]:gap-12"
+	>
+		<section class="scroll-fade grid gap-4" aria-labelledby="about-title">
+			<h2
+				id="about-title"
+				class="m-0 font-display text-[1.75rem] font-semibold tracking-[-0.02em] text-ink"
+			>
+				About
+			</h2>
+			<p class="m-0 max-w-[42rem] text-[1.05rem] leading-relaxed text-muted">
+				{resume.about}
+			</p>
+		</section>
+
+		<section
+			id="experience"
+			class="scroll-fade grid gap-8"
+			aria-labelledby="experience-title"
+		>
+			<div class="grid gap-2">
+				<h2
+					id="experience-title"
+					class="m-0 font-display text-[1.75rem] font-semibold tracking-[-0.02em] text-ink"
+				>
+					Experience
+				</h2>
+				<p class="m-0 text-muted">Roles and impact.</p>
+			</div>
+			<ul class="m-0 grid list-none gap-10 p-0">
+				{
+					resume.experience.map((job) => (
+						<li class="grid gap-3 border-t border-line pt-8">
+							<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+								<h3 class="m-0 text-[1.2rem] font-semibold text-ink">
+									{job.title}
+									<span class="font-medium text-sky"> — {job.company}</span>
+								</h3>
+								<p class="m-0 text-[0.92rem] text-muted">
+									{job.dates}
+									{job.location ? ` · ${job.location}` : ""}
+								</p>
+							</div>
+							<ul class="m-0 grid list-disc gap-2 pl-5 text-[1.02rem] leading-relaxed text-muted">
+								{job.bullets.map((bullet) => (
+									<li>{bullet}</li>
+								))}
+							</ul>
+						</li>
+					))
+				}
+			</ul>
+		</section>
+
+		<section class="scroll-fade grid gap-8" aria-labelledby="projects-title">
+			<div class="grid gap-2">
+				<h2
+					id="projects-title"
+					class="m-0 font-display text-[1.75rem] font-semibold tracking-[-0.02em] text-ink"
+				>
+					Projects
+				</h2>
+				<p class="m-0 text-muted">Selected work.</p>
+			</div>
+			<ul class="m-0 grid list-none gap-8 p-0">
+				{
+					resume.projects.map((project) => (
+						<li class="grid gap-2 border-t border-line pt-8">
+							<h3 class="m-0 text-[1.15rem] font-semibold text-ink">
+								{project.link ? (
+									<a
+										href={project.link}
+										class="text-ink underline-offset-4 hover:text-sky hover:underline"
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										{project.name}
+									</a>
+								) : (
+									project.name
+								)}
+							</h3>
+							<p class="m-0 text-[1.02rem] text-muted">{project.blurb}</p>
+							<ul class="m-0 grid list-disc gap-2 pl-5 text-[1.02rem] leading-relaxed text-muted">
+								{project.bullets.map((bullet) => (
+									<li>{bullet}</li>
+								))}
+							</ul>
+						</li>
+					))
+				}
+			</ul>
+		</section>
+
+		<section class="scroll-fade grid gap-6" aria-labelledby="skills-title">
+			<h2
+				id="skills-title"
+				class="m-0 font-display text-[1.75rem] font-semibold tracking-[-0.02em] text-ink"
+			>
+				Skills
+			</h2>
+			<div class="grid gap-5 max-[820px]:gap-4 min-[821px]:grid-cols-3">
+				{
+					(
+						[
+							["Languages", resume.skills.languages],
+							["Tools", resume.skills.tools],
+							["Strengths", resume.skills.soft],
+						] as const
+					).map(([label, items]) => (
+						<div class="grid gap-2">
+							<h3 class="m-0 text-[0.78rem] font-semibold tracking-[0.16em] text-sky uppercase">
+								{label}
+							</h3>
+							<p class="m-0 text-[1.02rem] leading-relaxed text-muted">
+								{items.join(" · ")}
+							</p>
+						</div>
+					))
+				}
+			</div>
+		</section>
+
+		<section class="scroll-fade grid gap-6" aria-labelledby="education-title">
+			<h2
+				id="education-title"
+				class="m-0 font-display text-[1.75rem] font-semibold tracking-[-0.02em] text-ink"
+			>
+				Education
+			</h2>
+			<ul class="m-0 grid list-none gap-6 p-0">
+				{
+					resume.education.map((ed) => (
+						<li class="grid gap-1 border-t border-line pt-6">
+							<h3 class="m-0 text-[1.1rem] font-semibold text-ink">
+								{ed.school}
+								<span class="font-medium text-sky"> — {ed.program}</span>
+							</h3>
+							<p class="m-0 text-[0.92rem] text-muted">{ed.dates}</p>
+							{ed.notes ? (
+								<p class="m-0 text-[1.02rem] text-muted">{ed.notes}</p>
+							) : null}
+						</li>
+					))
+				}
+			</ul>
+		</section>
+
+		{
+			resume.extras.length > 0 ? (
+				<section class="scroll-fade grid gap-4" aria-labelledby="extras-title">
+					<h2
+						id="extras-title"
+						class="m-0 font-display text-[1.75rem] font-semibold tracking-[-0.02em] text-ink"
+					>
+						Extras
+					</h2>
+					<p class="m-0 text-[1.02rem] leading-relaxed text-muted">
+						{resume.extras.join(" · ")}
+					</p>
+				</section>
+			) : null
+		}
+
+		<section
+			id="contact"
+			class="scroll-fade grid gap-4 border-t border-line pt-10"
+			aria-labelledby="contact-title"
+		>
+			<h2
+				id="contact-title"
+				class="m-0 font-display text-[1.75rem] font-semibold tracking-[-0.02em] text-ink"
+			>
+				Contact
+			</h2>
+			<p class="m-0 max-w-[34rem] text-[1.05rem] leading-relaxed text-muted">
+				Replace these links with yours. Ready when you are.
+			</p>
+			<div class="flex flex-wrap gap-3">
+				{
+					contacts.map((item) => (
+						<a
+							href={item.href}
+							class="inline-flex min-h-11 items-center rounded-md bg-deep px-4 text-[0.95rem] font-semibold text-paper no-underline transition-[transform,background] duration-200 hover:-translate-y-0.5 hover:bg-sky focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky"
+							target={item.external ? "_blank" : undefined}
+							rel={item.external ? "noopener noreferrer" : undefined}
+						>
+							{item.label}
+						</a>
+					))
+				}
+			</div>
+		</section>
+	</div>
+</div>

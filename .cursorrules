@@ -1,6 +1,6 @@
 # lilgrip.com — Cursor Rules (Astro 7 + Bun)
 
-You are working on **the lilgriper** site: Astro 7 static site on GitHub Pages at `lilgrip.com`.
+You are working on **lilgrip.com**: a resume site (Astro 7 static on GitHub Pages). Copy lives in `src/data/resume.ts`.
 
 ## Stack (non-negotiable)
 
@@ -34,18 +34,22 @@ You are working on **the lilgriper** site: Astro 7 static site on GitHub Pages a
 
 ## Visual / brand
 
-- **Theme:** Cooler Catppuccin — **sky and blue** as primary accents (`--color-sky`, `--color-blue` in `@theme`).
-- **Not** pink-primary brand face; peach/mauve/teal are supporting warmth, not candy-pink hero accent.
-- **No** terminal / hacker / localhost-console chrome, fake shell prompts, or dense dashboard clutter unless the user explicitly asks.
-- Chill tone: whitespace, soft motion; respect `prefers-reduced-motion`.
-- Hero scripture: 1 Corinthians 16:14 (WEB): “Let all that you do be done in love.”
+- **Theme:** Light cool paper + **sky/deep** accents (`--color-sky`, `--color-deep` in `@theme`).
+- **Fonts:** Fraunces (display) + Outfit (body). Brand-first hero: name is the hero signal.
+- **Not** pink-primary, purple-on-white, cream/terracotta, or broadsheet layouts.
+- **No** terminal / hacker chrome or dense dashboard clutter unless explicitly asked.
+- Whitespace, soft motion; respect `prefers-reduced-motion`.
 
-## Supabase / data
+## Resume content
+
+- Edit placeholders only in `src/data/resume.ts` unless redesigning layout.
+- Old routes redirect to `/` via `astro.config.mjs`.
+
+## Supabase / data (legacy)
 
 - Env (client-safe only): `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` — see `.env.example`.
 - **Never** commit `.env` or use service-role keys in the browser.
-- Tables: `lilgrip_comments`, `grip_sightings`; buckets: `grip-heys`, `grip-sightings` (anon select/insert as designed).
-- Sanitize/clamp user text in `src/lib/` before insert; cap upload size/MIME for hey photos and sightings.
+- Resume home does not mount Supabase islands; keep secrets out of the client if revived.
 - Document schema or RLS changes in `OVERVIEW.md`.
 
 ## Code quality

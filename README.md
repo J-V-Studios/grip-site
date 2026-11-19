@@ -1,15 +1,14 @@
-# lilgrip
+# lilgrip.com — resume
 
-Personal site for **lilgrip**, published at [lilgrip.com](https://lilgrip.com).
+Personal **resume** site at [lilgrip.com](https://lilgrip.com).
 
-**Stack:** Astro 7 + Bun + TypeScript + Tailwind v4 + React 19 islands, plus Motion, GSAP (SplitText), Lenis, React Three Fiber + postprocessing, TanStack Query, Zustand, Zod, AutoAnimate, Sonner, Lucide, react-wrap-balancer, canvas-confetti, and `@astrojs/sitemap`. See **`AGENTS.md`** for commands, layout, env vars, and contributor rules.
+**Stack:** Astro 7 + Bun + TypeScript + Tailwind v4. See **`AGENTS.md`** for commands and layout.
 
 ## Quick start
 
 ```bash
 export PATH="$HOME/.bun/bin:$PATH"
 bun install
-cp .env.example .env   # add PUBLIC_SUPABASE_* values
 bun run dev
 ```
 
@@ -21,40 +20,14 @@ bun run dev
 | `bun run check` | Typecheck (`astro check`) |
 | `bun run lint` | Biome |
 | `bun run test` | Vitest |
-| `bun run test:e2e` | Playwright (when configured) |
+| `bun run test:e2e` | Playwright smoke |
 
-**Migration:** The Astro app under `src/` is the active codebase. Legacy root HTML/CSS/JS may remain until cutover; do not add features there.
+## Content
 
-## Environment
-
-Client-safe Supabase vars only (never commit secrets):
-
-- `PUBLIC_SUPABASE_URL`
-- `PUBLIC_SUPABASE_ANON_KEY`
-
-Details in `.env.example`.
+Edit **`src/data/resume.ts`** to replace placeholders (name, experience, projects, links). Layout stays in `src/components/ResumePage.astro`.
 
 ## Deploy
 
 - Build output: **`dist/`** (`bun run build`).
 - GitHub Pages custom domain: **`public/CNAME`** → `lilgrip.com`.
-- CI/CD workflow (lint, test, build, deploy on green `main`) — see `TODO.md` / specs in `docs/superpowers/`.
-
-## DNS (Squarespace)
-
-`lilgrip.com` DNS is on Squarespace; mail stays on Titan. Change only website records.
-
-For `lilgrip.com` in Squarespace DNS:
-
-- Replace Squarespace `A` records on `@` with GitHub Pages IPs: `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`.
-- Point `www` `CNAME` to `j-v-studios.github.io` (not Squarespace ext host).
-- Remove Squarespace `HTTPS` record on `@` if it pins old addresses.
-
-Shared notes and sightings live in Supabase; anyone with the site can read public data per RLS.
-
-## Docs
-
-- `AGENTS.md` — start here for agents
-- `OVERVIEW.md` — design system and features
-- `TODO.md` — roadmap
-- `.cursorrules` — stack constraints
+- `astro.config.mjs`: `site: "https://lilgrip.com"`, `output: "static"`.

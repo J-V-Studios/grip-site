@@ -4,6 +4,8 @@ Check items off as they ship. Prefer small PRs / commits. Align with `AGENTS.md`
 
 ## Done
 
+- [x] Overwrite site with resume shell (placeholders in `src/data/resume.ts`)
+- [x] Redirect old marketing routes to `/`
 - [x] Goofy redesign: meme splash, say-hey pulse
 - [x] Restore grip sightings + points; community flag for non-gripster photos
 - [x] Fix sightings photo upload UX; hunter accounts + grip points leaderboard
@@ -78,10 +80,12 @@ Check items off as they ship. Prefer small PRs / commits. Align with `AGENTS.md`
 
 ## Content / product
 
-- [ ] House rules for sightings (consent / chill / no harassment)
-- [ ] Grip points rules (flat +10 vs bonuses)
-- [ ] Moderation path for bad uploads (needs non-anon tooling)
-- [ ] Fill placeholder pages when content exists
+- [ ] Fill real resume details in `src/data/resume.ts` (name, roles, projects, links)
+- [ ] Optional photo / headshot in resume hero
+- [ ] Remove or archive unused legacy islands/lib once resume is final
+- [ ] House rules for sightings (consent / chill / no harassment) — legacy
+- [ ] Grip points rules (flat +10 vs bonuses) — legacy
+- [ ] Moderation path for bad uploads (needs non-anon tooling) — legacy
 
 ## Quality / hygiene
 
